@@ -1,0 +1,19 @@
+load("@valdi//bzl/valdi:valdi_application.bzl", "valdi_application")
+load("@valdi//bzl/valdi:valdi_exported_library.bzl", "valdi_exported_library")
+
+valdi_application(
+    name = "haycee_mobile_app_valdi_app",
+    ios_bundle_id = "com.website.haycee_mobile_app_valdi",
+    ios_families = ["iphone"],
+    root_component_path = "App@haycee_mobile_app_valdi/src/App",
+    title = "haycee_mobile_app_valdi",
+    version = "1.0.0",
+    deps = ["//modules/haycee_mobile_app_valdi"],
+)
+
+valdi_exported_library(
+    name = "haycee_mobile_app_valdi_export",
+    ios_bundle_id = "com.website.haycee_mobile_app_valdi.lib",
+    ios_bundle_name = "HayceeMobileAppValdi",
+    deps = ["//modules/haycee_mobile_app_valdi"],
+)

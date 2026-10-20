@@ -1,0 +1,45 @@
+name: Valdi validation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  static-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate generated evidence files
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const required = [
+            'docs/valdi-reference/SOURCE_MANIFEST.json',
+            'docs/valdi-reference/API_INDEX.json',
+            'docs/setup/PROJECT_READINESS.md',
+            'AGENTS.md',
+          ];
+          for (const file of required) {
+            if (!fs.existsSync(file)) throw new Error(`Missing ${file}`);
+          }
+          const manifest = JSON.parse(fs.readFileSync(required[0], 'utf8'));
+          const api = JSON.parse(fs.readFileSync(required[1], 'utf8'));
+          if (!manifest.commit || !manifest.repository) throw new Error('Manifest lacks source identity');
+          if (!api.counts || api.counts.entries < 1) throw new Error('API index is empty');
+          console.log(`Validated commit ${manifest.commit}; ${api.counts.entries} API evidence entries`);
+          NODE
+      - name: Reject accidental React hooks in the minimal app
+        shell: bash
+        run: |
+          if grep -R -n -E 'use(State|Effect|Context)|from ["'"']react(["'"']|/)' modules --include='*.ts' --include='*.tsx'; then
+            echo 'React patterns are not permitted in this Valdi application.'
+            exit 1
+          fi
+
+# This workflow intentionally performs static evidence checks only. It does not claim Android,
+# iOS or macOS builds; those require the platform/toolchains documented in PROJECT_READINESS.md.

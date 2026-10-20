@@ -1,0 +1,41 @@
+name: Valdi Android build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install the pinned Valdi CLI
+        run: npm install --global @snap/valdi@1.0.11
+
+      - name: Set up Valdi dependencies
+        run: valdi dev_setup
+
+      - name: Check the Valdi environment
+        run: valdi doctor
+
+      - name: Synchronize the project
+        run: valdi projectsync
+
+      - name: Build the Android package
+        run: valdi package android --output_path ./dist/haycee-mobile-app-valdi.apk
+
+      - name: Upload Android package
+        uses: actions/upload-artifact@v4
+        with:
+          name: haycee-mobile-app-valdi-android
+          path: dist/haycee-mobile-app-valdi.apk
+          if-no-files-found: error

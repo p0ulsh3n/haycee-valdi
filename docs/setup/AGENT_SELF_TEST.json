@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-10-20T00:07:16.4844209Z",
+  "reference_commit": "f26bee4dc170b6c929f71d4dd07d44e033f47176",
+  "api_entries": 11836,
+  "results": [
+    {
+      "name": "Stateful component API",
+      "term": "StatefulComponent",
+      "status": "pass",
+      "hits": 5,
+      "examples": [
+        "docs/docs/glossary.md:154",
+        "docs/docs/migrate-from-flutter.md:96",
+        "src/valdi_modules/src/valdi/valdi_core/src/Component.ts:184"
+      ]
+    },
+    {
+      "name": "Native template import",
+      "term": "NativeTemplateElements",
+      "status": "pass",
+      "hits": 114,
+      "examples": [
+        "docs/api/api-quick-reference.md:532",
+        "docs/api/api-style-attributes.md:54",
+        "docs/api/api-style-attributes.md:426"
+      ]
+    },
+    {
+      "name": "Bazel module rule",
+      "term": "valdi_module",
+      "status": "pass",
+      "hits": 2176,
+      "examples": [
+        "docs/docs/stdlib-filesystem.md:175",
+        "src/valdi_modules/src/valdi/bridge_observables/src/types/BridgeError.d.ts:8",
+        "src/valdi_modules/src/valdi/bridge_observables/src/types/BridgeObservable.ts:11"
+      ]
+    },
+    {
+      "name": "Cancelable async API",
+      "term": "CancelablePromise",
+      "status": "pass",
+      "hits": 18,
+      "examples": [
+        "docs/docs/stdlib-http.md:67",
+        "docs/docs/stdlib-http.md:78",
+        "docs/docs/stdlib-http.md:91"
+      ]
+    },
+    {
+      "name": "Navigation API evidence",
+      "term": "NavigationRoot",
+      "status": "pass",
+      "hits": 6,
+      "examples": [
+        "docs/docs/migrate-from-flutter.md:325",
+        "docs/docs/start-from-react.md:350",
+        "src/valdi_modules/src/valdi/valdi_navigation/src/NavigationRoot.tsx:8"
+      ]
+    },
+    {
+      "name": "Project external imports indexed",
+      "term": "module imports",
+      "status": "pass",
+      "hits": 9,
+      "examples": []
+    },
+    {
+      "name": "Official client skills present",
+      "term": "CLI bundle client skills",
+      "status": "pass",
+      "hits": 14,
+      "examples": [
+        "installed=14",
+        "cli_bundle=14",
+        "main_registry=26"
+      ]
+    }
+  ]
+}
