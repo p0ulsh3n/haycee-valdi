@@ -22,7 +22,22 @@ jobs:
         run: npm install --global @snap/valdi@1.0.11
 
       - name: Set up Valdi dependencies
-        run: valdi dev_setup
+        shell: bash
+        run: |
+          for attempt in 1 2 3; do
+            echo "Valdi dependency setup attempt ${attempt}/3"
+            if valdi dev_setup; then
+              exit 0
+            else
+              status=$?
+              echo "valdi dev_setup failed with exit code ${status}"
+            fi
+            if [ "${attempt}" -lt 3 ]; then
+              echo 'Retrying after a short delay...'
+              sleep 10
+            fi
+          done
+          exit 1
 
       - name: Check the Valdi environment
         run: valdi doctor
