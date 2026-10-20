@@ -31,7 +31,7 @@ jobs:
         run: valdi projectsync
 
       - name: Build the Android package
-        run: valdi package android --application //:haycee_mobile_app_valdi_app --output_path ./dist/haycee-mobile-app-valdi.apk
+        run: valdi package android --application //:haycee_mobile_app_valdi_app_android --output_path ./dist/haycee-mobile-app-valdi.apk
 
       - name: Upload Android package
         uses: actions/upload-artifact@v4
