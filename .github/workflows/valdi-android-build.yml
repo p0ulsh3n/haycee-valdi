@@ -7,7 +7,7 @@ on:
 
 jobs:
   android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - name: Check out source
@@ -38,6 +38,32 @@ jobs:
             fi
           done
           exit 1
+
+      - name: Install Valdi compiler compatibility library
+        shell: bash
+        run: |
+          if ldconfig -p | grep -q 'libtinfo\.so\.5'; then
+            echo 'libtinfo.so.5 is already available.'
+            exit 0
+          fi
+
+          echo 'Installing libtinfo5 required by the Valdi LLVM toolchain...'
+          if sudo apt-get update && sudo apt-get install -y libtinfo5; then
+            exit 0
+          fi
+
+          archive_url='https://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses'
+          archive_listing="$(curl -fsSL "${archive_url}/")"
+          deb_name="$(printf '%s\n' "${archive_listing}" | grep -oE 'libtinfo5_[^" ]*_amd64\.deb' | sort -Vu | tail -n1 || true)"
+          if [ -z "${deb_name}" ]; then
+            echo 'Could not locate a compatible libtinfo5 package.' >&2
+            exit 1
+          fi
+
+          curl -fsSL "${archive_url}/${deb_name}" -o "/tmp/${deb_name}"
+          sudo apt-get install -y "/tmp/${deb_name}"
+          rm -f "/tmp/${deb_name}"
+          ldconfig -p | grep -q 'libtinfo\.so\.5'
 
       - name: Check the Valdi environment
         run: valdi doctor
