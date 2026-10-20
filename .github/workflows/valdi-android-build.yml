@@ -21,6 +21,17 @@ jobs:
       - name: Install the pinned Valdi CLI
         run: npm install --global @snap/valdi@1.0.11
 
+      - name: Restore Bazel cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.valdi/bin
+            ~/.cache/bazel
+            ~/.cache/bazelisk
+          key: valdi-bazel-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'BUILD.bazel', '.bazelrc', 'modules/**/BUILD.bazel') }}
+          restore-keys: |
+            valdi-bazel-${{ runner.os }}-
+
       - name: Set up Valdi dependencies
         shell: bash
         run: |
@@ -71,12 +82,26 @@ jobs:
       - name: Synchronize the project
         run: valdi projectsync
 
-      - name: Build the Android package
-        run: valdi package android --application //:haycee_mobile_app_valdi_app_android --output_path ./dist/haycee-mobile-app-valdi.apk
+      - name: Build the Android arm64 package
+        shell: bash
+        run: |
+          # The pinned CLI's package command intentionally builds all Android ABIs.
+          # CI only needs the arm64 APK used by a current physical Android device.
+          "$HOME/.valdi/bin/bazelisk" build //:haycee_mobile_app_valdi_app_android \
+            --copt=-DANDROID_WITH_JNI \
+            --repo_env=VALDI_PLATFORM_DEPENDENCIES=android \
+            --define=client_repo_arm64=true \
+            --fat_apk_cpu=arm64-v8a \
+            --android_cpu=arm64-v8a
+
+          mkdir -p dist
+          apk='bazel-bin/haycee_mobile_app_valdi_app_android.apk'
+          test -f "${apk}"
+          cp "${apk}" dist/haycee-mobile-app-valdi-arm64.apk
 
       - name: Upload Android package
         uses: actions/upload-artifact@v4
         with:
-          name: haycee-mobile-app-valdi-android
-          path: dist/haycee-mobile-app-valdi.apk
+          name: haycee-mobile-app-valdi-android-arm64
+          path: dist/haycee-mobile-app-valdi-arm64.apk
           if-no-files-found: error

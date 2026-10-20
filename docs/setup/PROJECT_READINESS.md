@@ -7,8 +7,9 @@ Status: **GO AVEC LIMITATIONS**
 The Windows host is used for source editing and optional local Android/ADB testing. Ubuntu WSL was
 removed after setup because the Android build is now delegated to
 `.github/workflows/valdi-android-build.yml`. That workflow installs the pinned Valdi CLI and Linux
-Android dependencies, runs `valdi projectsync`, packages the Android APK, and uploads it as an
-artifact. A GitHub Actions run is required before claiming that the remote Android build passes.
+Android dependencies, runs `valdi projectsync`, builds an arm64 Android APK, and uploads it as an
+artifact. The arm64-only build avoids compiling the unused x86_64 and ARMv7 variants in CI. A
+GitHub Actions run is required before claiming that the remote Android build passes.
 
 The official minimal Valdi application structure and agent/reference infrastructure are present.
 Product development should wait until the build host/toolchain is moved to an officially supported

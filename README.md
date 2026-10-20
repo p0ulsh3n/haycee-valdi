@@ -13,8 +13,12 @@ does not support Windows. Android packaging is delegated to GitHub Actions.
 
 `.github/workflows/valdi-android-build.yml` runs on every push, pull request, or manual dispatch.
 It installs the pinned Valdi CLI, prepares the Linux Android toolchain, synchronizes the workspace,
-builds the Android APK, and uploads it as a workflow artifact. WSL is not required on the Windows
-development machine.
+builds an arm64 Android APK, and uploads it as a workflow artifact. The arm64 choice avoids the
+multi-ABI (fat APK) build and is intended for a modern physical Android device. WSL is not
+required on the Windows development machine.
+
+The CI artifact is not an x86_64 emulator or ARMv7 build. Match the ABI to the device if you use
+an older phone or an x86_64 emulator.
 
 Windows remains useful for editing and local ADB/device testing. GitHub Actions builds the APK;
 hot reload still requires a local Valdi runtime connected to an Android device or emulator.
