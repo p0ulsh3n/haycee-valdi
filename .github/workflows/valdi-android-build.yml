@@ -8,7 +8,10 @@ on:
 jobs:
   android:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    # A completely cold Valdi Android build can exceed 40 minutes.  The
+    # cache below is populated only after a successful first build, so this
+    # must leave enough time for that seed run to finish.
+    timeout-minutes: 120
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -21,16 +24,19 @@ jobs:
       - name: Install the pinned Valdi CLI
         run: npm install --global @snap/valdi@1.0.11
 
-      - name: Restore Bazel cache
+      - name: Restore Bazel caches
         uses: actions/cache@v4
         with:
           path: |
-            ~/.valdi/bin
-            ~/.cache/bazel
+            ~/.cache/bazel/disk
+            ~/.cache/bazel/repo
             ~/.cache/bazelisk
-          key: valdi-bazel-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'BUILD.bazel', '.bazelrc', 'modules/**/BUILD.bazel') }}
+          # A unique key lets every successful run save the newer action
+          # results; the restore prefix selects the most recent compatible
+          # cache on the next GitHub-hosted runner.
+          key: valdi-bazel-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'BUILD.bazel', '.bazelrc', 'modules/**/BUILD.bazel') }}-${{ github.run_id }}
           restore-keys: |
-            valdi-bazel-${{ runner.os }}-
+            valdi-bazel-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'BUILD.bazel', '.bazelrc', 'modules/**/BUILD.bazel') }}-
 
       - name: Set up Valdi dependencies
         shell: bash
@@ -90,6 +96,8 @@ jobs:
           "$HOME/.valdi/bin/bazelisk" build //:haycee_mobile_app_valdi_app_android \
             --copt=-DANDROID_WITH_JNI \
             --repo_env=VALDI_PLATFORM_DEPENDENCIES=android \
+            --disk_cache="$HOME/.cache/bazel/disk" \
+            --repository_cache="$HOME/.cache/bazel/repo" \
             --define=client_repo_arm64=true \
             --fat_apk_cpu=arm64-v8a \
             --android_cpu=arm64-v8a
