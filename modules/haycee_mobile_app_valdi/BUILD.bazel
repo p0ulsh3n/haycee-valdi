@@ -1,4 +1,14 @@
+load("@valdi//bzl/valdi:valdi_android_library.bzl", "valdi_android_library")
 load("@valdi//bzl/valdi:valdi_module.bzl", "valdi_module")
+
+valdi_android_library(
+    name = "android_impl",
+    srcs = glob(["android/**/*.kt"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "@valdi//valdi:valdi_android_support",
+    ],
+)
 
 valdi_module(
     name = "haycee_mobile_app_valdi",
@@ -11,11 +21,14 @@ valdi_module(
         "res/**/*.jpg",
         "res/**/*.png",
         "res/**/*.svg",
+        "res/**/*.ttf",
         "res/**/*.webp",
     ]),
+    android_deps = [":android_impl"],
     visibility = ["//visibility:public"],
     deps = [
         "@valdi//src/valdi_modules/src/valdi/valdi_core",
         "@valdi//src/valdi_modules/src/valdi/valdi_tsx",
+        "@valdi//src/valdi_modules/src/valdi/valdi_navigation",
     ],
 )

@@ -1,0 +1,53 @@
+{
+    "extends": "../../bazel-haycee_mobile_app_valdi/external/valdi/modules/_configs/base.tsconfig.json",
+    "compilerOptions": {
+        "paths": {
+            "haycee_mobile_app_valdi/*": [
+                "./*",
+                "../../bazel-out/k8-fastbuild/bin/modules/haycee_mobile_app_valdi/.valdi_build/projectsync/generated_ts/haycee_mobile_app_valdi/*"
+            ],
+            "jasmine/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/jasmine/*"
+            ],
+            "coreutils/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/coreutils/*"
+            ],
+            "source_map/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/source_map/*"
+            ],
+            "valdi_tsx/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/valdi_tsx/*"
+            ],
+            "valdi_core/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/valdi_core/*"
+            ],
+            "file_system/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/file_system/*"
+            ],
+            "valdi_standalone/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/valdi_standalone/*"
+            ],
+            "valdi_test/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/valdi_test/*",
+                "../../bazel-out/k8-fastbuild/bin/external/valdi/src/valdi_modules/src/valdi/valdi_test/.valdi_build/projectsync/generated_ts/valdi_test/*"
+            ],
+            "foundation/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/foundation/*"
+            ],
+            "valdi_navigation/*": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/valdi_navigation/*"
+            ],
+            "tslib": [
+                "../../bazel-haycee_mobile_app_valdi/external/valdi/src/valdi_modules/src/valdi/valdi_core/src/tslib"
+            ]
+        },
+        "types": [
+            "../../bazel-haycee_mobile_app_valdi/external/valdi/modules/types/Long",
+            "../../bazel-haycee_mobile_app_valdi/external/valdi/modules/types/globals"
+        ],
+        "rootDirs": [
+            "..",
+            "../../bazel-out/k8-fastbuild/bin/modules/haycee_mobile_app_valdi/.valdi_build/projectsync/generated_ts"
+        ]
+    }
+}

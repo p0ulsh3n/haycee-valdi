@@ -1,13 +1,16 @@
-import { StatefulComponent } from 'valdi_core/src/Component';
-import { ImageView, Label, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
-import { systemBoldFont, systemFont } from 'valdi_core/src/SystemFont';
-import { AttributedText } from 'valdi_tsx/src/AttributedText';
-import { AttributedTextBuilder } from 'valdi_core/src/utils/AttributedTextBuilder';
-import { Device } from 'valdi_core/src/Device';
-import { getDaemonClientManager } from 'valdi_core/src/debugging/DaemonClientManagerResolver';
-import { IDaemonClientManagerListener } from 'valdi_core/src/debugging/DaemonClientManager';
-import res from '../res';
+import { $slot } from 'valdi_core/src/CompilerIntrinsics';
+import { Layout } from 'valdi_tsx/src/NativeTemplateElements';
+import { NavigationRoot } from 'valdi_navigation/src/NavigationRoot';
+import { NavigationController } from 'valdi_navigation/src/NavigationController';
+import { BottomTabsNavigation } from './design-system/components/BottomTabsNavigation';
+import { InAppBannerComponent } from './design-system/components/InAppBanner';
+import { SnackBarComponent, TransientFeedback } from './design-system/components/SnackBar';
+import { layout } from './design-system/tokens/spacing';
+import navigationIcons from '../res/navigation-icons';
+import { ProductDetailScreen } from './products/ProductDetailScreen';
+import { HomeProduct } from './home/components/HomeProductRail';
 
 /**
  * @ViewModel
@@ -21,113 +24,41 @@ export interface AppViewModel {}
  */
 export interface AppComponentContext {}
 
-interface State {
-  hotReloaderConnected: boolean;
-}
+/** Application root: Home is the first page and bottom tabs stay visible. */
+export class App extends Component<AppViewModel, AppComponentContext> {
+  private navigationController?: NavigationController;
 
-/**
- * @Component
- * @ExportModel
- */
-export class App extends StatefulComponent<AppViewModel, AppComponentContext> implements IDaemonClientManagerListener {
-  state: State = { hotReloaderConnected: false };
-
-  onCreate(): void {
-    console.log('On App create!');
-    getDaemonClientManager().addListener(this);
-  }
-
-  onDestroy(): void {
-    console.log('On App destroy!');
-    getDaemonClientManager().removeListener(this);
-  }
-
-  onAvailabilityChanged(available: boolean): void {
-    this.setState({ hotReloaderConnected: available });
-  }
+  private handleProductTap = (product: HomeProduct, recommendations?: HomeProduct[]): void => {
+    this.navigationController?.push(ProductDetailScreen, { product, recommendations }, {});
+  };
 
   onRender(): void {
-    console.log('On App render!');
-    <view style={styles.main}>
-      <image style={styles.logo} src={res.valdi} />
-      <layout padding={20}>
-        <label style={styles.title} value={`Welcome to Valdi!`} />
-      </layout>
-      <label style={styles.subtitle} value={this.renderLabel()} />
-    </view>;
-  }
-
-  private renderLabel(): AttributedText {
-    const textBuilder = new AttributedTextBuilder();
-
-    textBuilder.appendText('This is currently running on ');
-    textBuilder.appendStyled({
-      content: this.getPlatformString(),
-      attributes: {
-        color: 'red',
-        font: systemBoldFont(20),
-      },
-    });
-
-    textBuilder.appendText('\nHot reloader ');
-    if (this.state.hotReloaderConnected) {
-      textBuilder.appendStyled({
-        content: 'connected',
-        attributes: {
-          color: 'green',
-          font: systemBoldFont(20),
-        },
-      });
-    } else {
-      textBuilder.appendStyled({
-        content: 'disconnected',
-        attributes: {
-          color: 'red',
-          font: systemBoldFont(20),
-        },
-      });
-    }
-
-    return textBuilder.build();
-  }
-
-  private getPlatformString(): string {
-    if (Device.isDesktop()) {
-      return 'Desktop';
-    } else if (Device.isIOS()) {
-      return 'iOS';
-    } else if (Device.isAndroid()) {
-      return 'Android';
-    } else {
-      return 'Unknown';
-    }
+    <layout style={styles.root}>
+      <NavigationRoot>
+        {$slot(_navigationController => {
+          this.navigationController = _navigationController;
+          <BottomTabsNavigation
+            onMenuTap={() => TransientFeedback.show({ message: 'Menu Home' })}
+            onSearchTap={() => TransientFeedback.show({ message: 'Recherche Home' })}
+            onWishlistTap={() => TransientFeedback.show({ message: 'Favoris Home' })}
+            onNotificationsTap={() => TransientFeedback.show({ message: 'Notifications Home' })}
+            onProductTap={this.handleProductTap}
+            onQuickAdd={() => TransientFeedback.show({
+              message: 'Votre article a été ajouté au panier',
+              icon: navigationIcons.shoppingCartAdd02,
+              duration: 2200,
+            })}
+          />;
+        })}
+      </NavigationRoot>
+      <SnackBarComponent bottomOffset={layout.navigation.bottomTabsHeight} />
+      <InAppBannerComponent />
+    </layout>;
   }
 }
 
 const styles = {
-  main: new Style<View>({
-    backgroundColor: 'white',
-    justifyContent: 'center',
-  }),
-  logo: new Style<ImageView>({
-    width: 80,
-    height: 80,
-    alignSelf: 'center',
-    borderRadius: 16,
-    boxShadow: '0 0 3 rgba(0, 0, 0, 0.15)',
-  }),
-  title: new Style<Label>({
-    color: 'black',
-    font: systemBoldFont(24),
-    accessibilityCategory: 'header',
-    alignSelf: 'center',
-  }),
-
-  subtitle: new Style<Label>({
-    alignSelf: 'center',
-    color: 'black',
-    font: systemFont(20),
-    numberOfLines: 0,
-    textAlign: 'center',
+  root: new Style<Layout>({
+    flexGrow: 1,
   }),
 };

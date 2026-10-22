@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+        "name": "Valdi attach",
+        "type": "node",
+        "request": "attach",
+        "websocketAddress": "ws://localhost:13595",
+        "sourceMapPathOverrides": {
+            "/haycee_mobile_app_valdi/*": "${workspaceRoot}/modules/haycee_mobile_app_valdi/*"
+        },
+        "sourceMaps": true,
+        "restart": false,
+        "resolveSourceMapLocations": []
+    }
+  ]
+}
