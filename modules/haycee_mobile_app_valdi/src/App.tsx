@@ -11,6 +11,8 @@ import { layout } from './design-system/tokens/spacing';
 import navigationIcons from '../res/navigation-icons';
 import { ProductDetailScreen } from './products/ProductDetailScreen';
 import { HomeProduct } from './home/components/HomeProductRail';
+import { ConversationScreen } from './messaging/ConversationScreen';
+import { ConversationPreview } from './messaging/MessagingTypes';
 
 /**
  * @ViewModel
@@ -32,6 +34,14 @@ export class App extends Component<AppViewModel, AppComponentContext> {
     this.navigationController?.push(ProductDetailScreen, { product, recommendations }, {});
   };
 
+  private handleConversationTap = (conversation: ConversationPreview): void => {
+    this.navigationController?.push(
+      ConversationScreen,
+      { conversation },
+      {},
+    );
+  };
+
   onRender(): void {
     <layout style={styles.root}>
       <NavigationRoot>
@@ -43,6 +53,7 @@ export class App extends Component<AppViewModel, AppComponentContext> {
             onWishlistTap={() => TransientFeedback.show({ message: 'Favoris Home' })}
             onNotificationsTap={() => TransientFeedback.show({ message: 'Notifications Home' })}
             onProductTap={this.handleProductTap}
+            onConversationTap={this.handleConversationTap}
             onQuickAdd={() => TransientFeedback.show({
               message: 'Votre article a été ajouté au panier',
               icon: navigationIcons.shoppingCartAdd02,

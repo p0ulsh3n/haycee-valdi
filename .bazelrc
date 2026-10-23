@@ -23,6 +23,9 @@ build --java_language_version=11
 build:macos --spawn_strategy=local
 build:linux --sandbox_writable_path=/var/tmp
 build:linux --spawn_strategy=local
+# Skia's layering_check needs sandboxed C++ actions to report generated
+# Clang module maps as declared inputs. Keep other Linux actions local.
+build:linux --strategy=CppCompile=sandboxed
 
 # common cc configuration
 build --cxxopt=-std=c++20

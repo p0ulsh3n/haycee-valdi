@@ -9,7 +9,7 @@ import { NavigationPageStatefulComponent } from 'valdi_navigation/src/Navigation
 import { Asset } from 'valdi_tsx/src/Asset';
 import { ScrollEvent } from 'valdi_tsx/src/GestureEvents';
 import { ElementFrame } from 'valdi_tsx/src/Geometry';
-import { Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { ImageView, Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../res/navigation-icons';
 import { Hairline } from '../design-system/components/Hairline';
 import { ImageCarousel } from '../design-system/components/ImageCarousel';
@@ -102,6 +102,7 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   private readonly stickyTitleRef = new ElementRef<Label>();
   private readonly headerBackgroundRef = new ElementRef<View>();
   private readonly stickyVendorRef = new ElementRef<View>();
+  private readonly mediaFavoriteIconRef = new ElementRef<ImageView>();
   private contentOffsetY = 0;
   private vendorRowOffsetY = 0;
   private vendorRowHeight = 64;
@@ -167,6 +168,18 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   private handleFavorite = (): void => {
     const isFavorited = !this.state.isFavorited;
     this.setState({ isFavorited });
+    const icon = this.mediaFavoriteIconRef.single();
+    if (icon) {
+      icon.setAttribute('scaleX', 0.72);
+      icon.setAttribute('scaleY', 0.72);
+      this.animate(
+        { stiffness: 480, damping: 15, beginFromCurrentState: true },
+        () => {
+          icon.setAttribute('scaleX', 1);
+          icon.setAttribute('scaleY', 1);
+        },
+      );
+    }
     TransientFeedback.show({
       message: isFavorited ? 'Ajouté aux favoris' : 'Retiré des favoris',
       icon: navigationIcons.favourite,
@@ -176,6 +189,10 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
 
   private handleBuyNow = (): void => {
     this.showFeedback('Passage au paiement');
+  };
+
+  private handleMessageSeller = (): void => {
+    this.showFeedback('Contacter le vendeur');
   };
 
   private handleGalleryIndexChange = (index: number): void => {
@@ -335,6 +352,7 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
         fallbackColors={fallbackColors}
         width={width}
         height={height}
+        paginationBottomOffset={spacing.md}
         showCounter={false}
         onTap={this.handleOpenImageViewer}
         onIndexChange={this.handleGalleryIndexChange}
@@ -349,6 +367,16 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
           <label value="⚡ FLASH" style={styles.flashBadgeText} />
         </view>
       ) : null}
+      <view style={styles.mediaFavorite} onTap={this.handleFavorite} accessibilityCategory="button">
+        <image
+          ref={this.mediaFavoriteIconRef}
+          src={this.state.isFavorited ? navigationIcons.favouriteBold : navigationIcons.favourite}
+          tint={this.state.isFavorited ? colors.textDanger : colors.textPrimary}
+          width={24}
+          height={24}
+          objectFit="contain"
+        />
+      </view>
     </view>;
   }
 
@@ -536,14 +564,9 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
     <view style={bottomInset > 0 ? styles.bottomBar.extend({ paddingBottom: bottomInset + spacing.sm }) : styles.bottomBar}>
       <Hairline color={colors.borderDefault} />
       <layout style={styles.bottomActions}>
-        <view style={styles.bottomFavorite} onTap={this.handleFavorite} accessibilityCategory="button">
-          <image
-            src={this.state.isFavorited ? navigationIcons.favouriteBold : navigationIcons.favourite}
-            tint={this.state.isFavorited ? colors.textDanger : colors.textPrimary}
-            width={24}
-            height={24}
-            objectFit="contain"
-          />
+        <view style={styles.bottomMessage} onTap={this.handleMessageSeller} accessibilityCategory="button">
+          <image src={navigationIcons.bubbleChat} tint={colors.textPrimary} width={20} height={20} objectFit="contain" />
+          <label value="Message" style={styles.bottomMessageLabel} numberOfLines={1} />
         </view>
         <view style={styles.bottomAdd} onTap={this.handleAddToCart} accessibilityCategory="button">
           <label value="Ajouter" style={styles.bottomAddText} />
@@ -885,6 +908,19 @@ const styles = {
     position: 'absolute',
   }),
   flashBadgeText: typography.badge.extend({ color: colors.textInverted }),
+  mediaFavorite: new Style<View>({
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.86)',
+    borderRadius: radius.full,
+    // Keep its center aligned with the 6pt carousel dots, raised clear of the overlapping panel.
+    bottom: spacing.xxl + spacing.md - 17,
+    height: 40,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: spacing.lg,
+    width: 40,
+    zIndex: 2,
+  }),
   vendorRow: new Style<View>({
     alignItems: 'center',
     flexDirection: 'row',
@@ -1061,7 +1097,12 @@ const styles = {
     right: 0,
   }),
   bottomActions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', paddingBottom: spacing.sm, paddingTop: spacing.sm }),
-  bottomFavorite: new Style<View>({ alignItems: 'center', height: 52, justifyContent: 'center', width: 52 }),
+  bottomMessage: new Style<View>({ alignItems: 'center', height: 52, justifyContent: 'center', width: 58 }),
+  bottomMessageLabel: new Style<Label>({
+    color: colors.textPrimary,
+    font: metropolis.medium(fontSize.nano),
+    marginTop: spacing.xs,
+  }),
   bottomAdd: new Style<View>({
     alignItems: 'center',
     borderColor: colors.textPrimary,

@@ -1,5 +1,7 @@
 import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
 import { NavigationPageComponent } from 'valdi_navigation/src/NavigationPageComponent';
+import { NavigationPresentOptions } from 'valdi_navigation/src/NavigationController';
+import { Component } from 'valdi_core/src/Component';
 import { IRenderedElementAttributeApplier } from 'valdi_core/src/IRenderedElementApplier';
 import { Style } from 'valdi_core/src/Style';
 import { DragEvent } from 'valdi_tsx/src/GestureEvents';
@@ -38,7 +40,7 @@ class SingleElementHolder<T> implements IRenderedElementHolder<T> {
   }
 }
 
-export interface TestBottomSheetViewModel {
+export interface BottomSheetViewModel {
   /** Optional sheet title. Omit it for a spinner-only loading state. */
   title?: string;
   /** Optional sheet message. Omit it for a spinner-only loading state. */
@@ -59,11 +61,65 @@ export interface TestBottomSheetViewModel {
   loadingColor?: string;
   /** Native opacity for the overlay, between 0 and 1. Defaults to 0.56. */
   overlayOpacity?: number;
+  /** Keep the presenting page visible outside the sheet. Defaults to false. */
+  transparentPageBackground?: boolean;
+  /** Optional standard action at the bottom of the sheet. */
+  footerLabel?: string;
+  /** Called when the optional footer action is tapped. */
+  onFooterTap?: () => void;
+  /** Footer surface; defaults to transparent to support floating actions. */
+  footerBackground?: 'transparent' | 'surface';
 }
 
-/** A small Snap-style sheet used to validate presentation and swipe dismissal. */
+export interface BottomSheetFooterViewModel {
+  label: string;
+  onTap: () => void;
+  disabled?: boolean;
+  background?: 'transparent' | 'surface';
+}
+
+/** Defaults used by the app's standard bottom-sheet presentation. */
+export const BOTTOM_SHEET_DEFAULTS = {
+  showOverlay: false,
+  showHandle: false,
+  enableGestures: false,
+  roundBottomCorners: false,
+  showLoading: false,
+  overlayOpacity: 0.56,
+  transparentPageBackground: false,
+  footerBackground: 'transparent',
+} as const;
+
+/** Shared centered bottom-sheet action. `surface` adds an opaque footer backing. */
+export class BottomSheetFooter extends Component<BottomSheetFooterViewModel> {
+  onRender(): void {
+    const { label, onTap, disabled = false, background = BOTTOM_SHEET_DEFAULTS.footerBackground } = this.viewModel;
+    <view style={background === 'surface' ? footerStyles.surface : footerStyles.transparent}>
+      <view
+        style={footerStyles.button}
+        opacity={disabled ? 0.5 : 1}
+        onTapDisabled={disabled}
+        onTap={onTap}
+        accessibilityCategory="button"
+      >
+        <label value={label} style={footerStyles.label} numberOfLines={1} />
+      </view>
+    </view>;
+  }
+}
+
+/** Maps the sheet's page-background option to Valdi's modal presentation option. */
+export function getBottomSheetNavigationOptions(
+  options: Pick<BottomSheetViewModel, 'transparentPageBackground'> = {},
+): Pick<NavigationPresentOptions, 'pageBackgroundColor'> {
+  return (options.transparentPageBackground ?? BOTTOM_SHEET_DEFAULTS.transparentPageBackground)
+    ? { pageBackgroundColor: 'transparent' }
+    : {};
+}
+
+/** App-standard bottom sheet with optional title, message and loading state. */
 @NavigationPage(module)
-export class TestBottomSheet extends NavigationPageComponent<TestBottomSheetViewModel> {
+export class BottomSheet extends NavigationPageComponent<BottomSheetViewModel> {
   private readonly sheetRef = new SingleElementHolder<View>();
 
   private handleDrag = (event: DragEvent): void => {
@@ -93,7 +149,7 @@ export class TestBottomSheet extends NavigationPageComponent<TestBottomSheetView
   };
 
   private renderLoadingSpinner(): void {
-    if (this.viewModel.showLoading !== true) {
+    if ((this.viewModel.showLoading ?? BOTTOM_SHEET_DEFAULTS.showLoading) !== true) {
       return;
     }
 
@@ -112,24 +168,24 @@ export class TestBottomSheet extends NavigationPageComponent<TestBottomSheetView
   }
 
   onRender(): void {
-    const sheetStyle = this.viewModel.roundBottomCorners === true ? styles.sheetRounded : styles.sheet;
+    const sheetStyle = (this.viewModel.roundBottomCorners ?? BOTTOM_SHEET_DEFAULTS.roundBottomCorners) === true ? styles.sheetRounded : styles.sheet;
 
     <layout style={styles.root}>
-      {when(this.viewModel.showOverlay === true, () => {
+      {when((this.viewModel.showOverlay ?? BOTTOM_SHEET_DEFAULTS.showOverlay) === true, () => {
         <view
           style={styles.overlay}
-          opacity={this.viewModel.overlayOpacity ?? 0.56}
-          onTapDisabled={this.viewModel.enableGestures !== true}
+          opacity={this.viewModel.overlayOpacity ?? BOTTOM_SHEET_DEFAULTS.overlayOpacity}
+          onTapDisabled={(this.viewModel.enableGestures ?? BOTTOM_SHEET_DEFAULTS.enableGestures) !== true}
           onTap={this.handleOverlayTap}
         />;
       })}
       <view
         ref={this.sheetRef}
         style={sheetStyle}
-        onDragDisabled={this.viewModel.enableGestures !== true}
+        onDragDisabled={(this.viewModel.enableGestures ?? BOTTOM_SHEET_DEFAULTS.enableGestures) !== true}
         onDrag={this.handleDrag}
       >
-        {when(this.viewModel.showHandle === true, () => {
+        {when((this.viewModel.showHandle ?? BOTTOM_SHEET_DEFAULTS.showHandle) === true, () => {
           <layout style={styles.handleContainer}>
             <view style={styles.handle} />
           </layout>;
@@ -154,20 +210,60 @@ export class TestBottomSheet extends NavigationPageComponent<TestBottomSheetView
             value={transformText('Fermer', this.viewModel.textCase)}
           />
         </view>
+        {this.viewModel.footerLabel && this.viewModel.onFooterTap ? (
+          <BottomSheetFooter
+            label={this.viewModel.footerLabel}
+            onTap={this.viewModel.onFooterTap}
+            background={this.viewModel.footerBackground}
+          />
+        ) : null}
       </view>
     </layout>;
   }
 }
 
-const sheetBaseStyle = new Style<View>({
+/** Shared surface/positioning used by the official sheet and specialized sheets. */
+export const bottomSheetSurfaceStyle = new Style<View>({
   backgroundColor: colors.backgroundPrimary,
+  borderRadius: BOTTOM_SHEET_DEFAULTS.roundBottomCorners ? radius.xl : `${radius.xl} ${radius.xl} 0 0`,
   bottom: 0,
-  left: 0,
-  minHeight: 320,
-  padding: spacing.xxl,
   position: 'absolute',
+  left: 0,
   right: 0,
 });
+
+const sheetBaseStyle = bottomSheetSurfaceStyle.extend({
+  minHeight: 320,
+  padding: spacing.xxl,
+});
+
+const footerStyles = {
+  transparent: new Style<View>({
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    paddingTop: spacing.sm,
+    width: '100%',
+  }),
+  surface: new Style<View>({
+    alignItems: 'center',
+    backgroundColor: colors.backgroundPrimary,
+    justifyContent: 'center',
+    paddingTop: spacing.sm,
+    width: '100%',
+  }),
+  button: new Style<View>({
+    alignItems: 'center',
+    backgroundColor: colors.interactivePrimary,
+    borderRadius: radius.full,
+    justifyContent: 'center',
+    minHeight: 48,
+    minWidth: 160,
+    paddingLeft: spacing.xl,
+    paddingRight: spacing.xl,
+  }),
+  label: typography.button.extend({ color: colors.textInverted }),
+};
 
 const styles = {
   root: new Style<Layout>({
@@ -184,9 +280,7 @@ const styles = {
     right: 0,
     top: 0,
   }),
-  // Four-value borderRadius follows the CSS corner order: top-left, top-right,
-  // bottom-right, bottom-left.
-  sheet: sheetBaseStyle.extend({ borderRadius: `${radius.xl} ${radius.xl} 0 0` }),
+  sheet: sheetBaseStyle,
   sheetRounded: sheetBaseStyle.extend({ borderRadius: radius.xl }),
   spinnerContainer: new Style<View>({
     alignItems: 'center',

@@ -96,4 +96,15 @@ export const layout = {
       slideDistance: 10,
     },
   },
+  live: {
+    categoryTabsHeight: 44,
+    categoryTabWidth: 144,
+    feedHorizontalPadding: 12,
+    feedTopPadding: 16,
+    feedBottomPadding: 20,
+    cardColumnGap: 8,
+    cardRowGap: 22,
+    panelAspectRatio: 0.75,
+    panelRadius: 8,
+  },
 } as const;

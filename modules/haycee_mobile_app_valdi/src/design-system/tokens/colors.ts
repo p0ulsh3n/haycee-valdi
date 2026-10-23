@@ -20,8 +20,15 @@ export const palette = {
   red: '#D93025',
   green: '#188038',
   blue: '#1A73E8',
+  messageBlue: '#3556C8',
+  messageBlueLight: '#5475E0',
   orange: '#E37400',
   purple: '#7B61FF',
+  liveLavender: '#EEE9F7',
+  livePeach: '#F4E9E2',
+  liveBlue: '#E6EEF4',
+  liveSage: '#E8EFE8',
+  liveSand: '#F1EDE2',
 } as const;
 
 export const colors = {
@@ -31,15 +38,22 @@ export const colors = {
   /** Translucent dark material used by default transient feedback. */
   backgroundTransient: 'rgba(72, 72, 72, 0.82)',
   backgroundBrand: palette.snapYellow,
+  backgroundMessageSent: palette.messageBlue,
   backgroundOverlay: 'rgba(0, 0, 0, 0.56)',
   mediaIndicatorActive: palette.white,
   mediaIndicatorInactive: 'rgba(255, 255, 255, 0.4)',
+  livePanelLavender: palette.liveLavender,
+  livePanelPeach: palette.livePeach,
+  livePanelBlue: palette.liveBlue,
+  livePanelSage: palette.liveSage,
+  livePanelSand: palette.liveSand,
 
   textPrimary: palette.black,
   textSecondary: palette.gray700,
   textTertiary: palette.gray500,
   textInverted: palette.white,
   textBrand: palette.black,
+  textMessageSent: palette.white,
   textDanger: palette.red,
   textSuccess: palette.green,
 

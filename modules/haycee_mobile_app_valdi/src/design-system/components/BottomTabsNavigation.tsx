@@ -10,6 +10,9 @@ import { colors } from '../tokens/colors';
 import { layout, spacing } from '../tokens/spacing';
 import { TextCase, transformText, typography } from '../tokens/typography';
 import { HomeScreenViewModel, HomeSurface } from '../../home/HomeScreen';
+import { MessagesInbox } from '../../messaging/MessagesInbox';
+import { ConversationPreview } from '../../messaging/MessagingTypes';
+import { LiveHomeScreen } from '../../live/LiveHomeScreen';
 
 export interface BottomTabItem {
   id: string;
@@ -32,6 +35,7 @@ export interface BottomTabsNavigationViewModel {
   onNotificationsTap?: HomeScreenViewModel['onNotificationsTap'];
   onProductTap?: HomeScreenViewModel['onProductTap'];
   onQuickAdd?: HomeScreenViewModel['onQuickAdd'];
+  onConversationTap?: (conversation: ConversationPreview) => void;
 }
 
 interface BottomTabsNavigationState {
@@ -104,6 +108,12 @@ export class BottomTabsNavigation extends StatefulComponent<BottomTabsNavigation
           onProductTap={this.viewModel.onProductTap}
           onQuickAdd={this.viewModel.onQuickAdd}
         />
+      ) : activeTab.id === 'messages' ? (
+        <MessagesInbox
+          onConversationTap={this.viewModel.onConversationTap}
+        />
+      ) : activeTab.id === 'live' ? (
+        <LiveHomeScreen />
       ) : (
         <view style={styles.content} backgroundColor={activeTab.pageColor ?? colors.backgroundPrimary}>
           <label

@@ -1,5 +1,22 @@
+load("@valdi//bzl:expand_template.bzl", "expand_template")
 load("@valdi//bzl/valdi:valdi_application.bzl", "valdi_application")
 load("@valdi//bzl/valdi:valdi_exported_library.bzl", "valdi_exported_library")
+load("@valdi//bzl/valdi/source_set:utils.bzl", "source_set_select")
+
+expand_template(
+    name = "haycee_android_app_manifest",
+    src = source_set_select(
+        debug = "//:HayceeAndroidDebugAppManifest.template.xml",
+        release = "//:HayceeAndroidReleaseAppManifest.template.xml",
+    ),
+    output = "HayceeAndroidAppManifest.xml",
+    substitutions = {
+        "@VALDI_APP_PACKAGE@": "com.snap.valdi.haycee_mobile_app_valdi_app",
+        "@VALDI_APP_NAME@": "haycee_mobile_app_valdi",
+        "@VALDI_APPLICATION_ATTRIBUTES@": "",
+        "@VALDI_ACTIVITY_ATTRIBUTES@": "",
+    },
+)
 
 valdi_application(
     name = "haycee_mobile_app_valdi_app",
@@ -8,6 +25,7 @@ valdi_application(
     root_component_path = "App@haycee_mobile_app_valdi/src/App",
     title = "haycee_mobile_app_valdi",
     version = "1.0.0",
+    android_app_manifest = ":haycee_android_app_manifest",
     deps = ["//modules/haycee_mobile_app_valdi"],
 )
 

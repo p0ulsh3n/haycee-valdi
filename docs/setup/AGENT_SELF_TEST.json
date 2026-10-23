@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-20T00:07:16.4844209Z",
+  "generated_at_utc": "2026-10-22T20:54:23.3037586Z",
   "reference_commit": "f26bee4dc170b6c929f71d4dd07d44e033f47176",
   "api_entries": 11836,
   "results": [
@@ -62,7 +62,7 @@
       "name": "Project external imports indexed",
       "term": "module imports",
       "status": "pass",
-      "hits": 9,
+      "hits": 19,
       "examples": []
     },
     {

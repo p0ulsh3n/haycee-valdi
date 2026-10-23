@@ -1,62 +1,62 @@
 {
-  "generated_at_utc": "2026-10-20T00:07:28.4557166Z",
-  "project": "S:\\haycee-mobile-app-valdi",
-  "results": [
-    {
-      "name": "API/agent self-test",
-      "command": "pwsh -NoProfile -File scripts/valdi-api-self-test.ps1",
-      "status": "pass",
-      "exit_code": 0,
-      "duration_ms": 8764,
-      "output": "Agent/API self-test complete: passes=7, failures=0"
-    },
-    {
-      "name": "Valdi CLI version",
-      "command": "valdi --version",
-      "status": "pass",
-      "exit_code": 0,
-      "duration_ms": 2057,
-      "output": "1.0.11"
-    },
-    {
-      "name": "Valdi doctor",
-      "command": "valdi doctor --project --framework --json",
-      "status": "fail-or-blocked",
-      "exit_code": 1,
-      "duration_ms": 3256,
-      "output": "{\r\n  \"timestamp\": \"2026-10-20T00:07:22.095Z\",\r\n  \"summary\": {\r\n    \"passed\": 9,\r\n    \"warnings\": 4,\r\n    \"failed\": 5,\r\n    \"total\": 18\r\n  },\r\n  \"results\": [\r\n    {\r\n      \"name\": \"Node.js version\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Node.js v24.19.0 is installed\",\r\n      \"category\": \"Node.js installation\"\r\n    },\r\n    {\r\n      \"name\": \"Bazel installation\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"Bazel is not installed or not in PATH\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install Bazel from https://bazel.build/install\",\r\n      \"category\": \"Bazel installation\"\r\n    },\r\n    {\r\n      \"name\": \"Valdi workspace\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Valid Valdi workspace detected\",\r\n      \"category\": \"Workspace configuration\"\r\n    },\r\n    {\r\n      \"name\": \"Bazel configuration\",\r\n      \"status\": \"pass\",\r\n      \"message\": \".bazelrc file found\",\r\n      \"category\": \"Workspace configuration\"\r\n    },\r\n    {\r\n      \"name\": \"Android SDK\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android SDK found at C:\\\\Users\\\\darkk\\\\AppData\\\\Local\\\\Android\\\\Sdk\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"Java Runtime\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"Java not found in PATH\",\r\n      \"details\": \"dev_setup installs Java JDK for Android development\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install Java 17 JDK for your distribution\",\r\n      \"category\": \"Java installation\"\r\n    },\r\n    {\r\n      \"name\": \"JAVA_HOME\",\r\n      \"status\": \"warn\",\r\n      \"message\": \"JAVA_HOME not set or invalid\",\r\n      \"details\": \"dev_setup configures JAVA_HOME for Android development\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Set JAVA_HOME environment variable\",\r\n      \"category\": \"Java installation\"\r\n    },\r\n    {\r\n      \"name\": \"Android Platform\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android Platform installed (4 versions)\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"Android Build Tools\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android Build Tools installed (5 versions)\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"git installation\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"git is not installed or not in PATH\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install git using your system's package manager\",\r\n      \"category\": \"Development tools\"\r\n    },\r\n    {\r\n      \"name\": \"npm installation\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"npm is not installed or not in PATH\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install Node.js from https://nodejs.org (includes npm)\",\r\n      \"category\": \"Development tools\"\r\n    },\r\n    {\r\n      \"name\": \"watchman installation\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"watchman is not installed or not in PATH\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install watchman using your system's package manager\",\r\n      \"category\": \"Development tools\"\r\n    },\r\n    {\r\n      \"name\": \"Git LFS\",\r\n      \"status\": \"warn\",\r\n      \"message\": \"git-lfs not installed\",\r\n      \"details\": \"Required for working with large files in the repository\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install git-lfs using your system's package manager\",\r\n      \"category\": \"Development tools\"\r\n    },\r\n    {\r\n      \"name\": \"Android Platform android-36\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android Platform android-36 installed\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"Android NDK\",\r\n      \"status\": \"warn\",\r\n      \"message\": \"Android NDK 25.2.9519653 not found\",\r\n      \"details\": \"Required for native development in framework\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"sdkmanager --install 'ndk;25.2.9519653'\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"ANDROID_HOME\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"ANDROID_HOME set to C:\\\\Users\\\\darkk\\\\AppData\\\\Local\\\\Android\\\\Sdk\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"ANDROID_NDK_HOME\",\r\n      \"status\": \"warn\",\r\n      \"message\": \"ANDROID_NDK_HOME not set or invalid\",\r\n      \"details\": \"dev_setup configures ANDROID_NDK_HOME for native development\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"valdi dev_setup\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"Android platform-tools PATH\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android platform-tools in PATH\",\r\n      \"category\": \"Android installation\"\r\n    }\r\n  ]\r\n}\r\nError: valdi doctor failed\r\n    at valdiDoctor (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\doctor.js:1160:15)\r\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\r\n    at async command (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\errorUtils.js:35:13)\r\n\u001b[31mvaldi doctor failed\u001b[0m"
-    },
-    {
-      "name": "Valdi projectsync",
-      "command": "valdi projectsync",
-      "status": "fail-or-blocked",
-      "exit_code": 1,
-      "duration_ms": 2143,
-      "output": "Searching for Valdi targets in current workspace...\r\nError: Could not find bazel executable (bzl or bazel)\r\n    at getBazelCli (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:26:19)\r\n    at getBazelCommandString (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:33:15)\r\n    at BazelClient.runCommand (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:200:36)\r\n    at BazelClient.runCommandWithLinesOutput (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:192:54)\r\n    at BazelClient.query (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:137:27)\r\n    at getAllProjectSyncTargets (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\projectsync.js:267:24)\r\n    at C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\projectsync.js:297:74\r\n    at ArgumentsResolver.getArgumentOrResolve (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\ArgumentsResolver.js:18:32)\r\n    at projectSync (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\projectsync.js:297:37)\r\n    at command (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\errorUtils.js:35:19)\r\n\u001b[31mCould not find bazel executable (bzl or bazel)\u001b[0m"
-    },
-    {
-      "name": "Valdi lint",
-      "command": "valdi lint check modules/haycee_mobile_app_valdi/src/App.tsx",
-      "status": "fail-or-blocked",
-      "exit_code": 2,
-      "duration_ms": 0,
-      "output": "Blocked: bootstrap did not generate both recognized Prettier and ESLint configs; valdi lint check would prompt interactively."
-    },
-    {
-      "name": "Valdi test",
-      "command": "valdi test --module haycee_mobile_app_valdi",
-      "status": "fail-or-blocked",
-      "exit_code": 1,
-      "duration_ms": 2163,
-      "output": "- Collecting targets for tests...\r\n× Failed to collect targets.\r\nError: Could not find bazel executable (bzl or bazel)\r\n    at getBazelCli (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:26:19)\r\n    at getBazelCommandString (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:33:15)\r\n    at BazelClient.spawnCommand (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:206:36)\r\n    at BazelClient.queryTargetsByKindWithFilter (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:174:27)\r\n    at getTestTargetsByModuleNames (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\test.js:10:25)\r\n    at C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\test.js:15:61\r\n    at ArgumentsResolver.getArgumentOrResolve (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\ArgumentsResolver.js:18:32)\r\n    at valdiTest (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\test.js:14:32)\r\n    at command (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\errorUtils.js:35:19)\r\n    at Object.handler (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\errorUtils.js:53:14)\r\n\u001b[31mCould not find bazel executable (bzl or bazel)\u001b[0m"
-    },
-    {
-      "name": "Valdi agent-check",
-      "command": "valdi agent-check --module haycee_mobile_app_valdi --quick --json",
-      "status": "fail-or-blocked",
-      "exit_code": 2,
-      "duration_ms": 0,
-      "output": "Unavailable: agent-check is documented in the current main reference but is not exposed by installed CLI 1.0.11."
-    }
-  ]
+    "generated_at_utc":  "2026-10-22T20:54:38.2732547Z",
+    "project":  "S:\\haycee-mobile-app-valdi",
+    "results":  [
+                    {
+                        "name":  "API/agent self-test",
+                        "command":  "pwsh -NoProfile -File scripts/valdi-api-self-test.ps1",
+                        "status":  "pass",
+                        "exit_code":  0,
+                        "duration_ms":  16438,
+                        "output":  "Agent/API self-test complete: passes=7, failures=0"
+                    },
+                    {
+                        "name":  "Valdi CLI version",
+                        "command":  "valdi --version",
+                        "status":  "pass",
+                        "exit_code":  0,
+                        "duration_ms":  3457,
+                        "output":  "1.0.11"
+                    },
+                    {
+                        "name":  "Valdi doctor",
+                        "command":  "valdi doctor --project --framework --json",
+                        "status":  "fail-or-blocked",
+                        "exit_code":  1,
+                        "duration_ms":  3359,
+                        "output":  "{\r\n  \"timestamp\": \"2026-10-22T20:54:30.406Z\",\r\n  \"summary\": {\r\n    \"passed\": 9,\r\n    \"warnings\": 4,\r\n    \"failed\": 5,\r\n    \"total\": 18\r\n  },\r\n  \"results\": [\r\n    {\r\n      \"name\": \"Node.js version\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Node.js v24.19.0 is installed\",\r\n      \"category\": \"Node.js installation\"\r\n    },\r\n    {\r\n      \"name\": \"Bazel installation\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"Bazel is not installed or not in PATH\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install Bazel from https://bazel.build/install\",\r\n      \"category\": \"Bazel installation\"\r\n    },\r\n    {\r\n      \"name\": \"Valdi workspace\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Valid Valdi workspace detected\",\r\n      \"category\": \"Workspace configuration\"\r\n    },\r\n    {\r\n      \"name\": \"Bazel configuration\",\r\n      \"status\": \"pass\",\r\n      \"message\": \".bazelrc file found\",\r\n      \"category\": \"Workspace configuration\"\r\n    },\r\n    {\r\n      \"name\": \"Android SDK\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android SDK found at C:\\\\Users\\\\darkk\\\\AppData\\\\Local\\\\Android\\\\Sdk\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"Java Runtime\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"Java not found in PATH\",\r\n      \"details\": \"dev_setup installs Java JDK for Android development\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install Java 17 JDK for your distribution\",\r\n      \"category\": \"Java installation\"\r\n    },\r\n    {\r\n      \"name\": \"JAVA_HOME\",\r\n      \"status\": \"warn\",\r\n      \"message\": \"JAVA_HOME not set or invalid\",\r\n      \"details\": \"dev_setup configures JAVA_HOME for Android development\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Set JAVA_HOME environment variable\",\r\n      \"category\": \"Java installation\"\r\n    },\r\n    {\r\n      \"name\": \"Android Platform\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android Platform installed (4 versions)\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"Android Build Tools\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android Build Tools installed (5 versions)\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"git installation\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"git is not installed or not in PATH\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install git using your system\u0027s package manager\",\r\n      \"category\": \"Development tools\"\r\n    },\r\n    {\r\n      \"name\": \"npm installation\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"npm is not installed or not in PATH\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install Node.js from https://nodejs.org (includes npm)\",\r\n      \"category\": \"Development tools\"\r\n    },\r\n    {\r\n      \"name\": \"watchman installation\",\r\n      \"status\": \"fail\",\r\n      \"message\": \"watchman is not installed or not in PATH\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install watchman using your system\u0027s package manager\",\r\n      \"category\": \"Development tools\"\r\n    },\r\n    {\r\n      \"name\": \"Git LFS\",\r\n      \"status\": \"warn\",\r\n      \"message\": \"git-lfs not installed\",\r\n      \"details\": \"Required for working with large files in the repository\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"Install git-lfs using your system\u0027s package manager\",\r\n      \"category\": \"Development tools\"\r\n    },\r\n    {\r\n      \"name\": \"Android Platform android-36\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android Platform android-36 installed\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"Android NDK\",\r\n      \"status\": \"warn\",\r\n      \"message\": \"Android NDK 25.2.9519653 not found\",\r\n      \"details\": \"Required for native development in framework\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"sdkmanager --install \u0027ndk;25.2.9519653\u0027\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"ANDROID_HOME\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"ANDROID_HOME set to C:\\\\Users\\\\darkk\\\\AppData\\\\Local\\\\Android\\\\Sdk\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"ANDROID_NDK_HOME\",\r\n      \"status\": \"warn\",\r\n      \"message\": \"ANDROID_NDK_HOME not set or invalid\",\r\n      \"details\": \"dev_setup configures ANDROID_NDK_HOME for native development\",\r\n      \"fixable\": true,\r\n      \"fixCommand\": \"valdi dev_setup\",\r\n      \"category\": \"Android installation\"\r\n    },\r\n    {\r\n      \"name\": \"Android platform-tools PATH\",\r\n      \"status\": \"pass\",\r\n      \"message\": \"Android platform-tools in PATH\",\r\n      \"category\": \"Android installation\"\r\n    }\r\n  ]\r\n}\r\nError: valdi doctor failed\r\n    at valdiDoctor (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\doctor.js:1160:15)\r\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\r\n    at async command (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\errorUtils.js:35:13)\r\n\u001b[31mvaldi doctor failed\u001b[0m"
+                    },
+                    {
+                        "name":  "Valdi projectsync",
+                        "command":  "valdi projectsync",
+                        "status":  "fail-or-blocked",
+                        "exit_code":  1,
+                        "duration_ms":  2595,
+                        "output":  "Searching for Valdi targets in current workspace...\r\nError: Could not find bazel executable (bzl or bazel)\r\n    at getBazelCli (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:26:19)\r\n    at getBazelCommandString (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:33:15)\r\n    at BazelClient.runCommand (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:200:36)\r\n    at BazelClient.runCommandWithLinesOutput (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:192:54)\r\n    at BazelClient.query (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:137:27)\r\n    at getAllProjectSyncTargets (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\projectsync.js:267:24)\r\n    at C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\projectsync.js:297:74\r\n    at ArgumentsResolver.getArgumentOrResolve (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\ArgumentsResolver.js:18:32)\r\n    at projectSync (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\projectsync.js:297:37)\r\n    at command (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\errorUtils.js:35:19)\r\n\u001b[31mCould not find bazel executable (bzl or bazel)\u001b[0m"
+                    },
+                    {
+                        "name":  "Valdi lint",
+                        "command":  "valdi lint check modules/haycee_mobile_app_valdi/src/App.tsx",
+                        "status":  "fail-or-blocked",
+                        "exit_code":  2,
+                        "duration_ms":  0,
+                        "output":  "Blocked: bootstrap did not generate both recognized Prettier and ESLint configs; valdi lint check would prompt interactively."
+                    },
+                    {
+                        "name":  "Valdi test",
+                        "command":  "valdi test --module haycee_mobile_app_valdi",
+                        "status":  "fail-or-blocked",
+                        "exit_code":  1,
+                        "duration_ms":  3116,
+                        "output":  "node.exe : - \u001b[33mCollecting targets for tests...\u001b[0m\r\nAu caractère C:\\Users\\darkk\\AppData\\Roaming\\npm\\valdi.ps1:24 : 5\r\n+     \u0026 \"node$exe\"  \"$basedir/node_modules/@snap/valdi/dist/index.js\" $ ...\r\n+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (- \u001b[33mCollecti...or tests...\u001b[0m:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n× \u001b[31mFailed to collect targets.\u001b[0m\r\nError: Could not find bazel executable (bzl or bazel)\r\n    at getBazelCli (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:26:19)\r\n    at getBazelCommandString (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:33:15)\r\n    at BazelClient.spawnCommand (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:206:36)\r\n    at BazelClient.queryTargetsByKindWithFilter (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\BazelClient.js:174:27)\r\n    at getTestTargetsByModuleNames (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\test.js:10:25)\r\n    at C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\test.js:15:61\r\n    at ArgumentsResolver.getArgumentOrResolve (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\ArgumentsResolver.js:18:32)\r\n    at valdiTest (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\commands\\test.js:14:32)\r\n    at command (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\errorUtils.js:35:19)\r\n    at Object.handler (C:\\Users\\darkk\\AppData\\Roaming\\npm\\node_modules\\@snap\\valdi\\dist\\utils\\errorUtils.js:53:14)\r\n\u001b[31mCould not find bazel executable (bzl or bazel)\u001b[0m"
+                    },
+                    {
+                        "name":  "Valdi agent-check",
+                        "command":  "valdi agent-check --module haycee_mobile_app_valdi --quick --json",
+                        "status":  "fail-or-blocked",
+                        "exit_code":  2,
+                        "duration_ms":  0,
+                        "output":  "Unavailable: agent-check is documented in the current main reference but is not exposed by installed CLI 1.0.11."
+                    }
+                ]
 }

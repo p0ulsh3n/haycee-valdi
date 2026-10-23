@@ -10,7 +10,7 @@ API entries searched: **11836**
 | Bazel module rule | pass | 2176 | docs/docs/stdlib-filesystem.md:175; src/valdi_modules/src/valdi/bridge_observables/src/types/BridgeError.d.ts:8; src/valdi_modules/src/valdi/bridge_observables/src/types/BridgeObservable.ts:11 |
 | Cancelable async API | pass | 18 | docs/docs/stdlib-http.md:67; docs/docs/stdlib-http.md:78; docs/docs/stdlib-http.md:91 |
 | Navigation API evidence | pass | 6 | docs/docs/migrate-from-flutter.md:325; docs/docs/start-from-react.md:350; src/valdi_modules/src/valdi/valdi_navigation/src/NavigationRoot.tsx:8 |
-| Project external imports indexed | pass | 9 |  |
+| Project external imports indexed | pass | 19 |  |
 | Official client skills present | pass | 14 | installed=14; cli_bundle=14; main_registry=26 |
 
 This test verifies searchability and source pointers; it does not replace a platform build or runtime test.

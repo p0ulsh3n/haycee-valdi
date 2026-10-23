@@ -18,6 +18,7 @@ export interface ImageCarouselViewModel {
   topInset?: number;
   width: number;
   height: number;
+  paginationBottomOffset?: number;
   showCounter?: boolean;
   onTap?: () => void;
   onIndexChange?: (index: number) => void;
@@ -166,7 +167,9 @@ export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, Ima
       </view>
     ) : null}
 
-    <view style={styles.paginationDotsOuter}>
+    <view style={styles.paginationDotsOuter.extend({
+      bottom: spacing.xxl + (this.viewModel.paginationBottomOffset ?? 0),
+    })}>
       <view style={styles.paginationDotsTrack.extend({ width: count * paginationSlotWidth })}>
         {Array.from({ length: count }).map((_item, index) => (
           <view key={'carousel-dot-' + index} style={styles.paginationDot} />
