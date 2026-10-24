@@ -1,6 +1,3 @@
 exports_files([
-    "rules_kotlin.patch",
-    "rules_kotlin_android_sdk.patch",
-    "rules_kotlin_module_bzl.patch",
     "valdi-projectsync-resource-outputs.patch",
 ])

@@ -64,12 +64,12 @@ The previously generated validation report still has 2 passes and 5 fail-or-bloc
 not been regenerated with the migrated CLI. The current migration run confirms that projectsync
 passes, but the module build is not yet complete: a two-job retry was stopped at 1,863/5,182
 actions when C: had about 1.3 GiB free. A targeted Bazel clean was then run with user approval;
-Windows denied offline VHDX compaction without administrator rights. GitHub Actions runs
-`40107947656`, `40109018693`, and `40109646179` passed dependency setup and `valdi projectsync`;
-Android analysis successively exposed missing root `@android_mvn`, missing `@rules_kotlin`, and an
-unpatched Kotlin/Android SDK provider crash. The root now declares the required repositories and
-applies the pinned Valdi Kotlin patches. A follow-up CI build is pending, so the APK remains
-unverified. No iOS/macOS build is declared on this Windows host.
+Windows denied offline VHDX compaction without administrator rights. GitHub Actions runs through
+`40110507670` passed dependency setup and `valdi projectsync`, but Android analysis still failed.
+The latest failure traced to overriding Valdi beta-0.1.0's registry-patched rules_kotlin 1.9.0 with
+1.9.5, which left `@androidsdk` unresolved. The root now pins 1.9.0; local module resolution and
+target query pass, while the next CI build is pending. The APK remains unverified. No iOS/macOS
+build is declared on this Windows host.
 `.github/workflows/valdi-validation.yml` provides a static evidence CI gate only.
 
 ## Next action
