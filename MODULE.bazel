@@ -54,6 +54,7 @@ archive_override(
 # Valdi's application rule references its Android Maven artifacts from the root
 # app target, so the root module must declare this repository too.
 bazel_dep(name = "rules_android", version = "0.6.5")
+bazel_dep(name = "rules_kotlin", version = "1.9.5")
 bazel_dep(name = "rules_jvm_external", version = "6.6")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(

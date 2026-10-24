@@ -64,13 +64,13 @@ The previously generated validation report still has 2 passes and 5 fail-or-bloc
 not been regenerated with the migrated CLI. The current migration run confirms that projectsync
 passes, but the module build is not yet complete: a two-job retry was stopped at 1,863/5,182
 actions when C: had about 1.3 GiB free. A targeted Bazel clean was then run with user approval;
-Windows denied offline VHDX compaction without administrator rights. GitHub Actions run
-`40107947656` passed dependency setup and `valdi projectsync`, then found that the root Bzlmod
-module had not exposed `@android_mvn`; that repository is now declared in `MODULE.bazel` and a
-follow-up CI run is pending. Local Android target analysis proceeds past this repository and stops
-at missing WSL `aapt2`. The APK remains unverified until the follow-up CI build finishes. No
-iOS/macOS build is declared on this Windows host. `.github/workflows/valdi-validation.yml` provides a
-static evidence CI gate only.
+Windows denied offline VHDX compaction without administrator rights. GitHub Actions runs
+`40107947656` and `40109018693` passed dependency setup and `valdi projectsync`, then exposed missing
+root visibility for `@android_mvn` and `@rules_kotlin`. Both dependencies are now declared in
+`MODULE.bazel` and another CI run is pending. Local Android target analysis proceeds past Maven
+resolution and stops at missing WSL `aapt2`. The APK remains unverified until that CI build
+finishes. No iOS/macOS build is declared on this Windows host.
+`.github/workflows/valdi-validation.yml` provides a static evidence CI gate only.
 
 ## Next action
 
