@@ -4,29 +4,37 @@ Status: **GO AVEC LIMITATIONS**
 
 ## CI execution model
 
-The Windows host is used for source editing and optional local Android/ADB testing. Ubuntu WSL was
-removed after setup because the Android build is now delegated to
-`.github/workflows/valdi-android-build.yml`. That workflow installs the pinned Valdi CLI and Linux
-Android dependencies, runs `valdi projectsync`, builds an arm64 Android APK, and uploads it as an
-artifact. The arm64-only build avoids compiling the unused x86_64 and ARMv7 variants in CI. A
-GitHub Actions run is required before claiming that the remote Android build passes.
+The Windows host is used for source editing and optional local Android/ADB testing. Ubuntu WSL
+24.04 is also present on the current workstation and can host the VS Code Valdi language server
+and local Linux tools; this does not by itself establish official Windows/WSL build support. Keep
+VS Code attached to WSL when resolving Bazel-generated module paths. See
+`.codex/skills/haycee-vscode-wsl/SKILL.md` and
+`.codex/skills/haycee-valdi-build/SKILL.md` for the shared workflow. GitHub Actions remains the
+reproducible Android build path: `.github/workflows/valdi-android-build.yml` installs the pinned
+Valdi CLI and Linux Android dependencies, runs `valdi projectsync`, builds an arm64 Android APK,
+and uploads it as an artifact. A successful workflow run is required before claiming that the
+remote Android build passes.
 
 The official minimal Valdi application structure and agent/reference infrastructure are present.
-Product development should wait until the build host/toolchain is moved to an officially supported
-environment or Bazel/Java compatibility is resolved.
+The repository dependency configuration has been migrated to Valdi/Valdi_Widgets `beta-0.1.0`
+using bzlmod. Do not treat the migration as fully build-verified until the pinned CLI 1.1.5
+`projectsync` and Android build complete successfully.
 
 ## Environment
 
 Windows 11 Professional x64, PowerShell 7.6.5, Node.js 24.19.0, npm 11.17.0, Git 2.52.0,
-Git LFS 3.7.1, Android SDK/ADB present, no Xcode, and no Bazel/Bazelisk recognized. See
+Git LFS 3.7.1, Android SDK/ADB present, no Xcode, and no Bazel/Bazelisk recognized on the Windows
+host. WSL has a separate toolchain/PATH and must be audited independently. See
 [`ENVIRONMENT_AUDIT.md`](ENVIRONMENT_AUDIT.md) and the requirement-by-requirement
 [`COMPLETION_AUDIT.md`](COMPLETION_AUDIT.md).
 
 ## Project
 
-The official `ui_application` bootstrap generated `WORKSPACE`, `BUILD.bazel`, the root config
-files, `modules/haycee_mobile_app_valdi/BUILD.bazel`, the generated `App.tsx`, and the resource
-asset. The project is pinned to `beta-0.0.3` for Valdi and Valdi_Widgets.
+The official `ui_application` bootstrap originally generated the project structure with
+`WORKSPACE` and Valdi/Valdi_Widgets `beta-0.0.3`. The repository has since been migrated to the
+official bzlmod layout: `MODULE.bazel` pins both dependencies to `beta-0.1.0`, `.bazelrc` points
+to the matching Valdi custom registry, and the obsolete root `WORKSPACE` was removed. The Android
+build and editor synchronization still require post-migration validation.
 
 ## Reference and documentation
 
@@ -37,7 +45,8 @@ index; see `docs/valdi-reference/COVERAGE_REPORT.md` and `SOURCE_MANIFEST.json`.
 ## Skills and agents
 
 Fourteen official client skills are installed in `.codex/skills/` and the active user Codex skill
-root, alongside the local `valdi-expert` skill. Specialized profiles are in `.codex/agents/`.
+root, alongside local `valdi-expert`, `haycee-vscode-wsl`, and `haycee-valdi-build` skills.
+Specialized profiles are in `.codex/agents/`.
 The CLI also installed the same official client skills for the detected Claude and Cursor config
 directories. Framework-internal-only skills were inventoried but not installed for application work.
 
@@ -45,9 +54,20 @@ directories. Framework-internal-only skills were inventoried but not installed f
 
 Run `pwsh -NoProfile -File scripts/valdi-api-self-test.ps1` to verify the searchable API evidence
 and official client-skill installation, then run `pwsh -NoProfile -File scripts/valdi-validate.ps1`.
-The latest validation run has 2 passes and 5 fail-or-blocked checks; non-zero checks remain
-failures or environment blocks in the generated report. No iOS/macOS build is declared on this
-Windows host. `.github/workflows/valdi-validation.yml` provides a static evidence CI gate only.
+With CLI 1.1.5, beta-0.1.0 `valdi projectsync` passed after a local Bzlmod patch corrected the
+resource output paths declared by the pinned rule. The Android APK build is still blocked because
+WSL has no Linux Android SDK configured. A separate app-module build was interrupted at 2,824 of
+5,182 actions when free space on `C:` fell to about 20 MiB; no Bazel cache was deleted. Therefore,
+the dependency and projectsync migration is verified, while the migration is not yet fully
+build-verified.
+The previously generated validation report still has 2 passes and 5 fail-or-blocked checks; it has
+not been regenerated with the migrated CLI. The current migration run confirms that projectsync
+passes, but the module build is not yet complete: a two-job retry was stopped at 1,863/5,182
+actions when C: had about 1.3 GiB free. A targeted Bazel clean was then run with user approval;
+Windows denied offline VHDX compaction without administrator rights. The Android APK remains
+unverified until run in CI or WSL with a Linux Android SDK and enough host disk space. No iOS/macOS
+build is declared on this Windows host. `.github/workflows/valdi-validation.yml` provides a static
+evidence CI gate only.
 
 ## Next action
 

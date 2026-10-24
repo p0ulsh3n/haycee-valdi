@@ -19,5 +19,4 @@ on_interrupt() {
 trap on_interrupt INT
 
 cd /mnt/s/haycee-mobile-app-valdi
-valdi hotreload --debug --target //:haycee_mobile_app_valdi_app_hotreload
-exit $?
+exec npm exec --yes --package=@snap/valdi@1.1.5 -- valdi hotreload --debug --target //:haycee_mobile_app_valdi_app_hotreload

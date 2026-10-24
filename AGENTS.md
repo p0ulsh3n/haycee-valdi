@@ -1,8 +1,9 @@
 # Haycee Valdi application rules
 
 This repository is a minimal application bootstrapped by the official Snapchat Valdi CLI.
-The pinned framework imports are recorded in `WORKSPACE`; keep Valdi and Valdi_Widgets versions
-coherent with that file.
+The pinned framework imports are recorded in `MODULE.bazel`; keep Valdi and Valdi_Widgets versions
+coherent with that file. This app uses the official bzlmod configuration introduced with the
+`beta-0.1.0` release; do not restore the legacy `WORKSPACE` dependency setup.
 
 ## Non-negotiable rules
 
@@ -26,6 +27,8 @@ coherent with that file.
 ## Reference and agent workflow
 
 1. Read the relevant official skill under `.codex/skills/`.
+   For workstation/editor setup, also read `haycee-vscode-wsl`; for builds and validation,
+   also read `haycee-valdi-build`.
 2. Query `docs/valdi-reference/API_INDEX.json` and follow its `source` pointer.
 3. Confirm the import and signature in the pinned/reference source before coding.
 4. Make the smallest module-scoped change.

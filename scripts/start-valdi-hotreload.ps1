@@ -143,10 +143,9 @@ if (-not (Test-Path -LiteralPath $apkPath)) {
     Get-ChildItem -LiteralPath (Join-Path $appModuleRoot 'android') -File -Recurse -Force -ErrorAction SilentlyContinue
     Get-Item -LiteralPath (Join-Path $appModuleRoot 'BUILD.bazel') -ErrorAction SilentlyContinue
     Get-Item -LiteralPath (Join-Path $projectRoot 'BUILD.bazel') -ErrorAction SilentlyContinue
-    Get-Item -LiteralPath (Join-Path $projectRoot 'WORKSPACE') -ErrorAction SilentlyContinue
+    Get-Item -LiteralPath (Join-Path $projectRoot 'MODULE.bazel') -ErrorAction SilentlyContinue
     Get-Item -LiteralPath (Join-Path $projectRoot '.bazelrc') -ErrorAction SilentlyContinue
     Get-Item -LiteralPath (Join-Path $projectRoot '.bazelversion') -ErrorAction SilentlyContinue
-    Get-Item -LiteralPath (Join-Path $projectRoot 'MODULE.bazel') -ErrorAction SilentlyContinue
   ) | Where-Object { $_ -and $_.LastWriteTimeUtc -gt $cachedApkTime }
   if ($nativeApkInputs.Count -gt 0) {
     Write-Host "Native APK inputs changed after the cached APK ($($nativeApkInputs.Count) file(s)); refreshing the native APK."

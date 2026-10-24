@@ -32,7 +32,7 @@ try {
   if ($help -match 'agent-check') {
     Run-Check 'Valdi agent-check' 'valdi agent-check --module haycee_mobile_app_valdi --quick --json' { valdi agent-check --module haycee_mobile_app_valdi --quick --json }
   } else {
-    $results.Add([ordered]@{ name='Valdi agent-check'; command='valdi agent-check --module haycee_mobile_app_valdi --quick --json'; status='fail-or-blocked'; exit_code=2; duration_ms=0; output='Unavailable: agent-check is documented in the current main reference but is not exposed by installed CLI 1.0.11.' })
+    $results.Add([ordered]@{ name='Valdi agent-check'; command='valdi agent-check --module haycee_mobile_app_valdi --quick --json'; status='fail-or-blocked'; exit_code=2; duration_ms=0; output='Unavailable: the installed Valdi CLI does not expose agent-check; use the migration-compatible CLI version pinned by the build workflow.' })
   }
 } finally { Pop-Location }
 

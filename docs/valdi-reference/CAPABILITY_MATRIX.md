@@ -5,7 +5,7 @@ Reference commit: `f26bee4dc170b6c929f71d4dd07d44e033f47176`
 | Capability | Evidence | Windows host | Android | iOS/macOS |
 |---|---|---|---|---|
 | TSX components and native template elements | `docs/api/api-reference-elements.md`, `docs/docs/core-component.md` | source index only | documented | documented; build blocked |
-| Bazel module/app build | `docs/docs/workflow-bazel.md`, generated `WORKSPACE` | blocked: Bazel/Windows host | not run | not run |
+| Bazel module/app build | `docs/docs/workflow-bazel.md`, `MODULE.bazel` (Valdi/Widgets beta-0.1.0) | blocked: Windows host | pending post-migration build in WSL/CI | not run |
 | Official client skills | `ai-skills/registry.json`, `.codex/skills/` | installed | applicable | applicable |
 | Android install/build | CLI `valdi install android` | blocked until Bazel/Java setup | device/emulator not established | n/a |
 | iOS/macOS install/build | CLI and official setup docs | unavailable: no macOS/Xcode | n/a | blocked: no macOS/Xcode |

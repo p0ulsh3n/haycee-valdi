@@ -6,8 +6,8 @@
   "commit_date": "2026-10-19T00:19:41Z",
   "retrieved_at_utc": "2026-10-20T00:05:55.7165371Z",
   "cli_version": "1.0.11",
-  "project_pinned_valdi_release": "beta-0.0.3",
-  "project_pinned_valdi_widgets_release": "beta-0.0.3",
+  "project_pinned_valdi_release": "beta-0.1.0",
+  "project_pinned_valdi_widgets_release": "beta-0.1.0",
   "source_counts": {
     "all_files_excluding_git": 7721,
     "documentation_files_indexed": 164,

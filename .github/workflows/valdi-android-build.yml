@@ -22,7 +22,7 @@ jobs:
           node-version: 22
 
       - name: Install the pinned Valdi CLI
-        run: npm install --global @snap/valdi@1.0.11
+        run: npm install --global @snap/valdi@1.1.5
 
       - name: Restore Bazel caches
         uses: actions/cache@v4
@@ -34,9 +34,9 @@ jobs:
           # A unique key lets every successful run save the newer action
           # results; the restore prefix selects the most recent compatible
           # cache on the next GitHub-hosted runner.
-          key: valdi-bazel-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'BUILD.bazel', '.bazelrc', 'modules/**/BUILD.bazel') }}-${{ github.run_id }}
+          key: valdi-bazel-${{ runner.os }}-${{ hashFiles('MODULE.bazel', '.bazelversion', 'BUILD.bazel', '.bazelrc', 'modules/**/BUILD.bazel') }}-${{ github.run_id }}
           restore-keys: |
-            valdi-bazel-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'BUILD.bazel', '.bazelrc', 'modules/**/BUILD.bazel') }}-
+            valdi-bazel-${{ runner.os }}-${{ hashFiles('MODULE.bazel', '.bazelversion', 'BUILD.bazel', '.bazelrc', 'modules/**/BUILD.bazel') }}-
 
       - name: Set up Valdi dependencies
         shell: bash

@@ -1,0 +1,12 @@
+--- a/bzl/valdi/valdi_projectsync.bzl
++++ b/bzl/valdi/valdi_projectsync.bzl
+@@ -61,4 +61,8 @@ def _get_files_output_paths(ctx, module_name, module_directory):
+     # res.ts
+     for res_dir in get_resources_dirs(ctx.files.res):
+-        res_file = paths.join(_TYPESCRIPT_GENERATED_TS_DIR, module_name, "{}.ts".format(res_dir))
++        if res_dir == "res":
++            ts_basename = "res.ts"
++        else:
++            ts_basename = paths.join("res", res_dir + ".ts")
++        res_file = paths.join(_TYPESCRIPT_GENERATED_TS_DIR, module_name, ts_basename)
+         outputs.append(res_file)

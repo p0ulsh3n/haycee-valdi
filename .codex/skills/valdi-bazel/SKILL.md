@@ -113,7 +113,8 @@ bazel build //apps/helloworld:hello_world --config=android
 
 - `.bazelrc` - Build flags and configurations
 - `MODULE.bazel` - Bazel module dependencies
-- `WORKSPACE` - Legacy workspace configuration (being migrated to MODULE.bazel)
+- `MODULE.bazel` - Bzlmod dependency/module configuration for this beta-0.1.0 project
+- `WORKSPACE` - Legacy configuration only; do not restore it in this repository
 
 ## Common Issues
 

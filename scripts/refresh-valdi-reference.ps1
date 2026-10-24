@@ -63,9 +63,18 @@ foreach ($record in $docRecords) {
 }
 [IO.File]::WriteAllText((Join-Path $output 'DOCUMENTATION_INVENTORY.md'), (($inventory -join "`r`n") + "`r`n"), [Text.UTF8Encoding]::new($false))
 
-$workspaceText = [IO.File]::ReadAllText((Join-Path $project 'WORKSPACE'))
-$valdiTag = if ($workspaceText -match 'strip_prefix\s*=\s*"Valdi-([^"]+)"') { $Matches[1] } else { $null }
-$widgetsTag = if ($workspaceText -match 'strip_prefix\s*=\s*"Valdi_Widgets-([^"]+)"') { $Matches[1] } else { $null }
+$moduleFile = Join-Path $project 'MODULE.bazel'
+if (Test-Path -LiteralPath $moduleFile) {
+  $moduleText = [IO.File]::ReadAllText($moduleFile)
+  $valdiTag = if ($moduleText -match '(?m)^VALDI_TAG\s*=\s*"([^"]+)"') { $Matches[1] } else { $null }
+  $widgetsTag = if ($moduleText -match '(?m)^WIDGETS_TAG\s*=\s*"([^"]+)"') { $Matches[1] } else { $null }
+} else {
+  # Keep the reference refresh usable for older checkouts during migration.
+  $workspaceFile = Join-Path $project 'WORKSPACE'
+  $workspaceText = [IO.File]::ReadAllText($workspaceFile)
+  $valdiTag = if ($workspaceText -match 'strip_prefix\s*=\s*"Valdi-([^"]+)"') { $Matches[1] } else { $null }
+  $widgetsTag = if ($workspaceText -match 'strip_prefix\s*=\s*"Valdi_Widgets-([^"]+)"') { $Matches[1] } else { $null }
+}
 $registryPath = Join-Path $reference 'ai-skills\registry.json'
 $registry = Get-Content -LiteralPath $registryPath -Raw | ConvertFrom-Json
 $skillChecks = foreach ($skill in $registry.skills) {
@@ -242,7 +251,7 @@ $coverage.Add('This report measures discoverability and source pointers. It does
 
 $matrix = @('# Valdi capability matrix','',('Reference commit: ' + '`' + $commit + '`'),'','| Capability | Evidence | Windows host | Android | iOS/macOS |', '|---|---|---|---|---|')
 $matrix += '| TSX components and native template elements | `docs/api/api-reference-elements.md`, `docs/docs/core-component.md` | source index only | documented | documented; build blocked |'
-$matrix += '| Bazel module/app build | `docs/docs/workflow-bazel.md`, generated `WORKSPACE` | blocked: Bazel/Windows host | not run | not run |'
+$matrix += '| Bazel module/app build | `docs/docs/workflow-bazel.md`, `MODULE.bazel` (bzlmod) | Windows native not supported; WSL/CI validation required | pending post-migration build | not run |'
 $matrix += '| Official client skills | `ai-skills/registry.json`, `.codex/skills/` | installed | applicable | applicable |'
 $matrix += '| Android install/build | CLI `valdi install android` | blocked until Bazel/Java setup | device/emulator not established | n/a |'
 $matrix += '| iOS/macOS install/build | CLI and official setup docs | unavailable: no macOS/Xcode | n/a | blocked: no macOS/Xcode |'

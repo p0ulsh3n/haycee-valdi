@@ -4,7 +4,7 @@
 
 - Installed CLI: `@snap/valdi` 1.0.11, bundled registry with 16 entries.
 - Reference checkout: `S:\valdi-official-reference`, commit `f26bee4dc170b6c929f71d4dd07d44e033f47176`, main registry with 28 entries.
-- The CLI registry is the compatibility baseline for the project pinned to `beta-0.0.3`; main-only skills are inventoried but not silently installed.
+- The project framework baseline is Valdi/Valdi_Widgets `beta-0.1.0`; the installed skill inventory was originally captured with CLI 1.0.11 and has not been regenerated from CLI 1.1.5.
 
 ## CLI-bundled skills
 
