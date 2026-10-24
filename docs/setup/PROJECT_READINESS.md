@@ -65,11 +65,12 @@ not been regenerated with the migrated CLI. The current migration run confirms t
 passes, but the module build is not yet complete: a two-job retry was stopped at 1,863/5,182
 actions when C: had about 1.3 GiB free. A targeted Bazel clean was then run with user approval;
 Windows denied offline VHDX compaction without administrator rights. GitHub Actions runs through
-`40111164706` passed dependency setup and `valdi projectsync`, but Android analysis then reproduced
-the Kotlin/Android SDK provider crash. The root pins Valdi beta-0.1.0's rules_kotlin 1.9.0 and now
-supplies an app-owned registry overlay that adds the hermetic SDK extension to the registry module
-metadata. The next CI run must validate this correction; the APK remains unverified. No iOS/macOS
-build is declared on this Windows host.
+`40111984208` passed dependency setup, `valdi projectsync`, and Android analysis, then reached
+7,740/12,448 build actions before Javac rejected Java `record` declarations under tool source level
+11. The app pins Valdi beta-0.1.0's rules_kotlin 1.9.0 and supplies an app-owned registry overlay
+with the hermetic SDK extension in module metadata. `.bazelrc` now matches the pinned Valdi tool
+source level 17 while retaining app source level 11. The next CI run must verify the APK; it remains
+unverified. No iOS/macOS build is declared on this Windows host.
 `.github/workflows/valdi-validation.yml` provides a static evidence CI gate only.
 
 ## Next action
