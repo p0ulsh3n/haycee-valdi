@@ -26,12 +26,12 @@ behavior and is applied through Bzlmod without modifying the reference checkout.
 then passed for the app and its 11 Valdi dependencies using CLI 1.1.5. The project hot-reload
 launcher now runs that pinned CLI through `npm exec`, avoiding the older global CLI.
 
-GitHub Actions runs completed setup and `valdi projectsync`. The first Android analysis found that
-the root Bzlmod module did not expose `@android_mvn`; after adding it, the second analysis found the
-root also needed direct `rules_kotlin` visibility for the generated AAR target. Both dependencies
-are now declared in the root module; another CI run is pending. A local Android-target `cquery`
-gets past the Maven-repository error, then stops because WSL has no Linux Android SDK (`aapt2`);
-the Windows SDK contains `.exe` tools.
+GitHub Actions runs completed setup and `valdi projectsync`. Android analysis successively found a
+missing root `@android_mvn`, missing direct `@rules_kotlin` visibility, and then a Bazel 7 Android
+SDK provider `ClassCastException` from unpatched rules_kotlin. The root module now declares both
+repositories and applies the three patches referenced by the pinned Valdi beta-0.1.0 module. A
+local `bazelisk query //:haycee_mobile_app_valdi_app_android` passes with these overrides; another
+CI build is pending.
 The app module build was attempted twice. The first attempt was interrupted when `C:` fell to about 20 MiB free.
 A retry limited to two Bazel jobs reached 1,863 of 5,182 actions before `C:` fell to about 1.3 GiB;
 it was stopped to avoid exhausting the host disk. With user approval, `bazelisk clean` was run for
@@ -52,7 +52,7 @@ in CI or a Linux environment with adequate disk space and an Android SDK.
 | `valdi skills install --category=client` | Passed; 14 client skills installed for detected Claude/Cursor directories. |
 | `valdi projectsync` | Passed with CLI 1.1.5 after applying the local Bzlmod compatibility patch; app and framework module sync outputs were confirmed. |
 | `bazelisk build --jobs=2 //modules/haycee_mobile_app_valdi:haycee_mobile_app_valdi` | Two attempts stopped for low host disk space; the last reached 1,863/5,182 actions with about 1.3 GiB free. Then ran targeted `bazelisk clean` (no `--expunge`); no success claimed. |
-| Android arm64 app target | Runs `40107947656` and `40109018693`: setup and `projectsync` passed; Android analysis successively exposed missing root `@android_mvn` and `@rules_kotlin` visibility. Both are now declared; rerun the GitHub job. Local `cquery` then reaches Android SDK resolution and is blocked by the absent WSL `aapt2`. |
+| Android arm64 app target | Runs `40107947656`, `40109018693`, and `40109646179`: setup and `projectsync` passed. Android analysis exposed missing `@android_mvn`, missing `@rules_kotlin`, then a Kotlin/Android SDK provider crash. The root Maven/Kotlin repos and pinned Kotlin patches are now configured; CI rerun pending. |
 | `valdi lint`, `valdi test`, `valdi agent-check` | Previous beta-0.0.3 validation recorded lint/test blocked and `agent-check` unavailable in CLI 1.0.11. Re-run after the CLI 1.1.5 migration in WSL. |
 
 ## Known limitations
