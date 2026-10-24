@@ -65,10 +65,10 @@ not been regenerated with the migrated CLI. The current migration run confirms t
 passes, but the module build is not yet complete: a two-job retry was stopped at 1,863/5,182
 actions when C: had about 1.3 GiB free. A targeted Bazel clean was then run with user approval;
 Windows denied offline VHDX compaction without administrator rights. GitHub Actions runs through
-`40110507670` passed dependency setup and `valdi projectsync`, but Android analysis still failed.
-The latest failure traced to overriding Valdi beta-0.1.0's registry-patched rules_kotlin 1.9.0 with
-1.9.5, which left `@androidsdk` unresolved. The root now pins 1.9.0; local module resolution and
-target query pass, while the next CI build is pending. The APK remains unverified. No iOS/macOS
+`40111164706` passed dependency setup and `valdi projectsync`, but Android analysis then reproduced
+the Kotlin/Android SDK provider crash. The root pins Valdi beta-0.1.0's rules_kotlin 1.9.0 and now
+supplies an app-owned registry overlay that adds the hermetic SDK extension to the registry module
+metadata. The next CI run must validate this correction; the APK remains unverified. No iOS/macOS
 build is declared on this Windows host.
 `.github/workflows/valdi-validation.yml` provides a static evidence CI gate only.
 

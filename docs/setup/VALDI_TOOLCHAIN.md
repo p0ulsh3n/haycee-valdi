@@ -29,13 +29,12 @@ launcher now runs that pinned CLI through `npm exec`, avoiding the older global 
 GitHub Actions runs completed setup and `valdi projectsync`. Android analysis successively found a
 missing root `@android_mvn`, missing direct `@rules_kotlin` visibility, a Bazel 7 Android SDK
 provider `ClassCastException`, and (run `40110507670`) an unresolved `@androidsdk` in
-`rules_kotlin`. The cause was selecting `rules_kotlin` 1.9.5 instead of the exact 1.9.0 version
-and registry metadata shipped with Valdi beta-0.1.0. The root now pins 1.9.0 and relies on the
-matching Valdi registry patches and hermetic SDK extension. Local `bazelisk mod graph` confirms
-1.9.0 is selected, and `bazelisk query //:haycee_mobile_app_valdi_app_android` resolves the target;
-`cquery` now passes the former Kotlin repository error and proceeds into Android toolchain analysis,
-where this WSL host stops because its Android SDK repository has no `aapt2` target. The next CI run,
-which installs the Linux Android SDK, must confirm full analysis and APK output.
+`rules_kotlin`. The app now pins the beta-0.1.0 registry's `rules_kotlin` 1.9.0 metadata in a small
+app-owned registry overlay, retaining the official source archive and patches while adding the
+hermetic SDK extension to the registry module metadata. This is needed because Bazel resolves
+module extensions from registry `MODULE.bazel`, not from a patched archive copy. Run `40111164706`
+passed setup and `projectsync` but reproduced the SDK provider crash before the overlay was added;
+the next CI run must validate the overlay and APK output.
 The app module build was attempted twice. The first attempt was interrupted when `C:` fell to about 20 MiB free.
 A retry limited to two Bazel jobs reached 1,863 of 5,182 actions before `C:` fell to about 1.3 GiB;
 it was stopped to avoid exhausting the host disk. With user approval, `bazelisk clean` was run for
@@ -56,7 +55,7 @@ in CI or a Linux environment with adequate disk space and an Android SDK.
 | `valdi skills install --category=client` | Passed; 14 client skills installed for detected Claude/Cursor directories. |
 | `valdi projectsync` | Passed with CLI 1.1.5 after applying the local Bzlmod compatibility patch; app and framework module sync outputs were confirmed. |
 | `bazelisk build --jobs=2 //modules/haycee_mobile_app_valdi:haycee_mobile_app_valdi` | Two attempts stopped for low host disk space; the last reached 1,863/5,182 actions with about 1.3 GiB free. Then ran targeted `bazelisk clean` (no `--expunge`); no success claimed. |
-| Android arm64 app target | Runs `40107947656`, `40109018693`, `40109646179`, and `40110507670`: setup and `projectsync` passed, but Android analysis failed in each run. The latest failure was unresolved `@androidsdk` from selecting rules_kotlin 1.9.5. Root now pins Valdi beta-0.1.0's registry version 1.9.0; CI rerun pending. |
+| Android arm64 app target | Runs through `40111164706`: setup and `projectsync` passed, but analysis then reproduced the Kotlin/Android SDK provider crash. An app-owned registry overlay now adds the hermetic SDK extension to Valdi beta-0.1.0's rules_kotlin 1.9.0 metadata; CI rerun pending. |
 | `valdi lint`, `valdi test`, `valdi agent-check` | Previous beta-0.0.3 validation recorded lint/test blocked and `agent-check` unavailable in CLI 1.0.11. Re-run after the CLI 1.1.5 migration in WSL. |
 
 ## Known limitations
