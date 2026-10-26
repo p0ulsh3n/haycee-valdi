@@ -7,7 +7,7 @@ import navigationIcons from '../../../res/navigation-icons';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
-import { fontSize, metropolis } from '../../design-system/tokens/typography';
+import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { cancelVoiceRecording, finishVoiceRecording, requestVoicePermission, startVoiceRecording } from '../MediaBridgeNative';
 
 interface VoiceClip { fileUri: string; durationMillis: number; waveform: number[] }
@@ -430,7 +430,7 @@ const styles = {
     height: 40, justifyContent: 'center', marginRight: spacing.sm, width: 40,
   }),
   input: new Style<TextView>({
-    color: colors.textPrimary, flexGrow: 1, flexShrink: 1, font: metropolis.regular(fontSize.body), maxHeight: 100,
+    color: colors.textPrimary, flexGrow: 1, flexShrink: 1, font: montserrat.regular(fontSize.body), maxHeight: 100,
     minHeight: 24, textGravity: 'center',
   }),
   inputContainer: new Style<View>({
@@ -460,9 +460,9 @@ const styles = {
   recordingStatus: new Style<View>({ alignItems: 'center', flexDirection: 'row', flexShrink: 0, left: spacing.sm, position: 'absolute' }),
   recordingStatusLocked: new Style<View>({ alignItems: 'center', flexDirection: 'row', flexShrink: 0 }),
   recordingPrompt: new Style<View>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }),
-  recordingTimer: new Style<Label>({ color: colors.textDanger, font: metropolis.semiBold(fontSize.body), marginLeft: spacing.sm }),
-  recordingText: new Style<Label>({ color: colors.textSecondary, font: metropolis.medium(fontSize.metadata), marginLeft: spacing.md }),
-  recordingTextCancel: new Style<Label>({ color: colors.textDanger, font: metropolis.semiBold(fontSize.metadata) }),
+  recordingTimer: new Style<Label>({ color: colors.textDanger, font: montserrat.semiBold(fontSize.body), marginLeft: spacing.sm }),
+  recordingText: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.metadata), marginLeft: spacing.md }),
+  recordingTextCancel: new Style<Label>({ color: colors.textDanger, font: montserrat.semiBold(fontSize.metadata) }),
   recordingDeleteButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.textDanger, borderRadius: radius.full, height: 40, justifyContent: 'center', left: 0, position: 'absolute', width: 40 }),
   recordingSendButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundMessageSent, borderRadius: radius.full, height: 40, justifyContent: 'center', position: 'absolute', right: 0, width: 40 }),
   lockPillPosition: new Style<View>({ alignItems: 'center', position: 'absolute', right: spacing.md, top: -76, zIndex: 2 }),
@@ -471,7 +471,7 @@ const styles = {
   lockPillFill: new Style<View>({ background: 'linear-gradient(#D6FF56, #A7E500)', borderRadius: radius.full, bottom: 0, left: 0, position: 'absolute', top: 0, zIndex: 1 }),
   lockPillContent: new Style<View>({ alignItems: 'center', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between', paddingBottom: spacing.md, paddingTop: spacing.md, zIndex: 2 }),
   errorBanner: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, padding: spacing.xs }),
-  errorText: new Style<Label>({ color: colors.textDanger, font: metropolis.medium(fontSize.tiny) }),
+  errorText: new Style<Label>({ color: colors.textDanger, font: montserrat.semiBold(fontSize.tiny) }),
 };
 
 const LOCK_GESTURE_DISTANCE = 84;

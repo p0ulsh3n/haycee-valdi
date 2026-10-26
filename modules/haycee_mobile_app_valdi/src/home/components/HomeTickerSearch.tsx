@@ -6,7 +6,7 @@ import { ImageView, Label, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
 import { colors } from '../../design-system/tokens/colors';
 import { layout } from '../../design-system/tokens/spacing';
-import { fontSize, lineHeight, metropolis } from '../../design-system/tokens/typography';
+import { fontSize, lineHeight, montserrat } from '../../design-system/tokens/typography';
 
 export interface HomeTickerSearchViewModel {
   suggestions?: string[];
@@ -129,7 +129,7 @@ const styles = {
   searchLabel: new Style<Label>({
     color: colors.textSecondary,
     flexGrow: 1,
-    font: metropolis.regular(fontSize.body),
+    font: montserrat.regular(fontSize.body),
     lineHeight: lineHeight.body / fontSize.body,
   }),
 };

@@ -13,6 +13,7 @@ import { HomeScreenViewModel, HomeSurface } from '../../home/HomeScreen';
 import { MessagesInbox } from '../../messaging/MessagesInbox';
 import { ConversationPreview } from '../../messaging/MessagingTypes';
 import { LiveHomeScreen } from '../../live/LiveHomeScreen';
+import type { LiveFeedItem } from '../../live/data/LiveFeedData';
 
 export interface BottomTabItem {
   id: string;
@@ -36,6 +37,7 @@ export interface BottomTabsNavigationViewModel {
   onProductTap?: HomeScreenViewModel['onProductTap'];
   onQuickAdd?: HomeScreenViewModel['onQuickAdd'];
   onConversationTap?: (conversation: ConversationPreview) => void;
+  onLiveTap?: (item: LiveFeedItem) => void;
 }
 
 interface BottomTabsNavigationState {
@@ -113,7 +115,7 @@ export class BottomTabsNavigation extends StatefulComponent<BottomTabsNavigation
           onConversationTap={this.viewModel.onConversationTap}
         />
       ) : activeTab.id === 'live' ? (
-        <LiveHomeScreen />
+        <LiveHomeScreen onOpenLive={this.viewModel.onLiveTap ?? this.handlePreviewLiveTap} />
       ) : (
         <view style={styles.content} backgroundColor={activeTab.pageColor ?? colors.backgroundPrimary}>
           <label
@@ -179,6 +181,8 @@ export class BottomTabsNavigation extends StatefulComponent<BottomTabsNavigation
     this.setState({ activeIndex: index });
     this.viewModel.onIndexChange?.(index, tab);
   }
+
+  private handlePreviewLiveTap = (): void => undefined;
 
   private getTabs(): BottomTabItem[] {
     const tabs = this.viewModel.tabs;

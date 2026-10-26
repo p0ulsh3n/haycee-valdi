@@ -1,7 +1,7 @@
 module(name = "haycee_mobile_app_valdi", version = "0.1")
 
 # -- Valdi framework (https://github.com/Snapchat/Valdi) ---------------------
-VALDI_TAG = "beta-0.1.0"
+VALDI_TAG = "beta-0.2.1"
 VALDI_URL = "https://github.com/Snapchat/Valdi/archive/" + VALDI_TAG + ".tar.gz"
 VALDI_PREFIX = "Valdi-" + VALDI_TAG
 
@@ -10,8 +10,6 @@ archive_override(
     module_name = "valdi",
     urls = [VALDI_URL],
     strip_prefix = VALDI_PREFIX,
-    patches = ["//patches:valdi-projectsync-resource-outputs.patch"],
-    patch_strip = 1,
 )
 
 # Valdi internal sub-modules: local_path_override in Valdi's own MODULE.bazel
@@ -38,11 +36,8 @@ archive_override(module_name = "rules_hdrs", urls = [VALDI_URL], strip_prefix = 
 bazel_dep(name = "valdi_toolchain")
 archive_override(module_name = "valdi_toolchain", urls = [VALDI_URL], strip_prefix = VALDI_PREFIX + "/bin")
 
-bazel_dep(name = "resvg_libs")
-archive_override(module_name = "resvg_libs", urls = [VALDI_URL], strip_prefix = VALDI_PREFIX + "/third-party/resvg/resvg_libs")
-
 # -- Valdi Widgets (https://github.com/Snapchat/Valdi_Widgets) ---------------
-WIDGETS_TAG = "beta-0.1.0"
+WIDGETS_TAG = "beta-0.2.1"
 
 bazel_dep(name = "valdi_widgets")
 archive_override(
@@ -56,6 +51,9 @@ archive_override(
 bazel_dep(name = "rules_android", version = "0.6.5")
 bazel_dep(name = "rules_kotlin", version = "1.9.0")
 bazel_dep(name = "rules_jvm_external", version = "6.6")
+# The root Android target expands Valdi rules that reference @platforms.
+# Declare the dependency directly so Bazel's root repository mapping can resolve it.
+bazel_dep(name = "platforms", version = "1.1.0")
 single_version_override(module_name = "rules_kotlin", version = "1.9.0")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
@@ -119,7 +117,7 @@ register_toolchains("@local_config_apple_cc_toolchains//:all")
 register_toolchains("@llvm_toolchain//:all")
 
 # -- Version pins (must match Valdi's MODULE.bazel) ---------------------------
-single_version_override(module_name = "protobuf", version = "27.0")
+single_version_override(module_name = "protobuf", version = "29.3")
 single_version_override(module_name = "rules_apple", version = "4.0.0")
 single_version_override(module_name = "rules_pkg", version = "0.9.1")
 single_version_override(module_name = "zlib", version = "1.3.2")

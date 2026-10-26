@@ -9,7 +9,7 @@ import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior
 import { colors } from '../design-system/tokens/colors';
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
-import { fontSize, metropolis } from '../design-system/tokens/typography';
+import { fontSize, montserrat } from '../design-system/tokens/typography';
 import { BottomSheetFooter, bottomSheetSurfaceStyle, BottomSheetViewModel } from '../design-system/components/BottomSheet';
 import { copyMediaToCache, loadGallery, loadGalleryPage, loadMediaThumbnail } from './MediaBridgeNative';
 
@@ -239,14 +239,14 @@ const styles = {
     paddingTop: spacing.md,
   }),
   header: new Style<View>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', paddingBottom: spacing.md }),
-  title: new Style<Label>({ color: colors.textPrimary, font: metropolis.semiBold(fontSize.section) }),
+  title: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.section) }),
   closeButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, justifyContent: 'center', paddingBottom: spacing.sm, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.sm }),
-  closeLabel: new Style<Label>({ color: colors.textPrimary, font: metropolis.medium(fontSize.metadata) }),
+  closeLabel: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata) }),
   albumRail: new Style<ScrollView>({ flexGrow: 0, flexShrink: 0, marginBottom: spacing.md }),
   album: new Style<View>({ backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, marginRight: spacing.sm, paddingBottom: spacing.sm, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.sm }),
   albumSelected: new Style<View>({ backgroundColor: colors.textPrimary, borderRadius: radius.full, marginRight: spacing.sm, paddingBottom: spacing.sm, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.sm }),
-  albumText: new Style<Label>({ color: colors.textPrimary, font: metropolis.medium(fontSize.metadata) }),
-  albumTextSelected: new Style<Label>({ color: colors.textInverted, font: metropolis.semiBold(fontSize.metadata) }),
+  albumText: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata) }),
+  albumTextSelected: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.metadata) }),
   photoScroll: new Style<ScrollView>({ flexGrow: 1, flexShrink: 1, marginBottom: spacing.sm }),
   photoGrid: new Style<Layout>({ flexDirection: 'row', flexWrap: 'wrap' }),
   photoCell: new Style<View>({ height: 122, padding: 1, position: 'relative', width: '33.333%' }),
@@ -254,11 +254,11 @@ const styles = {
   photoPlaceholder: new Style<View>({ backgroundColor: colors.backgroundSecondary, height: 120, width: '100%' }),
   selectionEmpty: new Style<View>({ borderColor: colors.textInverted, borderRadius: radius.full, borderWidth: 2, height: 24, opacity: 0.9, position: 'absolute', right: spacing.sm, top: spacing.sm, width: 24 }),
   selectionSelected: new Style<View>({ alignItems: 'center', backgroundColor: colors.interactivePrimary, borderColor: colors.textInverted, borderRadius: radius.full, borderWidth: 1, height: 24, justifyContent: 'center', position: 'absolute', right: spacing.sm, top: spacing.sm, width: 24 }),
-  selectionNumber: new Style<Label>({ color: colors.textInverted, font: metropolis.semiBold(fontSize.tiny) }),
+  selectionNumber: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.tiny) }),
   videoBadge: new Style<View>({ backgroundColor: colors.backgroundDark, borderRadius: radius.xs, bottom: spacing.sm, left: spacing.sm, paddingBottom: spacing.xs, paddingLeft: spacing.xs, paddingRight: spacing.xs, paddingTop: spacing.xs, position: 'absolute' }),
-  videoBadgeText: new Style<Label>({ color: colors.textInverted, font: metropolis.semiBold(fontSize.tiny) }),
+  videoBadgeText: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.tiny) }),
   messageState: new Style<View>({ alignItems: 'center', flexGrow: 1, justifyContent: 'center' }),
-  helperText: new Style<Label>({ color: colors.textSecondary, font: metropolis.regular(fontSize.metadata), textAlign: 'center' }),
+  helperText: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.metadata), textAlign: 'center' }),
   retryButton: new Style<View>({ backgroundColor: colors.backgroundSecondary, borderRadius: radius.md, marginTop: spacing.md, paddingBottom: spacing.sm, paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.sm }),
-  retryText: new Style<Label>({ color: colors.textPrimary, font: metropolis.medium(fontSize.metadata) }),
+  retryText: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata) }),
 };

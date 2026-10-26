@@ -5,7 +5,7 @@ import { ElementFrame } from 'valdi_tsx/src/Geometry';
 import { Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { colors } from '../tokens/colors';
 import { spacing } from '../tokens/spacing';
-import { metropolis } from '../tokens/typography';
+import { montserrat } from '../tokens/typography';
 
 const SCREEN_PADDING = 12;
 const COLUMN_GAP = 8;
@@ -203,7 +203,7 @@ const styles = {
   }),
   endLabel: new Style<Label>({
     color: colors.textTertiary,
-    font: metropolis.regular(11),
+    font: montserrat.regular(11),
   }),
   errorFooter: new Style<Layout>({
     alignItems: 'center',
@@ -212,7 +212,7 @@ const styles = {
   }),
   errorLabel: new Style<Label>({
     color: colors.textSecondary,
-    font: metropolis.regular(12),
+    font: montserrat.regular(12),
     marginBottom: spacing.sm,
   }),
   retryButton: new Style<View>({
@@ -225,6 +225,6 @@ const styles = {
   }),
   retryLabel: new Style<Label>({
     color: colors.textInverted,
-    font: metropolis.bold(12),
+    font: montserrat.extraBold(12),
   }),
 };

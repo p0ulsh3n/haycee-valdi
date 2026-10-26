@@ -6,8 +6,12 @@ infrastructure only; no product features have been added.
 ## Readiness
 
 See [`docs/setup/PROJECT_READINESS.md`](docs/setup/PROJECT_READINESS.md) for the current status.
-The current host is Windows and is marked **GO AVEC LIMITATIONS** because the official CLI setup
-does not support Windows. Android packaging is delegated to GitHub Actions.
+The Windows host is marked **GO AVEC LIMITATIONS** because the official Valdi CLI setup does not
+run natively on Windows. Local Android builds run inside Ubuntu on WSL2; GitHub Actions is also
+available for APK builds.
+
+For the current Windows/WSL2 and Linux prerequisites, pinned versions, arm64 build, and device
+hot-reload workflow, see [`docs/setup/DEVELOPMENT_ENVIRONMENT.md`](docs/setup/DEVELOPMENT_ENVIRONMENT.md).
 
 ## Android CI
 

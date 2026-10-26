@@ -450,7 +450,7 @@ const styles = {
     backgroundColor: colors.backgroundPrimary,
     flexGrow: 1,
     flexShrink: 1,
-    paddingBottom: 72,
+    paddingBottom: layout.navigation.bottomTabContentPadding,
   }),
   skeletonRoot: new Style<View>({
     backgroundColor: colors.backgroundPrimary,

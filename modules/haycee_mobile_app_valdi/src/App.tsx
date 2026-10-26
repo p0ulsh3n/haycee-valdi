@@ -13,6 +13,8 @@ import { ProductDetailScreen } from './products/ProductDetailScreen';
 import { HomeProduct } from './home/components/HomeProductRail';
 import { ConversationScreen } from './messaging/ConversationScreen';
 import { ConversationPreview } from './messaging/MessagingTypes';
+import { LiveViewerScreen } from './live/LiveViewerScreen';
+import type { LiveFeedItem } from './live/data/LiveFeedData';
 
 /**
  * @ViewModel
@@ -42,6 +44,10 @@ export class App extends Component<AppViewModel, AppComponentContext> {
     );
   };
 
+  private handleLiveTap = (item: LiveFeedItem): void => {
+    this.navigationController?.push(LiveViewerScreen, { item }, {});
+  };
+
   onRender(): void {
     <layout style={styles.root}>
       <NavigationRoot>
@@ -54,6 +60,7 @@ export class App extends Component<AppViewModel, AppComponentContext> {
             onNotificationsTap={() => TransientFeedback.show({ message: 'Notifications Home' })}
             onProductTap={this.handleProductTap}
             onConversationTap={this.handleConversationTap}
+            onLiveTap={this.handleLiveTap}
             onQuickAdd={() => TransientFeedback.show({
               message: 'Votre article a été ajouté au panier',
               icon: navigationIcons.shoppingCartAdd02,

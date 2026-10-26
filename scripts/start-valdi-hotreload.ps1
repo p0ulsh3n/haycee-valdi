@@ -185,6 +185,7 @@ bazelisk build //:haycee_mobile_app_valdi_app_android \
   --define=client_repo_arm64=true \
   --define=client_repo_arm32=false \
   --define=client_repo_x86_64=false \
+  --android_platforms=@snap_platforms//os:android_arm64 \
   --fat_apk_cpu=arm64-v8a \
   --android_cpu=arm64-v8a
 cp bazel-bin/haycee_mobile_app_valdi_app_android.apk __WINDOWS_APK_PATH__

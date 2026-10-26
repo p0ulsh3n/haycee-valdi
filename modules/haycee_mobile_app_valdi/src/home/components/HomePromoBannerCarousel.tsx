@@ -7,7 +7,7 @@ import { createReusableCallback } from 'valdi_core/src/utils/Callback';
 import { colors } from '../../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import { layout, spacing } from '../../design-system/tokens/spacing';
-import { metropolis, transformText } from '../../design-system/tokens/typography';
+import { montserrat, transformText } from '../../design-system/tokens/typography';
 
 export interface HomePromoBanner {
   id: string;
@@ -95,13 +95,12 @@ const styles = {
   }),
   eyebrow: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.bold(10),
-    letterSpacing: 1.2,
+    font: montserrat.extraBold(10),
     lineHeight: 1.2,
   }),
   title: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.black(25),
+    font: montserrat.black(25),
     lineHeight: 1.2,
     marginTop: spacing.sm,
   }),

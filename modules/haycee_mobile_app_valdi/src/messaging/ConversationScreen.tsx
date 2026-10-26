@@ -13,7 +13,7 @@ import { colors } from '../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
-import { fontSize, metropolis, typography } from '../design-system/tokens/typography';
+import { fontSize, montserrat, typography } from '../design-system/tokens/typography';
 import { MessageBubble } from './components/MessageBubble';
 import { MessageComposer } from './components/MessageComposer';
 import { MediaLibrarySheet } from './MediaLibrarySheet';
@@ -391,7 +391,7 @@ const styles = {
     position: 'relative',
     width: 42,
   }),
-  avatarInitials: new Style<Label>({ color: colors.textPrimary, font: metropolis.semiBold(fontSize.metadata) }),
+  avatarInitials: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata) }),
   onlineIndicator: new Style<View>({
     backgroundColor: colors.textSuccess,
     borderColor: colors.backgroundPrimary,
@@ -407,7 +407,7 @@ const styles = {
   personName: typography.productTitle,
   personStatus: new Style<Label>({
     color: colors.textSecondary,
-    font: metropolis.regular(fontSize.tiny),
+    font: montserrat.regular(fontSize.tiny),
     marginTop: spacing.xs,
   }),
   messagesScroll: new Style<ScrollView>({ backgroundColor: colors.backgroundPrimary, flexGrow: 1, flexShrink: 1 }),
@@ -428,11 +428,11 @@ const styles = {
     paddingRight: spacing.md,
     paddingTop: spacing.xs,
   }),
-  dateLabel: new Style<Label>({ color: colors.textSecondary, font: metropolis.medium(fontSize.tiny) }),
+  dateLabel: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.tiny) }),
   loadingLabel: new Style<Label>({
     alignSelf: 'center',
     color: colors.textTertiary,
-    font: metropolis.regular(fontSize.metadata),
+    font: montserrat.regular(fontSize.metadata),
     marginTop: spacing.md,
   }),
 };

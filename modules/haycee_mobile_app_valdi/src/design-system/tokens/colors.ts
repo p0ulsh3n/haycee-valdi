@@ -35,6 +35,8 @@ export const colors = {
   backgroundPrimary: palette.white,
   backgroundSecondary: palette.gray100,
   backgroundDark: palette.black,
+  /** Visible underlay so Live's translucent surface has something to blend with. */
+  liveBackdrop: '#1D2730',
   /** Translucent dark material used by default transient feedback. */
   backgroundTransient: 'rgba(72, 72, 72, 0.82)',
   backgroundBrand: palette.snapYellow,
@@ -47,11 +49,22 @@ export const colors = {
   livePanelBlue: palette.liveBlue,
   livePanelSage: palette.liveSage,
   livePanelSand: palette.liveSand,
+  /** Transparent interior and light outline for controls over Live video. */
+  liveGlassSurface: 'rgba(0, 0, 0, 0)',
+  liveGlassBorder: 'rgba(255, 255, 255, 0.34)',
+  /** Translucent dark material used over Live content, including its action buttons. */
+  liveActionSurface: 'rgba(8, 14, 18, 0.42)',
+  liveViewerBadgeSurface: '#080E12',
+  liveViewerBadgeGradient: 'linear-gradient(135deg, rgba(137, 35, 160, 0.7) 0%, #F1A322 22.58%, #F7FF1A 100%)',
+  liveControlSurface: 'rgba(255, 255, 255, 0.88)',
+  liveChatSurface: 'rgba(255, 255, 255, 0.76)',
+  liveIndicatorGradient: `linear-gradient(${palette.red}, ${palette.purple})`,
 
   textPrimary: palette.black,
   textSecondary: palette.gray700,
   textTertiary: palette.gray500,
   textInverted: palette.white,
+  textOnDarkSecondary: palette.gray300,
   textBrand: palette.black,
   textMessageSent: palette.white,
   textDanger: palette.red,

@@ -17,6 +17,8 @@ export const layout = {
   navigation: {
     /** Height of the app bottom tabs, excluding the device safe-area inset. */
     bottomTabsHeight: 72,
+    /** Extra scrollable space that keeps the last tab item clear of the fixed navigation. */
+    bottomTabContentPadding: 72,
   },
   home: {
     header: {
@@ -101,10 +103,32 @@ export const layout = {
     categoryTabWidth: 144,
     feedHorizontalPadding: 12,
     feedTopPadding: 16,
-    feedBottomPadding: 20,
+    feedBottomPadding: 104,
     cardColumnGap: 8,
     cardRowGap: 22,
     panelAspectRatio: 0.75,
     panelRadius: 8,
+    viewer: {
+      horizontalPadding: 16,
+      headerButtonSize: 38,
+      /** Shared outline thickness for controls layered over Live video. */
+      glassBorderWidth: 1,
+      viewerBadgeGradientWidth: 2,
+      chatHeight: 208,
+      composerHeight: 44,
+      productQuickAccessSize: 44,
+      productCountBadgeSize: 18,
+      actionButtonSize: 40,
+      productCardHeight: 174,
+      productCardWidth: 312,
+      productImageHeight: 72,
+      productButtonHeight: 38,
+      productFooterHeight: 18,
+      productCarouselGap: 8,
+      productAutoAdvanceMilliseconds: 5000,
+      productTickerHoldMilliseconds: 900,
+      productTickerSpeed: 36,
+      productTickerResetMilliseconds: 700,
+    },
   },
 } as const;

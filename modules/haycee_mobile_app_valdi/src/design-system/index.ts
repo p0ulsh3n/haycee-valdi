@@ -5,9 +5,8 @@ export { noBounceScrollAttributes } from './tokens/scrollBehavior';
 export {
   fontSize,
   fontWeight,
-  letterSpacing,
   lineHeight,
-  metropolis,
+  montserrat,
   defaultTextCase,
   transformText,
   TextCase,

@@ -9,7 +9,7 @@ import { colors } from '../tokens/colors';
 import { noBounceScrollAttributes } from '../tokens/scrollBehavior';
 import { radius } from '../tokens/radius';
 import { spacing } from '../tokens/spacing';
-import { fontSize, metropolis } from '../tokens/typography';
+import { fontSize, montserrat } from '../tokens/typography';
 
 export interface ImageCarouselViewModel {
   imageUrls?: string[];
@@ -233,8 +233,7 @@ const styles = {
   }),
   fallbackLabel: new Style<Label>({
     color: colors.textInverted,
-    font: metropolis.bold(fontSize.label),
-    letterSpacing: 1.5,
+    font: montserrat.extraBold(fontSize.label),
   }),
   pagination: new Style<View>({
     alignItems: 'center',
@@ -250,8 +249,7 @@ const styles = {
   }),
   paginationLabel: new Style<Label>({
     color: colors.textInverted,
-    font: metropolis.bold(fontSize.metadata),
-    letterSpacing: 0.2,
+    font: montserrat.extraBold(fontSize.metadata),
   }),
   paginationDotsOuter: new Style<View>({
     bottom: spacing.xxl,

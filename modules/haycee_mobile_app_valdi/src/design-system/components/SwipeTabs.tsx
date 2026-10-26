@@ -21,7 +21,7 @@ import { colors } from '../tokens/colors';
 import { noBounceScrollAttributes } from '../tokens/scrollBehavior';
 import { radius } from '../tokens/radius';
 import { spacing } from '../tokens/spacing';
-import { metropolis, transformText, typography, TextCase } from '../tokens/typography';
+import { montserrat, transformText, typography, TextCase } from '../tokens/typography';
 
 export interface SwipeTabItem {
   id: string;
@@ -472,11 +472,11 @@ const styles = {
   activeLabel: typography.tabLabel.extend({ color: colors.textPrimary }),
   iconOnly: new Style<Label>({
     color: colors.textSecondary,
-    font: metropolis.regular(18),
+    font: montserrat.regular(18),
   }),
   activeIconOnly: new Style<Label>({
     color: colors.borderFocus,
-    font: metropolis.bold(18),
+    font: montserrat.extraBold(18),
   }),
   indicatorTrack: new Style<View>({
     width: '100%',
@@ -515,7 +515,7 @@ const styles = {
   }),
   stateIcon: new Style<Label>({
     color: colors.textSecondary,
-    font: metropolis.regular(28),
+    font: montserrat.regular(28),
     marginBottom: spacing.md,
   }),
   stateTitle: typography.headline.extend({ textAlign: 'center' }),

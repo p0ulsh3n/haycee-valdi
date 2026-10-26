@@ -8,8 +8,8 @@ import { TransientFeedback } from '../design-system/components/SnackBar';
 import { colors } from '../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { radius } from '../design-system/tokens/radius';
-import { spacing } from '../design-system/tokens/spacing';
-import { fontSize, lineHeight, metropolis, typography } from '../design-system/tokens/typography';
+import { layout, spacing } from '../design-system/tokens/spacing';
+import { fontSize, lineHeight, montserrat, typography } from '../design-system/tokens/typography';
 import { MessagingApi } from './MessagingApi';
 import { getMessagingApiConfiguration } from './MessagingApiConfiguration';
 import { ConversationPreview } from './MessagingTypes';
@@ -265,7 +265,7 @@ const styles = {
   title: typography.title1,
   subtitle: new Style<Label>({
     color: colors.textSecondary,
-    font: metropolis.regular(fontSize.metadata),
+    font: montserrat.regular(fontSize.metadata),
     lineHeight: lineHeight.label / fontSize.metadata,
     marginTop: spacing.xs,
   }),
@@ -291,7 +291,7 @@ const styles = {
   searchField: new Style<TextField>({
     color: colors.textPrimary,
     flexGrow: 1,
-    font: metropolis.regular(fontSize.body),
+    font: montserrat.regular(fontSize.body),
     marginLeft: spacing.sm,
     minWidth: 0,
   }),
@@ -323,8 +323,8 @@ const styles = {
     paddingLeft: spacing.lg,
     paddingRight: spacing.lg,
   }),
-  filterLabel: new Style<Label>({ color: colors.textSecondary, font: metropolis.semiBold(fontSize.metadata) }),
-  filterLabelActive: new Style<Label>({ color: colors.textInverted, font: metropolis.semiBold(fontSize.metadata) }),
+  filterLabel: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.metadata) }),
+  filterLabelActive: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.metadata) }),
   list: new Style<ScrollView>({ flexGrow: 1, flexShrink: 1 }),
   listContent: new Style<Layout>({ paddingBottom: spacing.lg }),
   conversationRow: new Style<View>({
@@ -349,7 +349,7 @@ const styles = {
   }),
   avatarInitials: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.semiBold(fontSize.body),
+    font: montserrat.semiBold(fontSize.body),
     textAlign: 'center',
   }),
   onlineIndicator: new Style<View>({
@@ -368,27 +368,27 @@ const styles = {
   conversationName: new Style<Label>({
     color: colors.textPrimary,
     flexGrow: 1,
-    font: metropolis.semiBold(fontSize.product),
+    font: montserrat.semiBold(fontSize.product),
     lineHeight: lineHeight.product / fontSize.product,
     minWidth: 0,
   }),
   timeLabel: new Style<Label>({
     color: colors.textTertiary,
-    font: metropolis.regular(fontSize.tiny),
+    font: montserrat.regular(fontSize.tiny),
     marginLeft: spacing.sm,
   }),
   conversationPreview: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginTop: spacing.xs }),
   preview: new Style<Label>({
     color: colors.textSecondary,
     flexGrow: 1,
-    font: metropolis.regular(fontSize.metadata),
+    font: montserrat.regular(fontSize.metadata),
     lineHeight: lineHeight.label / fontSize.metadata,
     minWidth: 0,
   }),
   previewUnread: new Style<Label>({
     color: colors.textPrimary,
     flexGrow: 1,
-    font: metropolis.semiBold(fontSize.metadata),
+    font: montserrat.semiBold(fontSize.metadata),
     lineHeight: lineHeight.label / fontSize.metadata,
     minWidth: 0,
   }),
@@ -403,17 +403,17 @@ const styles = {
     paddingLeft: spacing.xs,
     paddingRight: spacing.xs,
   }),
-  unreadCount: new Style<Label>({ color: colors.textPrimary, font: metropolis.bold(fontSize.tiny), textAlign: 'center' }),
+  unreadCount: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.tiny), textAlign: 'center' }),
   emptyState: new Style<Layout>({ alignItems: 'center', flexGrow: 1, justifyContent: 'center', padding: spacing.xxxl }),
   emptyTitle: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.semiBold(fontSize.large),
+    font: montserrat.semiBold(fontSize.large),
     marginTop: spacing.lg,
     textAlign: 'center',
   }),
   emptyMessage: new Style<Label>({
     color: colors.textSecondary,
-    font: metropolis.regular(fontSize.body),
+    font: montserrat.regular(fontSize.body),
     marginTop: spacing.sm,
     textAlign: 'center',
   }),

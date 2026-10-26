@@ -7,7 +7,7 @@ import { ImageView, Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElem
 import navigationIcons from '../../../res/navigation-icons';
 import { getMasonryImageAspectRatio } from './MasonryFeed';
 import { colors } from '../tokens/colors';
-import { fontSize, metropolis, typography, transformText } from '../tokens/typography';
+import { fontSize, montserrat, typography, transformText } from '../tokens/typography';
 
 export interface MasonryProduct {
   id: string;
@@ -39,6 +39,13 @@ export interface MasonryProduct {
   vendorRating?: string;
   /** Seller rating summary, for example "5 (6)" in the seller profile badges. */
   vendorReviewSummary?: string;
+  vendorSalesCount?: number;
+  vendorFollowersCount?: number;
+  vendorBio?: string;
+  vendorCountry?: string;
+  vendorCity?: string;
+  vendorVerified?: boolean;
+  vendorIsFollowing?: boolean;
   /** Seller dispatch estimate, for example "24H" in the seller profile badges. */
   vendorDispatchTime?: string;
   /** Seller delivery estimate, for example "1.7 Day" in the seller profile badges. */
@@ -330,8 +337,7 @@ const styles = {
   }),
   badgeText: new Style<Label>({
     color: colors.textInverted,
-    font: metropolis.bold(fontSize.nano),
-    letterSpacing: 0.5,
+    font: montserrat.extraBold(fontSize.nano),
   }),
   flashBadge: new Style<View>({
     backgroundColor: colors.backgroundOverlay,
@@ -346,8 +352,7 @@ const styles = {
   }),
   flashText: new Style<Label>({
     color: colors.backgroundBrand,
-    font: metropolis.bold(fontSize.nano),
-    letterSpacing: 0.5,
+    font: montserrat.extraBold(fontSize.nano),
   }),
   favoriteButton: new Style<View>({
     alignItems: 'center',
@@ -388,12 +393,12 @@ const styles = {
   }),
   price: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.bold(fontSize.price),
+    font: montserrat.extraBold(fontSize.price),
     marginRight: 4,
   }),
   originalPrice: new Style<Label>({
     color: colors.textTertiary,
-    font: metropolis.light(fontSize.metadata),
+    font: montserrat.regular(fontSize.metadata),
     marginRight: 4,
     textDecoration: 'strikethrough',
   }),
@@ -407,7 +412,7 @@ const styles = {
   }),
   discountText: new Style<Label>({
     color: colors.textDanger,
-    font: metropolis.bold(fontSize.nano),
+    font: montserrat.extraBold(fontSize.nano),
   }),
   statsRow: new Style<Layout>({
     alignItems: 'center',
@@ -415,11 +420,11 @@ const styles = {
   }),
   rating: new Style<Label>({
     color: colors.textSecondary,
-    font: metropolis.regular(fontSize.micro),
+    font: montserrat.regular(fontSize.micro),
     marginRight: 6,
   }),
   soldCount: new Style<Label>({
     color: colors.textTertiary,
-    font: metropolis.regular(fontSize.micro),
+    font: montserrat.regular(fontSize.micro),
   }),
 };

@@ -1,6 +1,7 @@
 import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { Device } from 'valdi_core/src/Device';
+import { createReusableCallback } from 'valdi_core/src/utils/Callback';
 import { Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import { colors } from '../../design-system/tokens/colors';
@@ -11,6 +12,7 @@ import { getLiveFeedItems } from '../data/LiveFeedData';
 export interface LiveCategoryFeedViewModel {
   categoryId: string;
   isPrepared: boolean;
+  onOpenLive: (item: ReturnType<typeof getLiveFeedItems>[number]) => void;
 }
 
 /** One independently scrollable category page, prepared only near the active tab. */
@@ -24,7 +26,9 @@ export class LiveCategoryFeed extends Component<LiveCategoryFeedViewModel> {
     const items = getLiveFeedItems(this.viewModel.categoryId);
     const horizontalPadding = layout.live.feedHorizontalPadding;
     const columnGap = layout.live.cardColumnGap;
-    const cardWidth = (Device.getWindowWidth() - horizontalPadding * 2 - columnGap) / 2;
+    // Keep a small layout-rounding buffer: tablet widths can be fractional dp,
+    // and an exact-fit row may wrap its second card after pixel rounding.
+    const cardWidth = (Device.getWindowWidth() - horizontalPadding * 2 - columnGap * 2) / 2;
 
     <scroll {...noBounceScrollAttributes} style={styles.scroll} showsVerticalScrollIndicator={false}>
       <layout style={styles.grid.extend({
@@ -42,7 +46,10 @@ export class LiveCategoryFeed extends Component<LiveCategoryFeedViewModel> {
               width: cardWidth,
             })}
           >
-            <LiveFeedCard item={item} />
+            <LiveFeedCard
+              item={item}
+              onTap={createReusableCallback(() => this.viewModel.onOpenLive(item))}
+            />
           </view>
         ))}
       </layout>

@@ -5,7 +5,7 @@ import { ImageView, Label, Layout, SpinnerView, View } from 'valdi_tsx/src/Nativ
 import { colors, palette } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
-import { fontSize, metropolis } from '../../design-system/tokens/typography';
+import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { ConversationMessage } from '../MessagingTypes';
 import { playVoice, stopVoice } from '../MediaBridgeNative';
 import navigationIcons from '../../../res/navigation-icons';
@@ -191,7 +191,7 @@ const styles = {
     width: 30,
   }),
   avatarImage: new Style<ImageView>({ borderRadius: radius.full, height: 30, width: 30 }),
-  avatarInitials: new Style<Label>({ color: colors.textSecondary, font: metropolis.medium(fontSize.tiny) }),
+  avatarInitials: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.tiny) }),
   bubbleMine: new Style<View>({
     background: `linear-gradient(${palette.messageBlueLight}, ${colors.backgroundMessageSent})`,
     borderRadius: radius.lg,
@@ -213,25 +213,25 @@ const styles = {
   messageImage: new Style<ImageView>({ borderRadius: radius.md, height: 220, width: 220 }),
   mediaMessage: new Style<View>({ position: 'relative' }),
   videoBadge: new Style<View>({ backgroundColor: colors.backgroundDark, borderRadius: radius.xs, bottom: spacing.sm, left: spacing.sm, paddingBottom: spacing.xs, paddingLeft: spacing.sm, paddingRight: spacing.sm, paddingTop: spacing.xs, position: 'absolute' }),
-  videoBadgeText: new Style<Label>({ color: colors.textInverted, font: metropolis.semiBold(fontSize.tiny) }),
+  videoBadgeText: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.tiny) }),
   voiceMessage: new Style<View>({ alignItems: 'center', flexDirection: 'row', minWidth: 210 }),
   voiceControl: new Style<View>({ alignItems: 'center', height: 38, justifyContent: 'center', marginRight: spacing.md, position: 'relative', width: 38 }),
   voiceSpinner: new Style<SpinnerView>({ height: 38, position: 'absolute', width: 38 }),
   voiceIcon: new Style<ImageView>({ position: 'absolute' }),
   voiceWaveform: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', flexGrow: 1, flexShrink: 1, height: 28, justifyContent: 'space-between', marginRight: spacing.md }),
   voiceWaveBar: new Style<View>({ borderRadius: radius.full, width: 2 }),
-  messageTextMine: new Style<Label>({ color: colors.textMessageSent, font: metropolis.regular(fontSize.message) }),
-  messageTextOther: new Style<Label>({ color: colors.textPrimary, font: metropolis.regular(fontSize.message) }),
+  messageTextMine: new Style<Label>({ color: colors.textMessageSent, font: montserrat.regular(fontSize.message) }),
+  messageTextOther: new Style<Label>({ color: colors.textPrimary, font: montserrat.regular(fontSize.message) }),
   metadata: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginTop: spacing.xs }),
-  time: new Style<Label>({ color: colors.textSecondary, font: metropolis.medium(fontSize.tiny) }),
+  time: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.tiny) }),
   readStatus: new Style<Label>({
     color: colors.backgroundMessageSent,
-    font: metropolis.semiBold(fontSize.tiny),
+    font: montserrat.semiBold(fontSize.tiny),
     marginLeft: spacing.xs,
   }),
   failedStatus: new Style<Label>({
     color: colors.textDanger,
-    font: metropolis.semiBold(fontSize.tiny),
+    font: montserrat.semiBold(fontSize.tiny),
     marginLeft: spacing.xs,
   }),
 };

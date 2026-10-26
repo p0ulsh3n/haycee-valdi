@@ -18,7 +18,7 @@ import { colors } from '../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
-import { fontSize, metropolis, typography, transformText } from '../design-system/tokens/typography';
+import { fontSize, montserrat, typography, transformText } from '../design-system/tokens/typography';
 import { MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { ProductImageViewerScreen } from './ProductImageViewerScreen';
 import { SellerProfileScreen } from '../sellers/SellerProfileScreen';
@@ -752,7 +752,7 @@ const styles = {
   stickyVendorName: typography.bodyEmphasis,
   stickyVendorMeta: typography.caption.extend({ marginTop: spacing.xs }),
   headerTitle: typography.headline.extend({
-    font: metropolis.bold(fontSize.large),
+    font: montserrat.extraBold(fontSize.large),
   }),
   headerBackground: new Style<View>({
     backgroundColor: colors.backgroundPrimary,
@@ -788,8 +788,7 @@ const styles = {
   }),
   mediaLabel: new Style<Label>({
     color: 'rgba(255, 255, 255, 0.78)',
-    font: metropolis.bold(fontSize.label),
-    letterSpacing: 1.5,
+    font: montserrat.extraBold(fontSize.label),
   }),
   badge: new Style<View>({
     backgroundColor: colors.backgroundPrimary,
@@ -818,9 +817,9 @@ const styles = {
     marginTop: spacing.md,
   }),
   price: typography.price.extend({
-    font: metropolis.black(fontSize.priceLarge),
+    font: montserrat.black(fontSize.priceLarge),
   }),
-  originalPrice: typography.priceLight.extend({
+  originalPrice: typography.priceRegular.extend({
     color: colors.textTertiary,
     marginLeft: spacing.sm,
   }),
@@ -940,7 +939,7 @@ const styles = {
     justifyContent: 'center',
     width: 40,
   }),
-  vendorInitial: typography.headline.extend({ font: metropolis.bold(fontSize.body) }),
+  vendorInitial: typography.headline.extend({ font: montserrat.extraBold(fontSize.body) }),
   vendorDetails: new Style<Layout>({
     flexGrow: 1,
     marginLeft: spacing.md,
@@ -975,7 +974,7 @@ const styles = {
     marginBottom: spacing.lg,
     padding: spacing.lg,
   }),
-  offerTitle: typography.badge.extend({ letterSpacing: 2 }),
+  offerTitle: typography.badge,
   offerBody: typography.caption.extend({ marginTop: spacing.sm }),
   featuredLabel: typography.badge.extend({ color: colors.textSecondary, marginBottom: spacing.lg }),
   variantsSection: new Style<Layout>({
@@ -988,7 +987,7 @@ const styles = {
     justifyContent: 'space-between',
     marginTop: spacing.lg,
   }),
-  optionLabel: typography.caption.extend({ letterSpacing: 1.2 }),
+  optionLabel: typography.caption,
   optionValue: typography.bodyEmphasis,
   optionScroll: new Style<ScrollView>({ marginTop: spacing.sm }),
   colorOptions: new Style<Layout>({ flexDirection: 'row' }),
@@ -1100,7 +1099,7 @@ const styles = {
   bottomMessage: new Style<View>({ alignItems: 'center', height: 52, justifyContent: 'center', width: 58 }),
   bottomMessageLabel: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.medium(fontSize.nano),
+    font: montserrat.semiBold(fontSize.nano),
     marginTop: spacing.xs,
   }),
   bottomAdd: new Style<View>({

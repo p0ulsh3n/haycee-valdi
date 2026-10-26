@@ -6,7 +6,7 @@ import { MasonryProduct } from '../../design-system/components/MasonryProductCar
 import { colors } from '../../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import { layout } from '../../design-system/tokens/spacing';
-import { metropolis, typography, transformText } from '../../design-system/tokens/typography';
+import { montserrat, typography, transformText } from '../../design-system/tokens/typography';
 import { HomeSectionHeader } from './HomeSectionHeader';
 
 export interface HomeProduct extends MasonryProduct {}
@@ -134,7 +134,7 @@ const styles = {
     paddingRight: layout.home.productRails.flash.contentHorizontalPadding,
     paddingTop: 8,
   }),
-  flashPrice: typography.priceLight,
+  flashPrice: typography.priceRegular,
   trendingCard: new Style<View>({
     borderRadius: layout.home.productRails.trending.cardRadius,
     height: layout.home.productRails.trending.cardHeight,
@@ -158,13 +158,12 @@ const styles = {
   }),
   trendingTitle: new Style<Label>({
     color: colors.textInverted,
-    font: metropolis.bold(10),
-    letterSpacing: 1,
+    font: montserrat.extraBold(10),
     lineHeight: 1.3,
   }),
   trendingPrice: new Style<Label>({
     color: colors.textInverted,
-    font: metropolis.light(17),
+    font: montserrat.regular(17),
     lineHeight: 1.3,
   }),
   dealsCard: new Style<View>({
@@ -187,7 +186,7 @@ const styles = {
   dealsTitle: typography.productTitle.extend({
     marginBottom: 6,
   }),
-  dealsPrice: typography.priceLight,
+  dealsPrice: typography.priceRegular,
   productImage: new Style<View>({
     borderRadius: 10,
     height: 156,

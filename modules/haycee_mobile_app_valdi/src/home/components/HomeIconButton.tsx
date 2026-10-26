@@ -4,7 +4,7 @@ import { Style } from 'valdi_core/src/Style';
 import { Label, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { colors } from '../../design-system/tokens/colors';
 import { layout } from '../../design-system/tokens/spacing';
-import { metropolis } from '../../design-system/tokens/typography';
+import { montserrat } from '../../design-system/tokens/typography';
 
 export interface HomeIconButtonViewModel {
   icon?: Asset;
@@ -46,7 +46,7 @@ const styles = {
   }),
   glyph: new Style<Label>({
     color: colors.iconDefault,
-    font: metropolis.regular(24),
+    font: montserrat.regular(24),
     lineHeight: 1,
   }),
 };

@@ -10,11 +10,12 @@ import { colors } from '../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
-import { fontSize, metropolis, typography, transformText } from '../design-system/tokens/typography';
+import { fontSize, montserrat, typography, transformText } from '../design-system/tokens/typography';
 import { MasonryProduct } from '../design-system/components/MasonryProductCard';
 
 export interface SellerProfileViewModel {
   product: MasonryProduct;
+  sellerProducts?: MasonryProduct[];
 }
 
 interface SellerProfileState {
@@ -31,7 +32,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
   state: SellerProfileState = { activeTab: 0, isFollowing: false };
 
   onCreate(): void {
-    this.state = { activeTab: 0, isFollowing: false };
+    this.state = { activeTab: 0, isFollowing: this.viewModel.product.vendorIsFollowing ?? false };
   }
 
   private handleBack = (): void => {
@@ -74,10 +75,11 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
   }
 
   private renderTabs(): void {
-    const tabs = [
-      { label: 'Produits', count: '1' },
-      { label: 'Shows', count: '3' },
-      { label: 'Posts', count: '4' },
+    const productCount = this.viewModel.sellerProducts?.length;
+    const tabs: Array<{ label: string; count?: string }> = [
+      { label: 'Produits', count: productCount === undefined ? undefined : `${productCount}` },
+      { label: 'Shows' },
+      { label: 'Posts' },
     ];
 
     <layout style={styles.tabsContainer}>
@@ -85,7 +87,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
         {tabs.map((tab, index) => (
           <view key={'seller-tab-' + tab.label} style={styles.tab} onTap={() => this.handleTab(index)} accessibilityCategory="button">
             <label
-              value={tab.label + '  ' + tab.count}
+              value={tab.count ? `${tab.label}  ${tab.count}` : tab.label}
               style={index === this.state.activeTab ? styles.tabLabelActive : styles.tabLabel}
               numberOfLines={1}
             />
@@ -106,11 +108,18 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
       return;
     }
 
+    const sellerProducts = this.viewModel.sellerProducts;
+    const productTiles = sellerProducts
+      ? sellerProducts.slice(0, 3).map(item => ({ id: item.id, title: item.title, price: item.price, color: item.color }))
+      : [product, ...(product.galleryColors ?? []).map((color, index) => ({ ...product, id: `${product.id}-gallery-${index}`, color }))]
+          .slice(0, 3)
+          .map(item => ({ id: item.id, title: item.title, price: item.price, color: item.color }));
+
     <view style={styles.productGrid}>
-      {[product.color, ...(product.galleryColors ?? [])].slice(0, 3).map((color, index) => (
-        <view key={'seller-product-' + index} style={styles.productTile} backgroundColor={color}>
-          <label value={transformText(product.title, 'capitalize')} style={styles.productTileTitle} numberOfLines={2} />
-          <label value={product.price} style={styles.productTilePrice} />
+      {productTiles.map(item => (
+        <view key={'seller-product-' + item.id} style={styles.productTile} backgroundColor={item.color}>
+          <label value={transformText(item.title, 'capitalize')} style={styles.productTileTitle} numberOfLines={2} />
+          <label value={item.price} style={styles.productTilePrice} numberOfLines={1} />
         </view>
       ))}
     </view>;
@@ -140,32 +149,44 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
               <label value={vendorDisplayName} style={styles.displayName} numberOfLines={1} />
               <label value={'@' + this.vendorUsername()} style={styles.vendorHandle} numberOfLines={1} />
               <view style={styles.infoBadges}>
-                <view style={styles.infoBadge}>
-                  <image src={navigationIcons.star} tint="#8B5CF6" width={13} height={13} objectFit="contain" />
-                  <label
-                    value={product.vendorReviewSummary ?? ((product.vendorRating ?? '5') + ' (6)')}
-                    style={styles.infoBadgeLabel}
-                    numberOfLines={1}
-                  />
-                </view>
-                <view style={styles.infoBadgeWithGap}>
-                  <image src={navigationIcons.deliveryTruck02} tint={colors.textSecondary} width={15} height={15} objectFit="contain" />
-                  <label value={product.vendorDispatchTime ?? '24H'} style={styles.infoBadgeLabel} numberOfLines={1} />
-                </view>
-                <view style={styles.infoBadgeWithGap}>
-                  <image src={navigationIcons.sellerDeliveryPlane} tint={colors.textSecondary} width={15} height={15} objectFit="contain" />
-                  <label value={product.vendorDeliveryTime ?? '1.7 Day'} style={styles.infoBadgeLabel} numberOfLines={1} />
-                </view>
+                {product.vendorReviewSummary || product.vendorRating ? (
+                  <view style={styles.infoBadge}>
+                    <image src={navigationIcons.star} tint="#8B5CF6" width={13} height={13} objectFit="contain" />
+                    <label value={product.vendorReviewSummary ?? product.vendorRating ?? ''} style={styles.infoBadgeLabel} numberOfLines={1} />
+                  </view>
+                ) : null}
+                {product.vendorDispatchTime ? (
+                  <view style={styles.infoBadgeWithGap}>
+                    <image src={navigationIcons.deliveryTruck02} tint={colors.textSecondary} width={15} height={15} objectFit="contain" />
+                    <label value={product.vendorDispatchTime} style={styles.infoBadgeLabel} numberOfLines={1} />
+                  </view>
+                ) : null}
+                {product.vendorDeliveryTime ? (
+                  <view style={styles.infoBadgeWithGap}>
+                    <image src={navigationIcons.sellerDeliveryPlane} tint={colors.textSecondary} width={15} height={15} objectFit="contain" />
+                    <label value={product.vendorDeliveryTime} style={styles.infoBadgeLabel} numberOfLines={1} />
+                  </view>
+                ) : null}
               </view>
             </view>
           </view>
           <view style={styles.statsRow}>
             <view style={styles.statsText}>
-              <label value="10" style={styles.statsNumber} />
-              <label value=" following" style={styles.statsLabel} />
-              <label value="  ·  " style={styles.statsSeparator} />
-              <label value="200" style={styles.statsNumber} />
-              <label value=" followers" style={styles.statsLabel} />
+              {product.vendorSalesCount !== undefined ? (
+                <layout style={styles.statItem}>
+                  <label value={formatSellerCount(product.vendorSalesCount)} style={styles.statsNumber} />
+                  <label value=" ventes" style={styles.statsLabel} />
+                </layout>
+              ) : null}
+              {product.vendorSalesCount !== undefined && product.vendorFollowersCount !== undefined ? (
+                <label value="  ·  " style={styles.statsSeparator} />
+              ) : null}
+              {product.vendorFollowersCount !== undefined ? (
+                <layout style={styles.statItem}>
+                  <label value={formatSellerCount(product.vendorFollowersCount)} style={styles.statsNumber} />
+                  <label value=" abonnés" style={styles.statsLabel} />
+                </layout>
+              ) : null}
             </view>
             <view
               style={this.state.isFollowing ? styles.followButtonActive : styles.followButton}
@@ -189,7 +210,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
               </view>
             </view>
           </view>
-          <label value="https://haycee.shop/boutique" style={styles.link} numberOfLines={1} />
+          {product.vendorBio ? <label value={product.vendorBio} style={styles.bio} numberOfLines={4} /> : null}
           {this.renderTabs()}
           {this.renderTabContent()}
         </view>
@@ -247,7 +268,7 @@ const styles = {
   }),
   avatarInitial: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.black(fontSize.display),
+    font: montserrat.black(fontSize.display),
   }),
   profileInfo: new Style<View>({
     flexGrow: 1,
@@ -260,7 +281,7 @@ const styles = {
   }),
   displayName: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.extraBold(fontSize.section),
+    font: montserrat.extraBold(fontSize.section),
     left: 0,
     lineHeight: 1.4,
     position: 'absolute',
@@ -304,8 +325,7 @@ const styles = {
   infoBadgeLabel: new Style<Label>({
     color: colors.textSecondary,
     flexShrink: 1,
-    font: metropolis.semiBold(fontSize.label),
-    letterSpacing: 0.2,
+    font: montserrat.semiBold(fontSize.label),
     marginLeft: spacing.xs,
   }),
   statsRow: new Style<View>({
@@ -319,6 +339,7 @@ const styles = {
     flexDirection: 'row',
     flexShrink: 1,
   }),
+  statItem: new Style<Layout>({ alignItems: 'center', flexDirection: 'row' }),
   statsNumber: typography.bodyEmphasis,
   statsLabel: typography.body,
   statsSeparator: typography.body.extend({
@@ -348,11 +369,11 @@ const styles = {
   }),
   followLabel: new Style<Label>({
     color: colors.textInverted,
-    font: metropolis.bold(fontSize.metadata),
+    font: montserrat.extraBold(fontSize.metadata),
   }),
   followLabelActive: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.bold(fontSize.metadata),
+    font: montserrat.extraBold(fontSize.metadata),
   }),
   followButtonContent: new Style<View>({
     alignItems: 'center',
@@ -361,7 +382,7 @@ const styles = {
   followIcon: new Style<View>({
     marginRight: spacing.sm,
   }),
-  link: typography.body.extend({ marginTop: spacing.xl }),
+  bio: typography.body.extend({ color: colors.textPrimary, marginTop: spacing.xl }),
   tabsContainer: new Style<Layout>({
     marginTop: spacing.xxl,
   }),
@@ -398,11 +419,11 @@ const styles = {
   }),
   productTileTitle: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.bold(fontSize.label),
+    font: montserrat.extraBold(fontSize.label),
   }),
   productTilePrice: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.extraBold(fontSize.product),
+    font: montserrat.extraBold(fontSize.product),
     marginTop: spacing.xs,
   }),
   emptyTab: new Style<View>({
@@ -439,4 +460,10 @@ const styles = {
     justifyContent: 'center',
     width: 40,
   }),
+};
+
+const formatSellerCount = (count: number): string => {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+  return Math.max(0, count).toString();
 };

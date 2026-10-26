@@ -8,6 +8,7 @@ import { colors } from '../design-system/tokens/colors';
 import { layout, spacing } from '../design-system/tokens/spacing';
 import { LiveCategoryFeed } from './components/LiveCategoryFeed';
 import { liveFeedTabs } from './data/LiveFeedData';
+import type { LiveFeedItem } from './data/LiveFeedData';
 
 const swipeTabs: SwipeTabItem[] = liveFeedTabs.map(tab => ({
   id: tab.id,
@@ -17,9 +18,17 @@ const swipeTabs: SwipeTabItem[] = liveFeedTabs.map(tab => ({
 }));
 
 /** Main Live destination: Shellby category pager and a color-panel preview feed. */
-export class LiveHomeScreen extends Component<{}> {
+export interface LiveHomeScreenViewModel {
+  onOpenLive: (item: LiveFeedItem) => void;
+}
+
+export class LiveHomeScreen extends Component<LiveHomeScreenViewModel> {
   private renderPage = (tab: SwipeTabItem, _isActive: boolean, isPrepared: boolean): void => {
-    <LiveCategoryFeed categoryId={tab.id} isPrepared={isPrepared} />;
+    <LiveCategoryFeed
+      categoryId={tab.id}
+      isPrepared={isPrepared}
+      onOpenLive={this.viewModel.onOpenLive}
+    />;
   };
 
   onRender(): void {

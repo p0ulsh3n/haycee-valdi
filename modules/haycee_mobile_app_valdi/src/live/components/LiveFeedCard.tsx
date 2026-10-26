@@ -5,11 +5,14 @@ import navigationIcons from '../../../res/navigation-icons';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { layout, spacing } from '../../design-system/tokens/spacing';
-import { fontSize, lineHeight, metropolis, typography } from '../../design-system/tokens/typography';
+import { fontSize, lineHeight, montserrat, typography } from '../../design-system/tokens/typography';
+import { formatLiveViewerCount } from '../data/LiveFeedData';
 import type { LiveFeedItem } from '../data/LiveFeedData';
+import { LiveNowPlayingIndicator } from './LiveNowPlayingIndicator';
 
 export interface LiveFeedCardViewModel {
   item: LiveFeedItem;
+  onTap: () => void;
 }
 
 /** Shellby-style Live tile, using a Haycee color panel instead of a thumbnail. */
@@ -24,7 +27,12 @@ export class LiveFeedCard extends Component<LiveFeedCardViewModel> {
       .toUpperCase();
     const isUpcoming = item.status === 'upcoming';
 
-    <view style={styles.card}>
+    <view
+      style={styles.card}
+      onTap={this.viewModel.onTap}
+      accessibilityCategory="button"
+      accessibilityLabel={`Ouvrir le live de ${item.hostName}`}
+    >
       <layout style={styles.hostRow}>
         <view style={styles.avatar.extend({ backgroundColor: item.panelColor })}>
           <label style={styles.avatarLabel} value={initials} numberOfLines={1} />
@@ -41,7 +49,7 @@ export class LiveFeedCard extends Component<LiveFeedCardViewModel> {
       >
         <view style={styles.panelTopRow}>
           <view style={isUpcoming ? styles.upcomingBadge : styles.liveBadge}>
-            {!isUpcoming ? <view style={styles.liveDot} /> : null}
+            {!isUpcoming ? <LiveNowPlayingIndicator /> : null}
             <label
               style={isUpcoming ? styles.upcomingLabel : styles.liveLabel}
               value={isUpcoming ? 'BIENTÔT' : 'EN DIRECT'}
@@ -62,7 +70,10 @@ export class LiveFeedCard extends Component<LiveFeedCardViewModel> {
               <view style={styles.viewersIconBacking}>
                 <image src={navigationIcons.userGroup} tint={colors.textInverted} width={15} height={15} objectFit="contain" />
               </view>
-              <label style={styles.viewersLabel} value={`${item.viewers} spectateurs`} numberOfLines={1} />
+              <layout style={styles.viewersText}>
+                <label style={styles.viewersCount} value={formatLiveViewerCount(item.viewers)} numberOfLines={1} />
+                <label style={styles.viewersSuffix} value="spectateurs" numberOfLines={1} />
+              </layout>
             </view>
           )}
         </view>
@@ -99,13 +110,13 @@ const styles = {
   }),
   avatarLabel: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.semiBold(fontSize.micro),
+    font: montserrat.semiBold(fontSize.micro),
   }),
   hostName: typography.caption.extend({
     alignSelf: 'center',
     color: colors.textPrimary,
     flexGrow: 1,
-    font: metropolis.semiBold(fontSize.metadata),
+    font: montserrat.semiBold(fontSize.metadata),
     lineHeight: lineHeight.label / fontSize.metadata,
   }),
   panel: new Style<View>({
@@ -124,10 +135,10 @@ const styles = {
     backgroundColor: colors.backgroundPrimary,
     borderRadius: radius.xs,
     flexDirection: 'row',
-    paddingBottom: spacing.xs,
-    paddingLeft: spacing.sm,
+    paddingBottom: 0,
+    paddingLeft: 0,
     paddingRight: spacing.sm,
-    paddingTop: spacing.xs,
+    paddingTop: 0,
   }),
   upcomingBadge: new Style<View>({
     alignItems: 'center',
@@ -138,22 +149,13 @@ const styles = {
     paddingRight: spacing.sm,
     paddingTop: spacing.xs,
   }),
-  liveDot: new Style<View>({
-    backgroundColor: colors.textDanger,
-    borderRadius: radius.full,
-    height: 6,
-    marginRight: spacing.xs,
-    width: 6,
-  }),
   liveLabel: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.bold(fontSize.nano),
-    letterSpacing: 0.4,
+    font: montserrat.extraBold(fontSize.nano),
   }),
   upcomingLabel: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.bold(fontSize.nano),
-    letterSpacing: 0.4,
+    font: montserrat.extraBold(fontSize.nano),
   }),
   panelCenter: new Style<Layout>({
     alignItems: 'center',
@@ -164,8 +166,7 @@ const styles = {
   }),
   panelCategory: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.extraBold(fontSize.section),
-    letterSpacing: -0.3,
+    font: montserrat.extraBold(fontSize.section),
     textAlign: 'center',
   }),
   panelBottomRow: new Style<Layout>({
@@ -176,12 +177,12 @@ const styles = {
   viewersBadge: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.backgroundPrimary,
-    borderRadius: radius.xs,
+    borderRadius: '11 4 4 11',
     flexDirection: 'row',
-    paddingBottom: spacing.xs,
-    paddingLeft: spacing.xs,
+    paddingBottom: 0,
+    paddingLeft: 0,
     paddingRight: spacing.sm,
-    paddingTop: spacing.xs,
+    paddingTop: 0,
   }),
   viewersIconBacking: new Style<View>({
     alignItems: 'center',
@@ -192,9 +193,18 @@ const styles = {
     marginRight: spacing.xs,
     width: 22,
   }),
-  viewersLabel: new Style<Label>({
+  viewersText: new Style<Layout>({
+    alignItems: 'center',
+    flexDirection: 'row',
+  }),
+  viewersCount: new Style<Label>({
     color: colors.textPrimary,
-    font: metropolis.semiBold(fontSize.metadata),
+    font: montserrat.extraBold(fontSize.metadata),
+  }),
+  viewersSuffix: new Style<Label>({
+    color: colors.textPrimary,
+    font: montserrat.semiBold(fontSize.metadata),
+    marginLeft: spacing.xs,
   }),
   info: new Style<Layout>({
     flexDirection: 'column',
@@ -208,8 +218,7 @@ const styles = {
   }),
   category: new Style<Label>({
     color: colors.textSecondary,
-    font: metropolis.semiBold(fontSize.nano),
-    letterSpacing: 0.6,
+    font: montserrat.semiBold(fontSize.nano),
     marginTop: spacing.xs,
   }),
 };

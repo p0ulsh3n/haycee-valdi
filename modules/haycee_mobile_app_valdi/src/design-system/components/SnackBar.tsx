@@ -7,7 +7,7 @@ import { when } from 'valdi_core/src/utils/When';
 import { colors } from '../tokens/colors';
 import { radius } from '../tokens/radius';
 import { spacing } from '../tokens/spacing';
-import { fontSize, metropolis, transformText, typography, TextCase } from '../tokens/typography';
+import { fontSize, montserrat, transformText, typography, TextCase } from '../tokens/typography';
 
 export type SnackBarType = 'default' | 'success' | 'error' | 'warning';
 
@@ -236,7 +236,7 @@ const styles = {
   }),
   message: typography.headline.extend({
     color: colors.textInverted,
-    font: metropolis.black(fontSize.large),
+    font: montserrat.black(fontSize.large),
     textAlign: 'left',
   }),
   subtitle: typography.caption.extend({
