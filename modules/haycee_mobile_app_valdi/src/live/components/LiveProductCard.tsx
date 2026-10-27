@@ -6,6 +6,7 @@ import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { layout, spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
+import { formatFcfa } from '../../design-system/utils/money';
 import type { LiveViewerProduct } from '../data/LiveViewerData';
 import { LiveProductNameTicker } from './LiveProductNameTicker';
 
@@ -15,9 +16,6 @@ export interface LiveProductCardViewModel {
   active: boolean;
   onBuy: (product: LiveViewerProduct) => void;
 }
-
-const formatLivePrice = (amount: number): string =>
-  `${Math.max(0, Math.floor(amount)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`;
 
 /** One reusable live offer card, including its image, title ticker, and buy action. */
 export class LiveProductCard extends Component<LiveProductCardViewModel> {
@@ -60,10 +58,10 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
             <label value="En stock" style={styles.stockAvailable} numberOfLines={1} />
           )}
           <layout style={styles.priceRow}>
-            <label value={formatLivePrice(product.price)} style={styles.price} numberOfLines={1} />
+            <label value={formatFcfa(product.price)} style={styles.price} numberOfLines={1} />
             {product.originalPrice !== undefined && product.originalPrice > product.price ? (
               <label
-                value={formatLivePrice(product.originalPrice)}
+                value={formatFcfa(product.originalPrice)}
                 style={styles.originalPrice}
                 textDecoration="strikethrough"
                 numberOfLines={1}
@@ -92,7 +90,7 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
           objectFit="contain"
         />
         <label
-          value={`${formatLivePrice(product.shippingAmount)} ${product.shippingLabel}`}
+          value={`${formatFcfa(product.shippingAmount)} ${product.shippingLabel}`}
           style={styles.footerLabel}
           numberOfLines={1}
         />

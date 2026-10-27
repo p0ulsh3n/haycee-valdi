@@ -59,6 +59,8 @@ export const colors = {
   liveControlSurface: 'rgba(255, 255, 255, 0.88)',
   liveChatSurface: 'rgba(255, 255, 255, 0.76)',
   liveIndicatorGradient: `linear-gradient(${palette.red}, ${palette.purple})`,
+  liveWalletStatusDelivered: '#E8EFE8',
+  liveWalletStatusPending: '#F1EDE2',
 
   textPrimary: palette.black,
   textSecondary: palette.gray700,

@@ -2,16 +2,18 @@ import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
 import { NavigationPageComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { NavigationPresentOptions } from 'valdi_navigation/src/NavigationController';
 import { Component } from 'valdi_core/src/Component';
+import { ElementRef } from 'valdi_core/src/ElementRef';
 import { IRenderedElementAttributeApplier } from 'valdi_core/src/IRenderedElementApplier';
 import { Style } from 'valdi_core/src/Style';
-import { DragEvent } from 'valdi_tsx/src/GestureEvents';
+import { DragEvent, ScrollEndEvent } from 'valdi_tsx/src/GestureEvents';
 import { IRenderedElementBase } from 'valdi_tsx/src/IRenderedElementBase';
 import { IRenderedElementHolder } from 'valdi_tsx/src/IRenderedElementHolder';
-import { Label, Layout, SpinnerView, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { Label, Layout, ScrollView, ScrollViewInteractive, SpinnerView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { when } from 'valdi_core/src/utils/When';
 import { colors } from '../tokens/colors';
 import { radius } from '../tokens/radius';
 import { spacing } from '../tokens/spacing';
+import { noBounceScrollAttributes } from '../tokens/scrollBehavior';
 import { transformText, typography, TextCase } from '../tokens/typography';
 
 /**
@@ -78,6 +80,17 @@ export interface BottomSheetFooterViewModel {
   background?: 'transparent' | 'surface';
 }
 
+export interface BottomSheetContentPage {
+  id: string;
+  render: () => void;
+}
+
+export interface BottomSheetContentPagerViewModel {
+  pages: BottomSheetContentPage[];
+  activeIndex: number;
+  onIndexChange?: (index: number) => void;
+}
+
 /** Defaults used by the app's standard bottom-sheet presentation. */
 export const BOTTOM_SHEET_DEFAULTS = {
   showOverlay: false,
@@ -105,6 +118,57 @@ export class BottomSheetFooter extends Component<BottomSheetFooterViewModel> {
         <label value={label} style={footerStyles.label} numberOfLines={1} />
       </view>
     </view>;
+  }
+}
+
+/**
+ * Horizontally paged content for multi-step sheets. It keeps the containing
+ * sheet in place while native paging slides each inner page into view.
+ */
+export class BottomSheetContentPager extends Component<BottomSheetContentPagerViewModel> {
+  private readonly pagesRef = new ElementRef<ScrollViewInteractive>();
+
+  onViewModelUpdate(previous?: Readonly<BottomSheetContentPagerViewModel>): void {
+    if (previous && previous.activeIndex !== this.viewModel.activeIndex) {
+      this.scrollToPage(this.viewModel.activeIndex, true);
+    }
+  }
+
+  private scrollToPage(index: number, animated: boolean): void {
+    const pages = this.pagesRef.single();
+    if (!pages) return;
+
+    const pageWidth = pages.frame.width;
+    if (pageWidth <= 0) return;
+
+    pages.setAttribute('contentOffsetAnimated', animated);
+    pages.setAttribute('contentOffsetX', Math.max(0, index) * pageWidth);
+  }
+
+  private handleScrollEnd = (event: ScrollEndEvent): void => {
+    const pageWidth = this.pagesRef.single()?.frame.width ?? 0;
+    if (pageWidth <= 0) return;
+
+    const index = Math.max(0, Math.min(this.viewModel.pages.length - 1, Math.round(event.x / pageWidth)));
+    if (index !== this.viewModel.activeIndex) this.viewModel.onIndexChange?.(index);
+  };
+
+  onRender(): void {
+    <scroll
+      {...noBounceScrollAttributes}
+      ref={this.pagesRef}
+      style={styles.contentPager}
+      horizontal={true}
+      pagingEnabled={true}
+      showsHorizontalScrollIndicator={false}
+      onScrollEnd={this.handleScrollEnd}
+    >
+      {this.viewModel.pages.map(page => (
+        <view key={page.id} style={styles.contentPage}>
+          {page.render()}
+        </view>
+      ))}
+    </scroll>;
   }
 }
 
@@ -307,6 +371,18 @@ const styles = {
     borderRadius: radius.full,
     height: 5,
     width: 48,
+  }),
+  contentPager: new Style<ScrollView>({
+    flexGrow: 1,
+    flexShrink: 1,
+    width: '100%',
+  }),
+  contentPage: new Style<View>({
+    flexDirection: 'column',
+    flexGrow: 1,
+    flexShrink: 0,
+    height: '100%',
+    width: '100%',
   }),
   message: typography.body.extend({
     color: colors.textSecondary,

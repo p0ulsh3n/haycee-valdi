@@ -11,6 +11,7 @@ import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
 import { fontSize, montserrat, typography, transformText } from '../design-system/tokens/typography';
+import { formatPriceLabel } from '../design-system/utils/money';
 import { MasonryProduct } from '../design-system/components/MasonryProductCard';
 
 export interface SellerProfileViewModel {
@@ -119,7 +120,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
       {productTiles.map(item => (
         <view key={'seller-product-' + item.id} style={styles.productTile} backgroundColor={item.color}>
           <label value={transformText(item.title, 'capitalize')} style={styles.productTileTitle} numberOfLines={2} />
-          <label value={item.price} style={styles.productTilePrice} numberOfLines={1} />
+          <label value={formatPriceLabel(item.price)} style={styles.productTilePrice} numberOfLines={1} />
         </view>
       ))}
     </view>;

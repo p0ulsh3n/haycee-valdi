@@ -1,5 +1,6 @@
 import { HomeProduct } from '../components/HomeProductRail';
 import { HomePromoBanner } from '../components/HomePromoBannerCarousel';
+import { formatPriceLabel } from '../../design-system/utils/money';
 
 /**
  * Stable category identity plus server-friendly display data.
@@ -24,7 +25,7 @@ const product = (
 ): HomeProduct => ({
   id,
   title,
-  price,
+  price: formatPriceLabel(price),
   color,
   ...(galleryColors ? { galleryColors } : {}),
 });

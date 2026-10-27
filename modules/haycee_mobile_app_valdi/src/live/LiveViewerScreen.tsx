@@ -2,25 +2,21 @@ import { Device } from 'valdi_core/src/Device';
 import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
 import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { Style } from 'valdi_core/src/Style';
-import { Asset } from 'valdi_tsx/src/Asset';
-import { EditTextEvent, Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
-import navigationIcons from '../../res/navigation-icons';
+import { EditTextEvent, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { TransientFeedback } from '../design-system/components/SnackBar';
 import { getBottomSheetNavigationOptions } from '../design-system/components/BottomSheet';
 import { colors } from '../design-system/tokens/colors';
+import { formatFcfa } from '../design-system/utils/money';
 import { layout, spacing } from '../design-system/tokens/spacing';
-import { fontSize, montserrat } from '../design-system/tokens/typography';
 import type { MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { SellerProfileScreen } from '../sellers/SellerProfileScreen';
-import { LiveChatFeed } from './components/LiveChatFeed';
-import { LiveCommentComposer } from './components/LiveCommentComposer';
+import { LiveViewerOverlay } from './components/LiveViewerOverlay';
 import { JoinAlert } from './components/JoinAlert';
-import { LiveProductSurface } from './components/LiveProductSurface';
-import { LiveProductQuickAccess } from './components/LiveProductQuickAccess';
 import { LiveProductsSheet } from './components/LiveProductsSheet';
 import { LiveCartSheet } from './components/LiveCartSheet';
 import { LiveRequestSheet } from './components/LiveRequestSheet';
 import { LiveSellerProfileSheet } from './components/LiveSellerProfileSheet';
+import { LiveWalletSheet } from './components/LiveWalletSheet';
 import { LiveViewerHeader } from './components/LiveViewerHeader';
 import type { LiveFeedItem } from './data/LiveFeedData';
 import { createLiveViewerDemoContent } from './data/LiveViewerData';
@@ -112,7 +108,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     const sellerProducts: MasonryProduct[] = (this.demoContent?.products ?? []).map(product => ({
       id: product.id,
       title: product.title,
-      price: product.price.toFixed(2),
+      price: formatFcfa(product.price),
       color: product.color,
       imageUrl: product.imageUrl,
       isLive: true,
@@ -166,7 +162,16 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   };
 
   private handleWallet = (): void => {
-    TransientFeedback.show({ message: 'Le portefeuille sera relié au service de paiement.' });
+    this.navigationController.present(
+      LiveWalletSheet,
+      {},
+      {},
+      {
+        animated: true,
+        wrapInPlatformNavigationController: false,
+        ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
+      },
+    );
   };
 
   private handleProducts = (): void => {
@@ -238,18 +243,6 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     TransientFeedback.show({ message: 'Le partage du live sera relié au service de partage.' });
   };
 
-  private renderActionButton(icon: Asset, label: string, shortLabel: string, onTap: () => void, isActive = false): void {
-    <view
-      style={isActive ? styles.actionButtonActive : styles.actionButton}
-      onTap={onTap}
-      accessibilityCategory="button"
-      accessibilityLabel={label}
-    >
-      <image src={icon} tint={isActive ? colors.interactivePrimary : colors.textInverted} width={19} height={19} objectFit="contain" />
-      <label value={shortLabel} style={styles.actionLabel} numberOfLines={1} />
-    </view>;
-  }
-
   onRender(): void {
     const item = this.viewModel.item;
     const content = this.demoContent;
@@ -272,38 +265,22 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
         <view style={styles.stageCenter} />
 
         {isLive ? (
-          <layout style={styles.liveInteractionArea}>
-            <view style={styles.chatColumn}>
-              <LiveChatFeed messages={this.state.messages} />
-              <view style={styles.composerSlot}>
-                <LiveCommentComposer
-                  value={this.state.commentDraft}
-                  onChange={this.handleDraftChange}
-                  onSend={this.handleSendComment}
-                />
-              </view>
-            </view>
-            <layout style={styles.actionRailVertical}>
-              {this.renderActionButton(navigationIcons.favourite, `J’aime, ${this.state.likeCount}`, 'J’aime', this.handleLike, this.state.isLiked)}
-              {this.renderActionButton(navigationIcons.money03, 'Portefeuille', 'Solde', this.handleWallet)}
-              {this.renderActionButton(navigationIcons.cart, 'Panier du live', 'Panier', this.handleOpenCart)}
-              {content.products.length > 0 ? (
-                this.renderActionButton(navigationIcons.userHandUp01, 'Demander un produit', 'Demander', this.handleOpenRequestSheet)
-              ) : null}
-              {content.products.length > 0 ? (
-                <LiveProductQuickAccess
-                  products={content.products}
-                  onTap={this.handleProducts}
-                />
-              ) : null}
-            </layout>
-          </layout>
+          <LiveViewerOverlay
+            messages={this.state.messages}
+            commentDraft={this.state.commentDraft}
+            likeCount={this.state.likeCount}
+            isLiked={this.state.isLiked}
+            products={content.products}
+            onDraftChange={this.handleDraftChange}
+            onSendComment={this.handleSendComment}
+            onLike={this.handleLike}
+            onWallet={this.handleWallet}
+            onOpenCart={this.handleOpenCart}
+            onOpenRequest={this.handleOpenRequestSheet}
+            onOpenProducts={this.handleProducts}
+            onProductAction={this.handleProductAction}
+          />
         ) : null}
-
-        <LiveProductSurface
-          products={content.products}
-          onProductAction={this.handleProductAction}
-        />
       </view>
 
       {isLive ? (
@@ -332,48 +309,6 @@ const styles = {
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.xxxl,
   }),
-  liveInteractionArea: new Style<Layout>({
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexGrow: 0,
-    flexShrink: 1,
-    marginBottom: spacing.sm,
-    paddingLeft: layout.live.viewer.horizontalPadding,
-    paddingRight: layout.live.viewer.horizontalPadding,
-    paddingTop: spacing.xs,
-  }),
-  chatColumn: new Style<View>({
-    flexGrow: 1,
-    flexShrink: 1,
-    minWidth: 0,
-  }),
-  composerSlot: new Style<View>({ marginTop: spacing.sm, paddingRight: spacing.xxl, width: '100%' }),
-  actionRailVertical: new Style<Layout>({
-    alignItems: 'center',
-    flexDirection: 'column',
-    flexShrink: 0,
-    height: layout.live.viewer.chatHeight + layout.live.viewer.composerHeight + spacing.sm,
-    justifyContent: 'flex-end',
-    marginLeft: spacing.md,
-    width: layout.live.viewer.productQuickAccessSize,
-  }),
-  actionButton: new Style<View>({
-    alignItems: 'center',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    height: 40,
-    marginBottom: spacing.sm,
-    width: 44,
-  }),
-  actionButtonActive: new Style<View>({
-    alignItems: 'center',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    height: 40,
-    marginBottom: spacing.sm,
-    width: 44,
-  }),
-  actionLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.tiny), marginTop: 2 }),
   joinAlertPosition: new Style<View>({
     left: layout.live.viewer.horizontalPadding,
     position: 'absolute',

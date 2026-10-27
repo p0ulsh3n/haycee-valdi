@@ -3,6 +3,14 @@ export { radius } from './tokens/radius';
 export { layout, spacing } from './tokens/spacing';
 export { noBounceScrollAttributes } from './tokens/scrollBehavior';
 export {
+  formatFcfa,
+  formatIntegerWithDotSeparator,
+  formatPriceLabel,
+  normalizeWholeAmountInput,
+  MONEY_GROUP_SEPARATOR,
+} from './utils/money';
+export type { WholeAmountInputResult } from './utils/money';
+export {
   fontSize,
   fontWeight,
   lineHeight,
@@ -34,6 +42,20 @@ export type {
 } from './components/BottomTabsNavigation';
 export { Hairline } from './components/Hairline';
 export type { HairlineOrientation, HairlineViewModel } from './components/Hairline';
+export {
+  BottomSheet,
+  BottomSheetContentPager,
+  BottomSheetFooter,
+  BOTTOM_SHEET_DEFAULTS,
+  bottomSheetSurfaceStyle,
+  getBottomSheetNavigationOptions,
+} from './components/BottomSheet';
+export type {
+  BottomSheetContentPage,
+  BottomSheetContentPagerViewModel,
+  BottomSheetFooterViewModel,
+  BottomSheetViewModel,
+} from './components/BottomSheet';
 export {
   MasonryFeed,
   getMasonryColumnWidth,

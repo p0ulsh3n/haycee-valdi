@@ -41,7 +41,7 @@ export class LiveCategoryFeed extends Component<LiveCategoryFeedViewModel> {
           <view
             key={item.id}
             style={styles.cell.extend({
-              marginRight: index % 2 === 0 ? columnGap : 0,
+              marginRight: index % 2 === 0 && index + 1 < items.length ? columnGap : 0,
               marginBottom: layout.live.cardRowGap,
               width: cardWidth,
             })}
@@ -70,6 +70,7 @@ const styles = {
     alignItems: 'flex-start',
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     width: '100%',
   }),
   cell: new Style<View>({

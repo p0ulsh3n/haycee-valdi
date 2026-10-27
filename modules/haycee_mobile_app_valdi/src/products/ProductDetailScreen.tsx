@@ -16,6 +16,7 @@ import { ImageCarousel } from '../design-system/components/ImageCarousel';
 import { TransientFeedback } from '../design-system/components/SnackBar';
 import { colors } from '../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
+import { formatPriceLabel } from '../design-system/utils/money';
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
 import { fontSize, montserrat, typography, transformText } from '../design-system/tokens/typography';
@@ -76,7 +77,7 @@ class ProductRecommendationTile extends Component<{ product: MasonryProduct }> {
         {product.imageUrl ? <image src={product.imageUrl} width="100%" height="100%" objectFit="cover" /> : null}
       </view>
       <label value={transformText(product.title, 'capitalize')} style={styles.recommendationTitle} numberOfLines={2} />
-      <label value={product.price} style={styles.recommendationPrice} numberOfLines={1} />
+      <label value={formatPriceLabel(product.price)} style={styles.recommendationPrice} numberOfLines={1} />
     </view>;
   }
 }
@@ -628,9 +629,9 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
           />
 
           <layout style={styles.priceRow}>
-            <label value={product.price} style={styles.price} />
+            <label value={formatPriceLabel(product.price)} style={styles.price} />
             {product.originalPrice ? (
-              <label value={product.originalPrice} style={styles.originalPrice} />
+              <label value={formatPriceLabel(product.originalPrice)} style={styles.originalPrice} />
             ) : null}
             {discount ? (
               <view style={styles.discountBadge}>

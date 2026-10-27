@@ -1,42 +1,19 @@
-import { StatefulComponent } from 'valdi_core/src/Component';
+import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { colors } from '../../design-system/tokens/colors';
 import { spacing } from '../../design-system/tokens/spacing';
 
-interface LiveNowPlayingIndicatorState {
-  frame: number;
-}
+const BAR_HEIGHTS: readonly [number, number, number] = [8, 13, 10];
 
-const BAR_HEIGHTS: ReadonlyArray<readonly [number, number, number]> = [
-  [8, 13, 10],
-  [13, 9, 14],
-  [9, 14, 7],
-  [12, 8, 12],
-];
-
-/** Native equalizer motion matching now-playing.svg; Valdi rasterizes SVG resources. */
-export class LiveNowPlayingIndicator extends StatefulComponent<{}, LiveNowPlayingIndicatorState> {
-  state: LiveNowPlayingIndicatorState = { frame: 0 };
-
-  onCreate(): void {
-    const timerId = setInterval(() => {
-      if (this.isDestroyed()) return;
-
-      const nextFrame = (this.state.frame + 1) % BAR_HEIGHTS.length;
-      this.setStateAnimated({ frame: nextFrame }, { duration: 0.42 });
-    }, 500);
-    this.registerDisposable(() => clearInterval(timerId));
-  }
-
+/** Static equalizer badge used during Live crash isolation; no per-card timer or state churn. */
+export class LiveNowPlayingIndicator extends Component<{}> {
   onRender(): void {
-    const heights = BAR_HEIGHTS[this.state.frame];
-
     <view style={styles.backing}>
       <layout style={styles.bars}>
-        <view style={styles.bar.extend({ height: heights[0] })} />
-        <view style={styles.bar.extend({ height: heights[1] })} />
-        <view style={styles.lastBar.extend({ height: heights[2] })} />
+        <view style={styles.bar.extend({ height: BAR_HEIGHTS[0] })} />
+        <view style={styles.bar.extend({ height: BAR_HEIGHTS[1] })} />
+        <view style={styles.lastBar.extend({ height: BAR_HEIGHTS[2] })} />
       </layout>
     </view>;
   }

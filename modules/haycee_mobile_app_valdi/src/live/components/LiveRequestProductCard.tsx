@@ -7,6 +7,7 @@ import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
+import { formatFcfa } from '../../design-system/utils/money';
 import type { LiveViewerProduct } from '../data/LiveViewerData';
 
 export interface LiveRequestProductCardViewModel {
@@ -16,9 +17,6 @@ export interface LiveRequestProductCardViewModel {
   requested: boolean;
   onRequest: (product: LiveViewerProduct) => void;
 }
-
-const formatPrice = (amount: number): string =>
-  `${Math.max(0, Math.floor(amount)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`;
 
 /** Request action and product details rendered inside the Live two-column grid. */
 export class LiveRequestProductCard extends Component<LiveRequestProductCardViewModel> {
@@ -70,7 +68,7 @@ export class LiveRequestProductCard extends Component<LiveRequestProductCardView
         ) : null}
       </view>
       <label value={product.title} style={styles.title} numberOfLines={1} />
-      <label value={formatPrice(product.price)} style={styles.price} numberOfLines={1} />
+      <label value={formatFcfa(product.price)} style={styles.price} numberOfLines={1} />
     </view>;
   }
 }

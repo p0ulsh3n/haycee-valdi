@@ -8,6 +8,7 @@ import navigationIcons from '../../../res/navigation-icons';
 import { getMasonryImageAspectRatio } from './MasonryFeed';
 import { colors } from '../tokens/colors';
 import { fontSize, montserrat, typography, transformText } from '../tokens/typography';
+import { formatPriceLabel } from '../utils/money';
 
 export interface MasonryProduct {
   id: string;
@@ -296,8 +297,8 @@ export class MasonryProductCard extends StatefulComponent<
       <layout style={styles.infoContainer}>
         <label value={title} style={styles.title} numberOfLines={2} />
         <layout style={styles.priceRow}>
-          <label value={product.price} style={styles.price} />
-          {product.originalPrice ? <label value={product.originalPrice} style={styles.originalPrice} /> : null}
+          <label value={formatPriceLabel(product.price)} style={styles.price} />
+          {product.originalPrice ? <label value={formatPriceLabel(product.originalPrice)} style={styles.originalPrice} /> : null}
           {discount ? (
             <view style={styles.discountBadge}>
               <label value={discount} style={styles.discountText} />

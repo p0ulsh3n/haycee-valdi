@@ -11,6 +11,7 @@ import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
+import { formatFcfa } from '../../design-system/utils/money';
 import type { LiveViewerCartItem } from '../data/LiveViewerData';
 
 export interface LiveCartSheetViewModel {
@@ -22,9 +23,6 @@ export interface LiveCartSheetViewModel {
 interface LiveCartSheetState {
   cartItems: LiveViewerCartItem[];
 }
-
-const formatPrice = (amount: number): string =>
-  `${Math.max(0, Math.floor(amount)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`;
 
 /** Live-only cart sheet presented from the cart icon in the product sheet. */
 @NavigationPage(module)
@@ -57,7 +55,7 @@ export class LiveCartSheet extends NavigationPageStatefulComponent<LiveCartSheet
       </view>
       <layout style={styles.itemInfo}>
         <label value={product.title} style={styles.itemTitle} numberOfLines={1} />
-        <label value={formatPrice(product.price)} style={styles.itemPrice} numberOfLines={1} />
+        <label value={formatFcfa(product.price)} style={styles.itemPrice} numberOfLines={1} />
       </layout>
       <layout style={styles.quantityControl}>
         <view style={styles.quantityButton} onTap={() => this.updateQuantity(product.id, -1)} accessibilityCategory="button" accessibilityLabel="Diminuer la quantité">
@@ -124,7 +122,7 @@ export class LiveCartSheet extends NavigationPageStatefulComponent<LiveCartSheet
             <Hairline color={colors.borderDefault} />
             <layout style={styles.summary}>
               <label value="TOTAL" style={styles.totalLabel} numberOfLines={1} />
-              <label value={formatPrice(total)} style={styles.totalValue} numberOfLines={1} />
+              <label value={formatFcfa(total)} style={styles.totalValue} numberOfLines={1} />
             </layout>
           </layout>
         ) : null}

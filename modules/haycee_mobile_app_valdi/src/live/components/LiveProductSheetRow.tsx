@@ -6,6 +6,7 @@ import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
+import { formatFcfa } from '../../design-system/utils/money';
 import type { LiveViewerProduct } from '../data/LiveViewerData';
 
 export interface LiveProductSheetRowViewModel {
@@ -14,9 +15,6 @@ export interface LiveProductSheetRowViewModel {
   onAdd: (product: LiveViewerProduct) => void;
   onBuy: (product: LiveViewerProduct) => void;
 }
-
-const formatPrice = (amount: number): string =>
-  `${Math.max(0, Math.floor(amount)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`;
 
 /** Dense product row matching Shellby's Live product-list sheet. */
 export class LiveProductSheetRow extends Component<LiveProductSheetRowViewModel> {
@@ -66,10 +64,10 @@ export class LiveProductSheetRow extends Component<LiveProductSheetRowViewModel>
 
         <layout style={styles.priceAndActions}>
           <layout style={styles.priceBlock}>
-            <label value={formatPrice(product.price)} style={styles.price} numberOfLines={1} />
+            <label value={formatFcfa(product.price)} style={styles.price} numberOfLines={1} />
             {product.originalPrice !== undefined && product.originalPrice > product.price ? (
               <label
-                value={formatPrice(product.originalPrice)}
+                value={formatFcfa(product.originalPrice)}
                 style={styles.originalPrice}
                 textDecoration="strikethrough"
                 numberOfLines={1}

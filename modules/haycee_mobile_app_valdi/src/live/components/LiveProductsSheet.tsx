@@ -37,7 +37,12 @@ export class LiveProductsSheet extends NavigationPageStatefulComponent<LiveProdu
     this.state = { cartItems: this.viewModel.cartItems };
   }
 
-  private close = (): void => this.navigationController.dismiss(true);
+  private close = (): void => {
+    // Valdi's animated modal pop reads the parent NavigationView frame. That
+    // container can already be detached in this Live overlay stack, so skip
+    // that transition path and dismiss the modal without animation.
+    this.navigationController.dismiss(false);
+  };
 
   private updateCart = (cartItems: LiveViewerCartItem[]): void => {
     this.setState({ cartItems });

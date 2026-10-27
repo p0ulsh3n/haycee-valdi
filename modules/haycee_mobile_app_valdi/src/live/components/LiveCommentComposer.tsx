@@ -11,6 +11,8 @@ export interface LiveCommentComposerViewModel {
   value: string;
   onChange: (event: EditTextEvent) => void;
   onSend: () => void;
+  onInputBegin: () => void;
+  onInputEnd: () => void;
 }
 
 /** Standalone live comment composer; action icons remain siblings to its right. */
@@ -23,9 +25,13 @@ export class LiveCommentComposer extends Component<LiveCommentComposerViewModel>
         placeholderColor={colors.textOnDarkSecondary}
         value={this.viewModel.value}
         onChange={this.viewModel.onChange}
+        onEditBegin={this.viewModel.onInputBegin}
+        onEditEnd={this.viewModel.onInputEnd}
         onReturn={this.viewModel.onSend}
+        contentType="default"
         returnKeyText="send"
         characterLimit={200}
+        autocapitalization="sentences"
         autocorrection="none"
       />
       {this.viewModel.value.trim().length > 0 ? (

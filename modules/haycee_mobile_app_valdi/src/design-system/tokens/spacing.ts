@@ -129,6 +129,9 @@ export const layout = {
       productTickerHoldMilliseconds: 900,
       productTickerSpeed: 36,
       productTickerResetMilliseconds: 700,
+      wallet: {
+        tabHeight: 44,
+      },
     },
   },
 } as const;

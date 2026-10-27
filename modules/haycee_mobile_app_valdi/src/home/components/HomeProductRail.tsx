@@ -6,6 +6,7 @@ import { MasonryProduct } from '../../design-system/components/MasonryProductCar
 import { colors } from '../../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import { layout } from '../../design-system/tokens/spacing';
+import { formatPriceLabel } from '../../design-system/utils/money';
 import { montserrat, typography, transformText } from '../../design-system/tokens/typography';
 import { HomeSectionHeader } from './HomeSectionHeader';
 
@@ -41,7 +42,7 @@ class HomeProductCard extends Component<HomeProductCardViewModel> {
         <view style={styles.trendingImage.extend({ backgroundColor: this.viewModel.color })} />
         <view style={styles.trendingOverlay}>
           <label style={styles.trendingTitle} value={transformText(productTitle, 'upper')} numberOfLines={1} />
-          <label style={styles.trendingPrice} value={this.viewModel.price} />
+          <label style={styles.trendingPrice} value={formatPriceLabel(this.viewModel.price)} />
         </view>
       </view>;
       return;
@@ -56,7 +57,7 @@ class HomeProductCard extends Component<HomeProductCardViewModel> {
         <view style={styles.dealsImage.extend({ backgroundColor: this.viewModel.color })} />
         <layout style={styles.dealsContent}>
           <label style={styles.dealsTitle} value={productTitle} numberOfLines={2} />
-          <label style={styles.dealsPrice} value={this.viewModel.price} />
+          <label style={styles.dealsPrice} value={formatPriceLabel(this.viewModel.price)} />
         </layout>
       </view>;
       return;
@@ -65,7 +66,7 @@ class HomeProductCard extends Component<HomeProductCardViewModel> {
     <view style={styles.flashCard} onTap={this.viewModel.onTap} accessibilityCategory="button">
       <view style={styles.flashImage.extend({ backgroundColor: this.viewModel.color })} />
       <layout style={styles.flashContent}>
-        <label style={styles.flashPrice} value={this.viewModel.price} />
+        <label style={styles.flashPrice} value={formatPriceLabel(this.viewModel.price)} />
       </layout>
     </view>;
   }
