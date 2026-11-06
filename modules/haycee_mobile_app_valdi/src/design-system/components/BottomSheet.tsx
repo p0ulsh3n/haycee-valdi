@@ -397,5 +397,5 @@ const styles = {
     marginTop: spacing.xxl,
     minHeight: 48,
   }),
-  closeButtonLabel: typography.button,
+  closeButtonLabel: typography.button.extend({ color: colors.textBrand }),
 };

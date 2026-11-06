@@ -33,16 +33,20 @@ export interface MasonryProduct {
   category?: string;
   /** Seller display name shown above the @username on storefronts. */
   vendorName?: string;
-  /** Seller account username, kept separate from the display name. */
+  /** Seller account username (max 30 characters), separate from the display name. */
   vendorUsername?: string;
   vendorId?: string;
   vendorAvatarUrl?: string;
+  /** Optional seller storefront cover image used behind the profile header. */
+  vendorCoverImageUrl?: string;
   vendorRating?: string;
   /** Seller rating summary, for example "5 (6)" in the seller profile badges. */
   vendorReviewSummary?: string;
   vendorSalesCount?: number;
   vendorFollowersCount?: number;
   vendorBio?: string;
+  /** ISO 3166-1 alpha-2 seller country code, for example FR or CI. */
+  vendorCountryCode?: string;
   vendorCountry?: string;
   vendorCity?: string;
   vendorVerified?: boolean;
@@ -285,7 +289,7 @@ export class MasonryProductCard extends StatefulComponent<
                   ? navigationIcons.shoppingCartCheck02
                   : navigationIcons.add02
               }
-              tint={colors.textPrimary}
+              tint={colors.textInverted}
               width={18}
               height={18}
               objectFit="contain"

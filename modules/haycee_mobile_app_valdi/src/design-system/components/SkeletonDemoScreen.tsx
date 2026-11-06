@@ -107,7 +107,7 @@ const styles = {
     justifyContent: 'center',
     width: 64,
   }),
-  avatarLabel: typography.title2,
+  avatarLabel: typography.title2.extend({ color: colors.textInverted }),
   contentTitle: typography.title2.extend({ textAlign: 'center' }),
   contentMessage: typography.message.extend({ color: colors.textSecondary, textAlign: 'center' }),
 };

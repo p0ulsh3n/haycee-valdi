@@ -7,10 +7,13 @@ import { TransientFeedback } from '../design-system/components/SnackBar';
 import { getBottomSheetNavigationOptions } from '../design-system/components/BottomSheet';
 import { colors } from '../design-system/tokens/colors';
 import { formatFcfa } from '../design-system/utils/money';
+import { normalizeUsername } from '../design-system/utils/identity';
 import { layout, spacing } from '../design-system/tokens/spacing';
 import type { MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { SellerProfileScreen } from '../sellers/SellerProfileScreen';
+import { createDemoSellerLiveItems, createDemoSellerStoreProducts } from '../sellers/data/SellerStorefrontData';
 import { LiveViewerOverlay } from './components/LiveViewerOverlay';
+import { UpcomingLiveScreen } from './UpcomingLiveScreen';
 import { JoinAlert } from './components/JoinAlert';
 import { LiveProductsSheet } from './components/LiveProductsSheet';
 import { LiveCartSheet } from './components/LiveCartSheet';
@@ -73,6 +76,10 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     this.navigationController.pop();
   };
 
+  private handleOpenLiveItem = (item: LiveFeedItem): void => {
+    this.navigationController.push(LiveViewerScreen, { item }, {}, { animated: true });
+  };
+
   private handleLike = (): void => {
     const isLiked = !this.state.isLiked;
     this.setState({
@@ -105,22 +112,25 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
 
   private handleOpenSellerStore = (): void => {
     const item = this.viewModel.item;
-    const sellerProducts: MasonryProduct[] = (this.demoContent?.products ?? []).map(product => ({
+    const liveProducts: MasonryProduct[] = (this.demoContent?.products ?? []).map((product, index) => ({
       id: product.id,
       title: product.title,
       price: formatFcfa(product.price),
       color: product.color,
       imageUrl: product.imageUrl,
+      category: ['mode', 'sacs', 'bijoux'][index % 3],
       isLive: true,
       vendorName: item.hostName,
-      vendorUsername: item.hostName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      vendorUsername: normalizeUsername(item.hostName.toLowerCase().replace(/[^a-z0-9]/g, '')),
       vendorId: item.id,
       vendorAvatarUrl: item.vendorAvatarUrl,
+      vendorCoverImageUrl: item.vendorCoverImageUrl,
       vendorRating: item.vendorRating,
       vendorReviewSummary: item.vendorReviewSummary,
       vendorSalesCount: item.vendorSalesCount,
       vendorFollowersCount: item.vendorFollowersCount,
       vendorBio: item.vendorBio,
+      vendorCountryCode: item.vendorCountryCode,
       vendorCountry: item.vendorCountry,
       vendorCity: item.vendorCity,
       vendorVerified: item.vendorVerified,
@@ -128,11 +138,49 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
       vendorDispatchTime: item.vendorDispatchTime,
       vendorDeliveryTime: item.vendorDeliveryTime,
     }));
+    const sellerProducts = liveProducts.length > 0
+      ? [...liveProducts, ...createDemoSellerStoreProducts(liveProducts[0])]
+      : [];
     const firstProduct = sellerProducts[0];
     if (!firstProduct) return;
+    const sellerLiveItems: LiveFeedItem[] = [
+      {
+        ...item,
+        id: `${item.id}-seller-live`,
+      },
+      {
+        ...item,
+        id: `${item.id}-seller-upcoming`,
+        title: `Prochain live de ${item.hostName}`,
+        category: item.category,
+        status: 'upcoming',
+        viewers: 0,
+        presentationType: 'showcase',
+        panelColor: colors.livePanelLavender,
+        scheduledAtLabel: 'DEMAIN · 18:00',
+        badges: [{ id: 'exclusive', label: 'EXCLUSIF', variant: 'exclusive' }],
+      },
+      ...createDemoSellerLiveItems(firstProduct).slice(2),
+    ];
     this.navigationController.push(
       SellerProfileScreen,
-      { product: firstProduct, sellerProducts },
+      {
+        product: firstProduct,
+        sellerProducts,
+        sellerLiveItems,
+        onOpenLive: (sellerLiveItem: LiveFeedItem) => {
+          if (sellerLiveItem.status === 'upcoming') {
+            this.navigationController.push(
+              UpcomingLiveScreen,
+              { item: sellerLiveItem, onOpenLive: this.handleOpenLiveItem },
+              {},
+              { animated: true },
+            );
+            return;
+          }
+          this.navigationController.push(LiveViewerScreen, { item: sellerLiveItem }, {}, { animated: true });
+        },
+      },
       {},
       { animated: true },
     );

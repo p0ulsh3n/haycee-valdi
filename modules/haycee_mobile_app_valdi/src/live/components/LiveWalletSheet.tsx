@@ -133,7 +133,7 @@ export class LiveWalletSheet extends NavigationPageStatefulComponent<{}, LiveWal
             <label value="Ajouter des fonds" style={styles.addFundsLabel} numberOfLines={1} />
           </view>
           <view style={styles.openHistoryButton} onTap={() => this.selectTab('history')} accessibilityCategory="button" accessibilityLabel="Voir l’historique des transactions et commandes">
-            <image src={navigationIcons.moneyExchange02} tint={colors.textSecondary} width={19} height={19} objectFit="contain" />
+            <image src={navigationIcons.moneyExchange02} tint={colors.textInverted} width={19} height={19} objectFit="contain" />
             <label value="Transactions" style={styles.openHistoryLabel} numberOfLines={1} />
           </view>
         </layout>
@@ -229,7 +229,7 @@ export class LiveWalletSheet extends NavigationPageStatefulComponent<{}, LiveWal
               accessibilityCategory="button"
               accessibilityLabel={`Choisir ${method.label}`}
             >
-              <view style={styles.paymentMethodIcon}>
+              <view style={this.state.selectedPaymentMethod === method.id ? styles.paymentMethodIconSelected : styles.paymentMethodIcon}>
                 <image src={navigationIcons.money03} tint={this.state.selectedPaymentMethod === method.id ? colors.iconBrand : colors.textSecondary} width={20} height={20} objectFit="contain" />
               </view>
               <label value={method.label} style={this.state.selectedPaymentMethod === method.id ? styles.paymentMethodLabelSelected : styles.paymentMethodLabel} numberOfLines={2} />
@@ -399,8 +399,8 @@ const styles = {
   walletActions: new Style<Layout>({ flexDirection: 'row', marginBottom: spacing.lg, width: '100%' }),
   addFundsButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundBrand, borderRadius: radius.full, flexDirection: 'column', flexGrow: 1, flexShrink: 1, height: 60, justifyContent: 'center', marginRight: spacing.xs, paddingLeft: spacing.sm, paddingRight: spacing.sm }),
   addFundsLabel: new Style<Label>({ color: colors.textBrand, font: montserrat.semiBold(fontSize.metadata), marginTop: spacing.xs, textAlign: 'center' }),
-  openHistoryButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, flexDirection: 'column', flexGrow: 1, flexShrink: 1, height: 60, justifyContent: 'center', marginLeft: spacing.xs, paddingLeft: spacing.sm, paddingRight: spacing.sm }),
-  openHistoryLabel: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.metadata), marginTop: spacing.xs, textAlign: 'center' }),
+  openHistoryButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonSecondary, borderRadius: radius.full, flexDirection: 'column', flexGrow: 1, flexShrink: 1, height: 60, justifyContent: 'center', marginLeft: spacing.xs, paddingLeft: spacing.sm, paddingRight: spacing.sm }),
+  openHistoryLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.metadata), marginTop: spacing.xs, textAlign: 'center' }),
   topUpPage: new Style<Layout>({ flexDirection: 'column', flexGrow: 1, flexShrink: 1, width: '100%' }),
   topUpContent: new Style<Layout>({ flexDirection: 'column', flexGrow: 1, flexShrink: 1, paddingBottom: spacing.md, paddingTop: spacing.md }),
   topUpBalanceCard: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.lg, flexDirection: 'column', marginBottom: spacing.xl, paddingBottom: spacing.lg, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.lg, width: '100%' }),
@@ -420,6 +420,7 @@ const styles = {
   paymentMethod: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.md, flexDirection: 'column', height: 94, justifyContent: 'center', marginRight: spacing.sm, paddingLeft: spacing.md, paddingRight: spacing.md, width: 132 }),
   paymentMethodSelected: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundBrand, borderRadius: radius.md, flexDirection: 'column', height: 94, justifyContent: 'center', marginRight: spacing.sm, paddingLeft: spacing.md, paddingRight: spacing.md, width: 132 }),
   paymentMethodIcon: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundPrimary, borderRadius: radius.full, height: 36, justifyContent: 'center', marginBottom: spacing.xs, width: 36 }),
+  paymentMethodIconSelected: new Style<View>({ alignItems: 'center', backgroundColor: 'transparent', borderRadius: radius.full, height: 36, justifyContent: 'center', marginBottom: spacing.xs, width: 36 }),
   paymentMethodLabel: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.metadata), textAlign: 'center' }),
   paymentMethodLabelSelected: new Style<Label>({ color: colors.textBrand, font: montserrat.extraBold(fontSize.metadata), textAlign: 'center' }),
   topUpFooter: new Style<View>({ backgroundColor: colors.backgroundPrimary, flexShrink: 0, paddingBottom: spacing.md, paddingTop: spacing.md, width: '100%' }),

@@ -16,6 +16,7 @@ import {
 } from 'valdi_tsx/src/NativeTemplateElements';
 import { StatefulComponent } from 'valdi_core/src/Component';
 import { DSButton } from './DSButton';
+import { Hairline } from './Hairline';
 import { SkeletonView } from './SkeletonView';
 import { colors } from '../tokens/colors';
 import { noBounceScrollAttributes } from '../tokens/scrollBehavior';
@@ -46,12 +47,33 @@ export interface SwipeTabItem {
 
 export type SwipeTabStatus = 'ready' | 'loading' | 'empty' | 'error';
 
+/** Shares continuous page-swipe progress between a pager and its sticky tab-rail mirror. */
+export class SwipeTabsProgressChannel {
+  private listeners: Array<(position: number) => void> = [];
+  private currentPosition = 0;
+
+  subscribe(listener: (position: number) => void): () => void {
+    this.listeners.push(listener);
+    listener(this.currentPosition);
+    return () => {
+      this.listeners = this.listeners.filter(current => current !== listener);
+    };
+  }
+
+  publish(position: number): void {
+    this.currentPosition = position;
+    this.listeners.slice().forEach(listener => listener(position));
+  }
+}
+
 export interface SwipeTabsViewModel {
   tabs: SwipeTabItem[];
   /** Hides tab labels and centers the icons while keeping the swipe behavior. */
   iconOnly?: boolean;
   /** Renders only the horizontal tab rail, without the associated content pages. */
   showPages?: boolean;
+  /** Overrides whether the tab rail itself scrolls horizontally. */
+  scrollableTabs?: boolean;
   /** Width of each item when the component is used as a horizontal tab rail. */
   tabItemWidth?: number;
   /** Minimum height of each tab item. */
@@ -60,6 +82,10 @@ export interface SwipeTabsViewModel {
   strongLabels?: boolean;
   /** Active indicator color. */
   indicatorColor?: string;
+  /** Adds the shared one-physical-pixel divider below the tab rail. */
+  showHairline?: boolean;
+  /** Optional color for the divider; defaults to the design-system border color. */
+  hairlineColor?: string;
   /** Width of the active indicator as a ratio of its tab width. */
   activeIndicatorWidthRatio?: number;
   /** Custom page renderer used when the tab content is supplied by the caller. */
@@ -67,6 +93,10 @@ export interface SwipeTabsViewModel {
   /** Defaults to `upper` for all tab and page text. */
   textCase?: TextCase;
   initialIndex?: number;
+  /** Controlled active page, used when multiple tab rails mirror one pager. */
+  activeIndex?: number;
+  /** Optional continuous swipe progress shared with a sticky mirror rail. */
+  progressChannel?: SwipeTabsProgressChannel;
   onIndexChange?: (index: number) => void;
 }
 
@@ -106,9 +136,43 @@ export class SwipeTabs extends StatefulComponent<SwipeTabsViewModel, SwipeTabsSt
   private readonly tabBarRef = new SingleElementHolder<ScrollViewInteractive>();
   private readonly indicatorRef = new SingleElementHolder<View>();
   private indicatorPosition = 0;
+  private unsubscribeProgress?: () => void;
 
   onCreate(): void {
-    this.setActiveIndex(this.clampIndex(this.viewModel.initialIndex ?? 0), false);
+    this.setActiveIndex(this.clampIndex(this.viewModel.activeIndex ?? this.viewModel.initialIndex ?? 0), false);
+    this.subscribeToProgressChannel();
+  }
+
+  onViewModelUpdate(previous?: SwipeTabsViewModel): void {
+    if (previous?.progressChannel !== this.viewModel.progressChannel) {
+      this.subscribeToProgressChannel();
+    }
+
+    const activeIndex = this.viewModel.activeIndex;
+    if (activeIndex === undefined || activeIndex === previous?.activeIndex) {
+      return;
+    }
+
+    this.setActiveIndex(activeIndex, false);
+    if (this.viewModel.showPages !== false) {
+      this.pagesRef.current?.setAttribute('contentOffsetX', this.clampIndex(activeIndex) * Device.getWindowWidth());
+    }
+  }
+
+  onDestroy(): void {
+    this.unsubscribeProgress?.();
+  }
+
+  private subscribeToProgressChannel(): void {
+    this.unsubscribeProgress?.();
+    this.unsubscribeProgress = undefined;
+    if (this.viewModel.showPages !== false || !this.viewModel.progressChannel) {
+      return;
+    }
+
+    this.unsubscribeProgress = this.viewModel.progressChannel.subscribe(position => {
+      this.setIndicatorPosition(position);
+    });
   }
 
   private clampIndex(index: number): number {
@@ -201,6 +265,7 @@ export class SwipeTabs extends StatefulComponent<SwipeTabsViewModel, SwipeTabsSt
     const indicatorPosition = Math.max(0, Math.min(maxPage, event.x / pageWidth));
     this.setIndicatorPosition(indicatorPosition);
     this.centerActiveTab(indicatorPosition, false);
+    this.viewModel.progressChannel?.publish(indicatorPosition);
   };
 
   private handleScrollEnd = (event: ScrollEndEvent): void => {
@@ -356,7 +421,8 @@ export class SwipeTabs extends StatefulComponent<SwipeTabsViewModel, SwipeTabsSt
     const iconOnly = this.viewModel.iconOnly ?? false;
     const showPages = this.viewModel.showPages ?? true;
     const tabWidth = this.getTabWidth();
-    const scrollableTabBar = this.viewModel.tabItemWidth !== undefined || !showPages;
+    const scrollableTabBar = this.viewModel.scrollableTabs
+      ?? (this.viewModel.tabItemWidth !== undefined || !showPages);
     const tabHeight = this.viewModel.tabHeight ?? 64;
     const labelTypography = this.viewModel.strongLabels ? typography.homeTabLabel : typography.tabLabel;
 
@@ -393,7 +459,7 @@ export class SwipeTabs extends StatefulComponent<SwipeTabsViewModel, SwipeTabsSt
         </layout>
       )}
 
-      {showPages && !scrollableTabBar ? <view style={styles.indicatorTrack}>
+      {!scrollableTabBar ? <view style={styles.indicatorTrack}>
         <view
           ref={this.indicatorRef}
           style={styles.activeIndicator.extend({
@@ -405,6 +471,8 @@ export class SwipeTabs extends StatefulComponent<SwipeTabsViewModel, SwipeTabsSt
           })}
         />
       </view> : null}
+
+      {this.viewModel.showHairline ? <Hairline color={this.viewModel.hairlineColor} /> : null}
 
       {showPages ? <scroll
         {...noBounceScrollAttributes}

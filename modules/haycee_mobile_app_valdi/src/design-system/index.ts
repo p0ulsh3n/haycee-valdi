@@ -42,6 +42,18 @@ export type {
 } from './components/BottomTabsNavigation';
 export { Hairline } from './components/Hairline';
 export type { HairlineOrientation, HairlineViewModel } from './components/Hairline';
+export { DSBadge } from './components/DSBadge';
+export type { DSBadgeVariant, DSBadgeViewModel } from './components/DSBadge';
+export { TabChips } from './components/TabChips';
+export type { TabChipItem, TabChipsViewModel } from './components/TabChips';
+export { Ticker } from './components/Ticker';
+export type {
+  TickerDirection,
+  TickerMode,
+  TickerOrientation,
+  TickerRotateTransition,
+  TickerViewModel,
+} from './components/Ticker';
 export {
   BottomSheet,
   BottomSheetContentPager,

@@ -1,5 +1,6 @@
 import type { LiveFeedItem, LivePresentationType } from './LiveFeedData';
 import { colors } from '../../design-system/tokens/colors';
+import { normalizeUsername } from '../../design-system/utils/identity';
 
 export interface LiveViewerMessage {
   id: string;
@@ -108,7 +109,9 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
   products: [
     {
       id: `${item.id}-product-1`,
-      title: item.presentationType === 'auction' ? 'Pièce en enchère' : 'Sélection du moment',
+      title: item.presentationType === 'auction'
+        ? 'Montre chronographe automatique édition limitée en acier inoxydable avec cadran noir, bracelet premium et verre saphir'
+        : 'Sac bandoulière en cuir grainé avec chaîne dorée',
       price: item.presentationType === 'auction' ? 18500 : 24900,
       originalPrice: item.presentationType === 'auction' ? undefined : 29900,
       stockLeft: item.presentationType === 'auction' ? 3 : 4,
@@ -121,7 +124,7 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
     },
     {
       id: `${item.id}-product-2`,
-      title: 'La découverte du live',
+      title: 'Sac à main vintage en cuir véritable avec détails métalliques',
       price: 32900,
       stockLeft: 12,
       shippingAmount: 1500,
@@ -132,7 +135,7 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
     },
     {
       id: `${item.id}-product-3`,
-      title: 'Dernière nouveauté',
+      title: 'Sneakers édition limitée en cuir blanc et semelle contrastée',
       price: 41750,
       originalPrice: 45900,
       stockLeft: 0,
@@ -145,8 +148,10 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
   ],
   messages: LIVE_DEMO_COMMENTS.map((comment, index) => ({
     id: `${item.id}-message-${index + 1}`,
-    username: comment.isHost ? item.hostName : comment.username,
-    avatarUrl: LIVE_DEMO_AVATARS[comment.avatarIndex],
+    username: normalizeUsername(comment.isHost ? item.hostName : comment.username),
+    avatarUrl: comment.isHost
+      ? item.vendorAvatarUrl ?? LIVE_DEMO_AVATARS[comment.avatarIndex]
+      : LIVE_DEMO_AVATARS[comment.avatarIndex],
     text: comment.text,
     isHost: comment.isHost,
   })),

@@ -146,7 +146,7 @@ const styles = {
     width: layout.live.viewer.productCountBadgeSize,
   }),
   countLabel: new Style<Label>({
-    color: colors.textPrimary,
+    color: colors.textBrand,
     font: montserrat.extraBold(fontSize.tiny),
   }),
 };

@@ -88,7 +88,7 @@ const styles = {
   requestButton: new Style<View>({
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: '#AFAFAF',
+    backgroundColor: colors.interactivePrimary,
     borderRadius: radius.full,
     bottom: spacing.sm,
     flexDirection: 'row',

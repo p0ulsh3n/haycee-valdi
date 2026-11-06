@@ -66,7 +66,7 @@ const styles = {
   }),
   sendButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.textPrimary,
+    backgroundColor: colors.interactivePrimary,
     borderRadius: radius.full,
     height: 32,
     justifyContent: 'center',

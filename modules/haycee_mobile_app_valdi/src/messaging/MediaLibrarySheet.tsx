@@ -259,6 +259,6 @@ const styles = {
   videoBadgeText: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.tiny) }),
   messageState: new Style<View>({ alignItems: 'center', flexGrow: 1, justifyContent: 'center' }),
   helperText: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.metadata), textAlign: 'center' }),
-  retryButton: new Style<View>({ backgroundColor: colors.backgroundSecondary, borderRadius: radius.md, marginTop: spacing.md, paddingBottom: spacing.sm, paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.sm }),
-  retryText: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata) }),
+  retryButton: new Style<View>({ backgroundColor: colors.interactivePrimary, borderRadius: radius.md, marginTop: spacing.md, paddingBottom: spacing.sm, paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.sm }),
+  retryText: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.metadata) }),
 };

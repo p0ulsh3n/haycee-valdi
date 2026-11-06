@@ -2,10 +2,11 @@ import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
+import { DSBadge } from '../../design-system/components/DSBadge';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { layout, spacing } from '../../design-system/tokens/spacing';
-import { fontSize, lineHeight, montserrat, typography } from '../../design-system/tokens/typography';
+import { fontSize, lineHeight, montserrat, transformText, typography } from '../../design-system/tokens/typography';
 import { formatLiveViewerCount } from '../data/LiveFeedData';
 import type { LiveFeedItem } from '../data/LiveFeedData';
 import { LiveNowPlayingIndicator } from './LiveNowPlayingIndicator';
@@ -13,6 +14,13 @@ import { LiveNowPlayingIndicator } from './LiveNowPlayingIndicator';
 export interface LiveFeedCardViewModel {
   item: LiveFeedItem;
   onTap: () => void;
+  /** Omits seller identity when this card is already inside that seller's profile. */
+  showHostHeader?: boolean;
+  /** Adds the Shellby-style reminder control to scheduled live cards. */
+  showReminderButton?: boolean;
+  isReminderSet?: boolean;
+  reminderCount?: number;
+  onToggleReminder?: () => void;
 }
 
 /** Shellby-style Live tile, using a Haycee color panel instead of a thumbnail. */
@@ -26,19 +34,25 @@ export class LiveFeedCard extends Component<LiveFeedCardViewModel> {
       .join('')
       .toUpperCase();
     const isUpcoming = item.status === 'upcoming';
+    const cardBadges = item.badges ?? [];
 
     <view
       style={styles.card}
       onTap={this.viewModel.onTap}
       accessibilityCategory="button"
-      accessibilityLabel={`Ouvrir le live de ${item.hostName}`}
+      accessibilityLabel={isUpcoming ? `Voir le live programmé de ${item.hostName}` : `Ouvrir le live de ${item.hostName}`}
     >
-      <layout style={styles.hostRow}>
-        <view style={styles.avatar.extend({ backgroundColor: item.panelColor })}>
-          <label style={styles.avatarLabel} value={initials} numberOfLines={1} />
-        </view>
-        <label style={styles.hostName} value={item.hostName} numberOfLines={1} />
-      </layout>
+      {this.viewModel.showHostHeader === false ? null : (
+        <layout style={styles.hostRow}>
+          <view style={styles.avatar.extend({ backgroundColor: item.panelColor })}>
+            <label style={styles.avatarLabel} value={initials} numberOfLines={1} />
+            {item.vendorAvatarUrl ? (
+              <image src={item.vendorAvatarUrl} style={styles.avatarPhoto} objectFit="cover" />
+            ) : null}
+          </view>
+          <label style={styles.hostName} value={item.hostName} numberOfLines={1} />
+        </layout>
+      )}
 
       <view
         style={styles.panel.extend({
@@ -48,23 +62,61 @@ export class LiveFeedCard extends Component<LiveFeedCardViewModel> {
         })}
       >
         <view style={styles.panelTopRow}>
-          <view style={isUpcoming ? styles.upcomingBadge : styles.liveBadge}>
-            {!isUpcoming ? <LiveNowPlayingIndicator /> : null}
-            <label
-              style={isUpcoming ? styles.upcomingLabel : styles.liveLabel}
-              value={isUpcoming ? 'BIENTÔT' : 'EN DIRECT'}
-              numberOfLines={1}
-            />
-          </view>
+          {isUpcoming ? (
+            cardBadges.length > 0 ? (
+              <layout style={styles.cardBadges}>
+                {cardBadges.slice(0, 2).map(badge => (
+                  <DSBadge key={`${item.id}-${badge.id}`} label={badge.label} variant={badge.variant} />
+                ))}
+              </layout>
+            ) : null
+          ) : (
+            <view style={styles.liveBadge}>
+              <LiveNowPlayingIndicator />
+              <label style={styles.liveLabel} value="EN DIRECT" numberOfLines={1} />
+            </view>
+          )}
+          <layout style={styles.panelTopActions}>
+            {!isUpcoming && cardBadges.length > 0 ? (
+              <layout style={styles.cardBadges}>
+                {cardBadges.slice(0, 2).map(badge => (
+                  <DSBadge key={`${item.id}-${badge.id}`} label={badge.label} variant={badge.variant} />
+                ))}
+              </layout>
+            ) : null}
+            {isUpcoming && this.viewModel.showReminderButton && this.viewModel.onToggleReminder ? (
+              <view
+                style={this.viewModel.isReminderSet ? styles.reminderButtonActive : styles.reminderButton}
+                onTap={this.viewModel.onToggleReminder}
+                accessibilityCategory="button"
+                accessibilityLabel={this.viewModel.isReminderSet ? 'Désactiver le rappel du live' : 'Activer le rappel du live'}
+              >
+                <image
+                  src={this.viewModel.isReminderSet ? navigationIcons.notification01Bold : navigationIcons.notification01}
+                  tint={this.viewModel.isReminderSet ? colors.iconInverted : colors.iconDefault}
+                  width={16}
+                  height={16}
+                  objectFit="contain"
+                />
+                <label
+                  style={this.viewModel.isReminderSet ? styles.reminderCountActive : styles.reminderCount}
+                  value={String((this.viewModel.reminderCount ?? 0) + (this.viewModel.isReminderSet ? 1 : 0))}
+                  numberOfLines={1}
+                />
+              </view>
+            ) : null}
+          </layout>
         </view>
         <view style={styles.panelCenter}>
           <label style={styles.panelCategory} value={item.category} numberOfLines={2} />
         </view>
         <view style={styles.panelBottomRow}>
           {isUpcoming ? (
-            <view style={styles.upcomingBadge}>
-              <label style={styles.upcomingLabel} value="RAPPEL DISPONIBLE" numberOfLines={1} />
-            </view>
+            item.scheduledAtLabel ? (
+              <view style={styles.upcomingBadge}>
+                <label style={styles.upcomingLabel} value={transformText(item.scheduledAtLabel, 'upper')} numberOfLines={1} />
+              </view>
+            ) : null
           ) : (
             <view style={styles.viewersBadge}>
               <view style={styles.viewersIconBacking}>
@@ -106,11 +158,20 @@ const styles = {
     height: 26,
     justifyContent: 'center',
     marginRight: spacing.sm,
+    position: 'relative',
     width: 26,
   }),
   avatarLabel: new Style<Label>({
     color: colors.textPrimary,
     font: montserrat.semiBold(fontSize.micro),
+  }),
+  avatarPhoto: new Style<View>({
+    borderRadius: radius.full,
+    height: 26,
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    width: 26,
   }),
   hostName: typography.caption.extend({
     alignSelf: 'center',
@@ -129,6 +190,51 @@ const styles = {
   panelTopRow: new Style<Layout>({
     alignItems: 'flex-start',
     flexDirection: 'row',
+    justifyContent: 'space-between',
+  }),
+  cardBadges: new Style<Layout>({
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  }),
+  panelTopActions: new Style<Layout>({
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  }),
+  reminderButton: new Style<View>({
+    alignItems: 'center',
+    backgroundColor: colors.backgroundPrimary,
+    borderRadius: radius.full,
+    flexDirection: 'row',
+    height: 28,
+    justifyContent: 'center',
+    marginLeft: spacing.xs,
+    minWidth: 42,
+    paddingLeft: spacing.xs,
+    paddingRight: spacing.xs,
+  }),
+  reminderButtonActive: new Style<View>({
+    alignItems: 'center',
+    backgroundColor: colors.buttonPrimary,
+    borderRadius: radius.full,
+    flexDirection: 'row',
+    height: 28,
+    justifyContent: 'center',
+    marginLeft: spacing.xs,
+    minWidth: 42,
+    paddingLeft: spacing.xs,
+    paddingRight: spacing.xs,
+  }),
+  reminderCount: new Style<Label>({
+    color: colors.textPrimary,
+    font: montserrat.semiBold(fontSize.nano),
+    marginLeft: spacing.xs,
+  }),
+  reminderCountActive: new Style<Label>({
+    color: colors.textInverted,
+    font: montserrat.semiBold(fontSize.nano),
+    marginLeft: spacing.xs,
   }),
   liveBadge: new Style<View>({
     alignItems: 'center',

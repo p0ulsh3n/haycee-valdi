@@ -198,7 +198,7 @@ const styles = {
     height: actionRailHeight,
     justifyContent: 'flex-end',
     marginLeft: spacing.md,
-    width: layout.live.viewer.productQuickAccessSize,
+    width: layout.live.viewer.actionRailWidth,
   }),
   productSurface: new Style<View>({ flexShrink: 0, width: '100%' }),
   actionButton: new Style<View>({
@@ -207,7 +207,7 @@ const styles = {
     height: 40,
     justifyContent: 'center',
     marginBottom: spacing.sm,
-    width: 44,
+    width: layout.live.viewer.actionRailWidth,
   }),
   actionButtonActive: new Style<View>({
     alignItems: 'center',
@@ -215,7 +215,7 @@ const styles = {
     height: 40,
     justifyContent: 'center',
     marginBottom: spacing.sm,
-    width: 44,
+    width: layout.live.viewer.actionRailWidth,
   }),
   actionLabel: new Style<Label>({
     color: colors.textInverted,

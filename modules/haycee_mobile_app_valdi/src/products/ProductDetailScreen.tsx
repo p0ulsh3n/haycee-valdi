@@ -149,15 +149,31 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   private handleOpenImageViewer = (): void => {
     this.navigationController.push(
       ProductImageViewerScreen,
-      { product: this.viewModel.product, initialIndex: this.state.galleryIndex },
+      {
+        product: this.viewModel.product,
+        initialIndex: this.state.galleryIndex,
+        sellerProducts: this.productsFromSameSeller(),
+      },
       {},
     );
   };
 
+  private productsFromSameSeller(): MasonryProduct[] {
+    const product = this.viewModel.product;
+    const sameSeller = (candidate: MasonryProduct): boolean => {
+      if (product.vendorId) return candidate.vendorId === product.vendorId;
+      if (product.vendorUsername) return candidate.vendorUsername === product.vendorUsername;
+      if (product.vendorName) return candidate.vendorName === product.vendorName;
+      return candidate.id === product.id;
+    };
+
+    return [product, ...(this.viewModel.recommendations ?? []).filter(item => item.id !== product.id && sameSeller(item))];
+  }
+
   private handleOpenSeller = (): void => {
     this.navigationController.push(
       SellerProfileScreen,
-      { product: this.viewModel.product },
+      { product: this.viewModel.product, sellerProducts: this.productsFromSameSeller() },
       {},
     );
   };
@@ -1105,15 +1121,14 @@ const styles = {
   }),
   bottomAdd: new Style<View>({
     alignItems: 'center',
-    borderColor: colors.textPrimary,
+    backgroundColor: colors.buttonSecondary,
     borderRadius: radius.xs,
-    borderWidth: 1,
     flexGrow: 1,
     height: 52,
     justifyContent: 'center',
     marginLeft: spacing.sm,
   }),
-  bottomAddText: typography.buttonSmall,
+  bottomAddText: typography.buttonSmall.extend({ color: colors.textInverted }),
   bottomBuy: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.interactivePrimary,
@@ -1123,6 +1138,6 @@ const styles = {
     justifyContent: 'center',
     marginLeft: spacing.sm,
   }),
-  bottomBuyText: typography.buttonSmall,
+  bottomBuyText: typography.buttonSmall.extend({ color: colors.textBrand }),
 };
 

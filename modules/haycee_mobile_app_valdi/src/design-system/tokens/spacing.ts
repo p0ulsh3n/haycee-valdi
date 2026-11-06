@@ -20,6 +20,16 @@ export const layout = {
     /** Extra scrollable space that keeps the last tab item clear of the fixed navigation. */
     bottomTabContentPadding: 72,
   },
+  seller: {
+    videos: {
+      columns: 3,
+      horizontalPadding: 1,
+      columnGap: 2,
+      rowGap: 2,
+      /** Poster width divided by height for the seller's short-video grid. */
+      posterAspectRatio: 0.75,
+    },
+  },
   home: {
     header: {
       topPadding: 12,
@@ -108,27 +118,34 @@ export const layout = {
     cardRowGap: 22,
     panelAspectRatio: 0.75,
     panelRadius: 8,
+    upcoming: {
+      /** Wide event artwork area, sized in proportion to the device width. */
+      heroAspectRatio: 1.18,
+      countdownCellHeight: 56,
+      reminderCardMinHeight: 82,
+      sellerAvatarSize: 44,
+    },
     viewer: {
       horizontalPadding: 16,
       headerButtonSize: 38,
+      sellerAvatarSize: 32,
       /** Shared outline thickness for controls layered over Live video. */
       glassBorderWidth: 1,
       viewerBadgeGradientWidth: 2,
       chatHeight: 208,
-      composerHeight: 44,
+      composerHeight: 40,
       productQuickAccessSize: 44,
       productCountBadgeSize: 18,
       actionButtonSize: 40,
+      actionRailWidth: 56,
       productCardHeight: 174,
       productCardWidth: 312,
       productImageHeight: 72,
       productButtonHeight: 38,
       productFooterHeight: 18,
-      productCarouselGap: 8,
       productAutoAdvanceMilliseconds: 5000,
       productTickerHoldMilliseconds: 900,
-      productTickerSpeed: 36,
-      productTickerResetMilliseconds: 700,
+      productTickerDurationMilliseconds: 16000,
       wallet: {
         tabHeight: 44,
       },

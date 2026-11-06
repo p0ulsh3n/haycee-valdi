@@ -5,9 +5,8 @@
  * makes a future light/dark palette change local to this module.
  */
 export const palette = {
-  snapYellow: '#FFFC00',
-  snapYellowDark: '#E8E500',
-  snapYellowLight: '#FFFDE0',
+  brandPurple: '#5E00FF',
+  brandPurplePressed: '#4B00CC',
 
   black: '#000000',
   gray900: '#1F1F1F',
@@ -23,7 +22,7 @@ export const palette = {
   messageBlue: '#3556C8',
   messageBlueLight: '#5475E0',
   orange: '#E37400',
-  purple: '#7B61FF',
+  purple: '#5E00FF',
   liveLavender: '#EEE9F7',
   livePeach: '#F4E9E2',
   liveBlue: '#E6EEF4',
@@ -39,7 +38,8 @@ export const colors = {
   liveBackdrop: '#1D2730',
   /** Translucent dark material used by default transient feedback. */
   backgroundTransient: 'rgba(72, 72, 72, 0.82)',
-  backgroundBrand: palette.snapYellow,
+  backgroundProfileHeader: 'rgba(0, 0, 0, 0.48)',
+  backgroundBrand: palette.brandPurple,
   backgroundMessageSent: palette.messageBlue,
   backgroundOverlay: 'rgba(0, 0, 0, 0.56)',
   mediaIndicatorActive: palette.white,
@@ -55,10 +55,16 @@ export const colors = {
   /** Translucent dark material used over Live content, including its action buttons. */
   liveActionSurface: 'rgba(8, 14, 18, 0.42)',
   liveViewerBadgeSurface: '#080E12',
-  liveViewerBadgeGradient: 'linear-gradient(135deg, rgba(137, 35, 160, 0.7) 0%, #F1A322 22.58%, #F7FF1A 100%)',
+  liveViewerBadgeGradient: `linear-gradient(135deg, rgba(137, 35, 160, 0.7) 0%, #F1A322 22.58%, ${palette.brandPurple} 100%)`,
   liveControlSurface: 'rgba(255, 255, 255, 0.88)',
   liveChatSurface: 'rgba(255, 255, 255, 0.76)',
-  liveIndicatorGradient: `linear-gradient(${palette.red}, ${palette.purple})`,
+  liveIndicatorGradient: `linear-gradient(${palette.red}, ${palette.brandPurple})`,
+  liveCardBadgeExclusive: '#F2C45F',
+  liveCardBadgeSold: palette.gray700,
+  liveCardBadgeClearance: palette.red,
+  liveCardBadgePromotion: palette.brandPurple,
+  liveCardBadgeNew: '#DCEBFF',
+  liveCardBadgeLimited: palette.black,
   liveWalletStatusDelivered: '#E8EFE8',
   liveWalletStatusPending: '#F1EDE2',
 
@@ -67,13 +73,19 @@ export const colors = {
   textTertiary: palette.gray500,
   textInverted: palette.white,
   textOnDarkSecondary: palette.gray300,
-  textBrand: palette.black,
+  textBrand: palette.white,
   textMessageSent: palette.white,
   textDanger: palette.red,
   textSuccess: palette.green,
 
-  interactivePrimary: palette.snapYellow,
-  interactivePrimaryPressed: palette.snapYellowDark,
+  interactivePrimary: palette.brandPurple,
+  interactivePrimaryPressed: palette.brandPurplePressed,
+  /** Filled primary call to action. */
+  buttonPrimary: palette.brandPurple,
+  /** Neutral state shown after following a seller. */
+  buttonFollowing: palette.gray100,
+  /** Third button color: filled secondary action. */
+  buttonSecondary: palette.black,
   interactiveDisabled: palette.gray300,
   interactiveDanger: palette.red,
   interactiveSuccess: palette.green,
@@ -85,5 +97,5 @@ export const colors = {
 
   iconDefault: palette.black,
   iconInverted: palette.white,
-  iconBrand: palette.black,
+  iconBrand: palette.white,
 } as const;

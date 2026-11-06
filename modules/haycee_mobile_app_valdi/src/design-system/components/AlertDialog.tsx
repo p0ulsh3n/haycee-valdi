@@ -146,6 +146,6 @@ const styles = {
     width: 1,
   }),
   cancelLabel: typography.button.extend({ color: colors.borderFocus }),
-  confirmLabel: typography.button.extend({ color: colors.borderFocus }),
+  confirmLabel: typography.button.extend({ color: colors.interactivePrimary }),
   dangerLabel: typography.button.extend({ color: colors.textDanger }),
 };

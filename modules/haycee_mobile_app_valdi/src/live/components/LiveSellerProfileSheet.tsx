@@ -10,6 +10,7 @@ import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
+import { limitSellerBio } from '../../design-system/utils/sellerBio';
 import type { LiveFeedItem } from '../data/LiveFeedData';
 
 export interface LiveSellerProfileSheetViewModel {
@@ -49,6 +50,7 @@ export class LiveSellerProfileSheet extends NavigationPageStatefulComponent<Live
     const { item } = this.viewModel;
     const isFollowing = this.state.isFollowing;
     const bottomInset = Math.max(0, Device.getDisplayBottomInset());
+    const sellerBio = item.vendorBio ? limitSellerBio(item.vendorBio) : undefined;
     const initials = item.hostName
       .split(' ')
       .map(part => part.charAt(0))
@@ -74,13 +76,12 @@ export class LiveSellerProfileSheet extends NavigationPageStatefulComponent<Live
         </view>
         <scroll style={styles.content} {...noBounceScrollAttributes} showsVerticalScrollIndicator={false}>
           <view style={styles.profileContent}>
-            {item.vendorAvatarUrl ? (
-              <image src={item.vendorAvatarUrl} style={styles.avatar} objectFit="cover" />
-            ) : (
-              <view style={styles.avatar}>
+            <view style={styles.avatar}>
+              <view style={styles.avatarFallback}>
                 <label value={initials} style={styles.avatarInitials} numberOfLines={1} />
               </view>
-            )}
+              {item.vendorAvatarUrl ? <image src={item.vendorAvatarUrl} style={styles.avatarPhoto} objectFit="cover" /> : null}
+            </view>
             <layout style={styles.nameRow}>
               <label value={item.hostName} style={styles.displayName} numberOfLines={1} />
               {item.vendorVerified ? <image src={navigationIcons.idVerified} tint={colors.interactivePrimary} width={22} height={22} objectFit="contain" /> : null}
@@ -130,15 +131,32 @@ export class LiveSellerProfileSheet extends NavigationPageStatefulComponent<Live
                 ) : null}
               </layout>
             ) : null}
-            {item.vendorBio ? <label value={item.vendorBio} style={styles.tagline} numberOfLines={4} /> : null}
+            {sellerBio ? <label value={sellerBio} style={styles.tagline} numberOfLines={4} /> : null}
           </view>
         </scroll>
         <layout style={styles.actions}>
-          <view style={styles.actionButton} onTap={this.openStore} accessibilityCategory="button">
-            <label value="Voir la Boutique" style={styles.actionLabel} numberOfLines={1} />
+          <view style={styles.storeButton} onTap={this.openStore} accessibilityCategory="button">
+            <label value="Voir la Boutique" style={styles.storeLabel} numberOfLines={1} />
           </view>
-          <view style={styles.actionButton} onTap={this.toggleFollow} accessibilityCategory="button">
-            <label value={isFollowing ? 'Se désabonner' : 'Suivre'} style={styles.actionLabel} numberOfLines={1} />
+          <view
+            style={isFollowing ? styles.followingActionButton : styles.secondaryActionButton}
+            onTap={this.toggleFollow}
+            accessibilityCategory="button"
+          >
+            <layout style={styles.actionContent}>
+              <image
+                src={isFollowing ? navigationIcons.userCheck01 : navigationIcons.userAdd01}
+                tint={isFollowing ? colors.textPrimary : colors.textInverted}
+                width={18}
+                height={18}
+                objectFit="contain"
+              />
+              <label
+                value={isFollowing ? 'Se désabonner' : 'Suivre'}
+                style={isFollowing ? styles.followingActionLabel : styles.secondaryActionLabel}
+                numberOfLines={1}
+              />
+            </layout>
           </view>
         </layout>
       </view>
@@ -152,7 +170,9 @@ const styles = {
   closeButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, height: 36, justifyContent: 'center', width: 36 }),
   content: new Style<ScrollView>({ flexGrow: 1, flexShrink: 1 }),
   profileContent: new Style<View>({ alignItems: 'center', paddingBottom: spacing.sm, paddingTop: spacing.xs }),
-  avatar: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderColor: colors.borderDefault, borderRadius: radius.full, borderWidth: 1, height: 104, justifyContent: 'center', width: 104 }),
+  avatar: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, height: 104, justifyContent: 'center', position: 'relative', width: 104 }),
+  avatarFallback: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, height: 104, justifyContent: 'center', width: 104 }),
+  avatarPhoto: new Style<View>({ borderRadius: radius.full, height: 104, left: 0, position: 'absolute', top: 0, width: 104 }),
   avatarInitials: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.display) }),
   nameRow: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginTop: spacing.md, maxWidth: '100%' }),
   displayName: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.display), marginRight: spacing.xs }),
@@ -166,8 +186,13 @@ const styles = {
   statSeparator: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.body), marginLeft: spacing.xs, marginRight: spacing.xs }),
   tagline: new Style<Label>({ color: colors.textPrimary, font: montserrat.regular(fontSize.body), marginBottom: spacing.xl, marginTop: spacing.md, textAlign: 'center' }),
   actions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center', width: '100%' }),
-  actionButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
-  actionLabel: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.label), textAlign: 'center' }),
+  storeButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonPrimary, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
+  storeLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.label), textAlign: 'center' }),
+  actionContent: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }),
+  secondaryActionButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonSecondary, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
+  secondaryActionLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.label), marginLeft: spacing.sm, textAlign: 'center' }),
+  followingActionButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonFollowing, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
+  followingActionLabel: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.label), marginLeft: spacing.sm, textAlign: 'center' }),
 };
 
 const formatVendorCount = (count: number): string => {

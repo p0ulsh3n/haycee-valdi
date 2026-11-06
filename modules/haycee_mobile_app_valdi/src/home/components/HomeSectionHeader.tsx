@@ -53,6 +53,6 @@ const styles = {
     paddingLeft: 12,
   }),
   actionLabel: typography.homeSectionAction.extend({
-    color: colors.textPrimary,
+    color: colors.interactivePrimary,
   }),
 };

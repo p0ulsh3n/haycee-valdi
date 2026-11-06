@@ -26,9 +26,11 @@ export class LiveCategoryFeed extends Component<LiveCategoryFeedViewModel> {
     const items = getLiveFeedItems(this.viewModel.categoryId);
     const horizontalPadding = layout.live.feedHorizontalPadding;
     const columnGap = layout.live.cardColumnGap;
-    // Keep a small layout-rounding buffer: tablet widths can be fractional dp,
-    // and an exact-fit row may wrap its second card after pixel rounding.
-    const cardWidth = (Device.getWindowWidth() - horizontalPadding * 2 - columnGap * 2) / 2;
+    const cardWidth = (Device.getWindowWidth() - horizontalPadding * 2 - columnGap) / 2;
+    const rows: Array<typeof items> = [];
+    for (let index = 0; index < items.length; index += 2) {
+      rows.push(items.slice(index, index + 2));
+    }
 
     <scroll {...noBounceScrollAttributes} style={styles.scroll} showsVerticalScrollIndicator={false}>
       <layout style={styles.grid.extend({
@@ -37,20 +39,23 @@ export class LiveCategoryFeed extends Component<LiveCategoryFeedViewModel> {
         paddingTop: layout.live.feedTopPadding,
         paddingBottom: layout.live.feedBottomPadding,
       })}>
-        {items.map((item, index) => (
-          <view
-            key={item.id}
-            style={styles.cell.extend({
-              marginRight: index % 2 === 0 && index + 1 < items.length ? columnGap : 0,
-              marginBottom: layout.live.cardRowGap,
-              width: cardWidth,
-            })}
-          >
-            <LiveFeedCard
-              item={item}
-              onTap={createReusableCallback(() => this.viewModel.onOpenLive(item))}
-            />
-          </view>
+        {rows.map((row, rowIndex) => (
+          <layout key={`live-row-${rowIndex}`} style={styles.row}>
+            {row.map((item, columnIndex) => (
+              <view
+                key={item.id}
+                style={styles.cell.extend({
+                  marginRight: columnIndex === 0 && row.length === 2 ? columnGap : 0,
+                  width: cardWidth,
+                })}
+              >
+                <LiveFeedCard
+                  item={item}
+                  onTap={createReusableCallback(() => this.viewModel.onOpenLive(item))}
+                />
+              </view>
+            ))}
+          </layout>
         ))}
       </layout>
     </scroll>;
@@ -67,10 +72,13 @@ const styles = {
     flexShrink: 1,
   }),
   grid: new Style<Layout>({
+    flexDirection: 'column',
+    width: '100%',
+  }),
+  row: new Style<Layout>({
     alignItems: 'flex-start',
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    marginBottom: layout.live.cardRowGap,
     width: '100%',
   }),
   cell: new Style<View>({

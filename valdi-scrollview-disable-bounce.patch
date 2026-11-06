@@ -1,0 +1,15 @@
+diff --git a/valdi/src/java/com/snap/valdi/views/ValdiScrollView.kt b/valdi/src/java/com/snap/valdi/views/ValdiScrollView.kt
+--- a/valdi/src/java/com/snap/valdi/views/ValdiScrollView.kt
++++ b/valdi/src/java/com/snap/valdi/views/ValdiScrollView.kt
+@@ -122,7 +122,10 @@ open class ValdiScrollView(context: Context) : ValdiView(context, attributeSet(context)),
+ 
+     var bounces: Boolean
+         get() = dragGestureRecognizer.bounces
+-        set(value) { dragGestureRecognizer.bounces = value }
++        set(value) {
++            dragGestureRecognizer.bounces = value
++            edgeEffect = value
++        }
+ 
+     var bouncesFromDragAtStart: Boolean
+         get() = dragGestureRecognizer.bouncesFromDragAtStart

@@ -87,7 +87,7 @@ export class LiveProductSheetRow extends Component<LiveProductSheetRowViewModel>
                 accessibilityCategory="button"
                 accessibilityLabel={`Ajouter ${product.title} au panier`}
               >
-                <image src={navigationIcons.shoppingCartAdd02} tint={colors.textPrimary} width={18} height={18} objectFit="contain" />
+                <image src={navigationIcons.shoppingCartAdd02} tint={colors.textInverted} width={18} height={18} objectFit="contain" />
               </view>
               <view
                 style={styles.buyButton}
@@ -157,7 +157,7 @@ const styles = {
     right: 0,
     top: 0,
   }),
-  discountText: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.nano) }),
+  discountText: new Style<Label>({ color: colors.textBrand, font: montserrat.extraBold(fontSize.nano) }),
   information: new Style<Layout>({
     flexDirection: 'column',
     flexGrow: 1,
@@ -191,7 +191,7 @@ const styles = {
     font: montserrat.extraBold(fontSize.nano),
   }),
   auctionStock: new Style<Label>({
-    color: colors.textBrand,
+    color: colors.textPrimary,
     flexShrink: 0,
     font: montserrat.extraBold(fontSize.nano),
   }),
@@ -206,7 +206,7 @@ const styles = {
   actions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginLeft: spacing.sm }),
   addButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.backgroundPrimary,
+    backgroundColor: colors.buttonSecondary,
     borderRadius: radius.xs,
     height: 36,
     justifyContent: 'center',
@@ -222,6 +222,6 @@ const styles = {
     paddingLeft: 14,
     paddingRight: 14,
   }),
-  buyText: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.nano) }),
+  buyText: new Style<Label>({ color: colors.textBrand, font: montserrat.semiBold(fontSize.nano) }),
   auctionAction: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.nano) }),
 };

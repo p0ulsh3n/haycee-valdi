@@ -14,6 +14,7 @@ import { HomeProduct } from './home/components/HomeProductRail';
 import { ConversationScreen } from './messaging/ConversationScreen';
 import { ConversationPreview } from './messaging/MessagingTypes';
 import { LiveViewerScreen } from './live/LiveViewerScreen';
+import { UpcomingLiveScreen } from './live/UpcomingLiveScreen';
 import type { LiveFeedItem } from './live/data/LiveFeedData';
 
 /**
@@ -45,6 +46,10 @@ export class App extends Component<AppViewModel, AppComponentContext> {
   };
 
   private handleLiveTap = (item: LiveFeedItem): void => {
+    if (item.status === 'upcoming') {
+      this.navigationController?.push(UpcomingLiveScreen, { item, onOpenLive: this.handleLiveTap }, {});
+      return;
+    }
     this.navigationController?.push(LiveViewerScreen, { item }, {});
   };
 

@@ -99,9 +99,10 @@ build --experimental_generate_json_trace_profile
 build --remote_grpc_log=/tmp/snap_client_grpc.log
 build --experimental_reuse_sandbox_directories
 
-# Default JS engine
+# Use Valdi's Android default engine. Hermes Hades GC was crashing while finalizing
+# Java bridge callbacks on its background GC thread (JNI env was null).
 build --flag_alias=valdi_js_engine=@valdi//bzl/valdi:js_engine
-build --valdi_js_engine=hermes
+build --valdi_js_engine=quickjs
 
 # Valdi Open Source Flags
 build --define=open_source_build=true

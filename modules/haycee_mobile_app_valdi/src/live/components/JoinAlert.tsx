@@ -5,6 +5,7 @@ import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
+import { normalizeUsername } from '../../design-system/utils/identity';
 
 export interface JoinAlertViewModel {
   username: string;
@@ -25,13 +26,14 @@ export class JoinAlert extends StatefulComponent<JoinAlertViewModel, JoinAlertSt
   onRender(): void {
     if (!this.state.isVisible) return;
 
-    const initial = this.viewModel.username.charAt(0).toUpperCase();
+    const username = normalizeUsername(this.viewModel.username);
+    const initial = username.charAt(0).toUpperCase();
     <view style={styles.pill} touchEnabled={false}>
       <view style={styles.avatar}>
         <label value={initial} style={styles.avatarLabel} numberOfLines={1} />
       </view>
       <layout style={styles.copy}>
-        <label value={this.viewModel.username} style={styles.username} numberOfLines={1} />
+        <label value={username} style={styles.username} numberOfLines={1} />
         <label value="vient de rejoindre le live" style={styles.message} numberOfLines={1} />
       </layout>
     </view>;

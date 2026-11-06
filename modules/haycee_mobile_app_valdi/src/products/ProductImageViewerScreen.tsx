@@ -16,6 +16,7 @@ import { SellerProfileScreen } from '../sellers/SellerProfileScreen';
 
 export interface ProductImageViewerViewModel {
   product: MasonryProduct;
+  sellerProducts?: MasonryProduct[];
   initialIndex?: number;
   imageRatio?: '1:1' | '3:4';
 }
@@ -103,7 +104,7 @@ export class ProductImageViewerScreen extends NavigationPageStatefulComponent<
   private handleShop = (): void => {
     this.navigationController.push(
       SellerProfileScreen,
-      { product: this.viewModel.product },
+      { product: this.viewModel.product, sellerProducts: this.viewModel.sellerProducts },
       {},
     );
   };
@@ -203,14 +204,14 @@ const styles = {
   }),
   shopButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.backgroundPrimary,
+    backgroundColor: colors.interactivePrimary,
     borderRadius: radius.full,
     flexGrow: 1,
     height: 48,
     justifyContent: 'center',
     marginRight: spacing.sm,
   }),
-  shopButtonText: typography.buttonSmall.extend({ color: colors.textPrimary }),
+  shopButtonText: typography.buttonSmall.extend({ color: colors.textInverted }),
   iconButton: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,

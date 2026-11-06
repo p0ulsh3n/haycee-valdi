@@ -22,8 +22,11 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
   onRender(): void {
     const { product, width } = this.viewModel;
     const imageHeight = layout.live.viewer.productImageHeight;
+    const imageBorderWidth = layout.live.viewer.glassBorderWidth;
     const imageAspectRatio = Math.max(0.1, product.imageAspectRatio ?? 1);
     const imageWidth = imageHeight * imageAspectRatio;
+    const imageContentHeight = Math.max(1, imageHeight - imageBorderWidth * 2);
+    const imageContentWidth = Math.max(1, imageWidth - imageBorderWidth * 2);
 
     <view style={styles.card} width={width} height={layout.live.viewer.productCardHeight}>
       <layout style={styles.productRow}>
@@ -37,8 +40,8 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
           {product.imageUrl ? (
             <image
               src={product.imageUrl}
-              width={imageWidth}
-              height={imageHeight}
+              width={imageContentWidth}
+              height={imageContentHeight}
               objectFit="contain"
             />
           ) : (
@@ -71,16 +74,6 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
         </layout>
       </layout>
 
-      <view
-        style={styles.buyButton}
-        onTap={() => this.viewModel.onBuy(product)}
-        accessibilityCategory="button"
-        accessibilityLabel={`Acheter ${product.title}`}
-      >
-        <label value="Acheter" style={styles.buyButtonLabel} numberOfLines={1} />
-      </view>
-
-      <view style={styles.footerDivider} />
       <layout style={styles.footer}>
         <image
           src={navigationIcons.deliveryTruck02}
@@ -95,6 +88,15 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
           numberOfLines={1}
         />
       </layout>
+
+      <view
+        style={styles.buyButton}
+        onTap={() => this.viewModel.onBuy(product)}
+        accessibilityCategory="button"
+        accessibilityLabel={`Acheter ${product.title}`}
+      >
+        <label value="Acheter" style={styles.buyButtonLabel} numberOfLines={1} />
+      </view>
     </view>;
   }
 }
@@ -102,28 +104,30 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
 const styles = {
   card: new Style<View>({
     backgroundColor: colors.liveGlassSurface,
-    borderColor: colors.liveGlassBorder,
     borderRadius: radius.lg,
-    borderWidth: layout.live.viewer.glassBorderWidth,
     flexDirection: 'column',
     justifyContent: 'space-between',
     padding: spacing.sm,
   }),
   productRow: new Style<Layout>({
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flexDirection: 'row',
     flexGrow: 1,
     minHeight: layout.live.viewer.productImageHeight,
   }),
   productImageFrame: new Style<View>({
     alignItems: 'center',
+    borderColor: 'rgba(255, 255, 255, 0.82)',
+    borderWidth: layout.live.viewer.glassBorderWidth,
     borderRadius: radius.sm,
     justifyContent: 'center',
   }),
   productCopy: new Style<Layout>({
+    alignSelf: 'flex-start',
     flexDirection: 'column',
     flexGrow: 1,
     flexShrink: 1,
+    justifyContent: 'flex-start',
     marginLeft: spacing.sm,
     minWidth: 0,
   }),
@@ -134,7 +138,7 @@ const styles = {
   }),
   stockLow: new Style<Label>({
     color: colors.textDanger,
-    font: montserrat.semiBold(fontSize.nano),
+    font: montserrat.semiBold(fontSize.metadata),
     marginTop: spacing.xs,
   }),
   stockUnavailable: new Style<Label>({
@@ -149,7 +153,7 @@ const styles = {
   }),
   price: new Style<Label>({
     color: colors.textInverted,
-    font: montserrat.black(fontSize.price),
+    font: montserrat.extraBold(fontSize.price),
   }),
   originalPrice: new Style<Label>({
     color: colors.textOnDarkSecondary,
@@ -158,7 +162,7 @@ const styles = {
   }),
   buyButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.backgroundPrimary,
+    backgroundColor: colors.interactivePrimary,
     borderRadius: radius.full,
     height: layout.live.viewer.productButtonHeight,
     justifyContent: 'center',
@@ -166,20 +170,14 @@ const styles = {
     width: '100%',
   }),
   buyButtonLabel: new Style<Label>({
-    color: colors.textPrimary,
+    color: colors.textInverted,
     font: montserrat.extraBold(fontSize.product),
-  }),
-  footerDivider: new Style<View>({
-    backgroundColor: colors.liveGlassBorder,
-    height: layout.live.viewer.glassBorderWidth,
-    marginTop: spacing.xs,
-    width: '100%',
   }),
   footer: new Style<Layout>({
     alignItems: 'center',
     flexDirection: 'row',
     height: layout.live.viewer.productFooterHeight,
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
   }),
   footerLabel: new Style<Label>({
     color: colors.textOnDarkSecondary,

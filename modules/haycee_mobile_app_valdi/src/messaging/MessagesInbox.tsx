@@ -403,7 +403,7 @@ const styles = {
     paddingLeft: spacing.xs,
     paddingRight: spacing.xs,
   }),
-  unreadCount: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.tiny), textAlign: 'center' }),
+  unreadCount: new Style<Label>({ color: colors.textBrand, font: montserrat.extraBold(fontSize.tiny), textAlign: 'center' }),
   emptyState: new Style<Layout>({ alignItems: 'center', flexGrow: 1, justifyContent: 'center', padding: spacing.xxxl }),
   emptyTitle: new Style<Label>({
     color: colors.textPrimary,

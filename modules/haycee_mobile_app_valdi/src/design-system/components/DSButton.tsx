@@ -37,8 +37,7 @@ const buttonStyles = {
     backgroundColor: colors.interactivePrimary,
   }),
   secondary: baseButtonStyle.extend({
-    backgroundColor: colors.backgroundSecondary,
-    border: `1 solid ${colors.borderDefault}`,
+    backgroundColor: colors.buttonSecondary,
   }),
   danger: baseButtonStyle.extend({
     backgroundColor: colors.interactiveDanger,
@@ -50,7 +49,7 @@ const buttonStyles = {
 
 const buttonLabelStyles = {
   primary: typography.button.extend({ color: colors.textBrand }),
-  secondary: typography.button.extend({ color: colors.textPrimary }),
+  secondary: typography.button.extend({ color: colors.textInverted }),
   danger: typography.button.extend({ color: colors.textInverted }),
   disabled: typography.button.extend({ color: colors.textTertiary }),
 } as const;
@@ -76,7 +75,7 @@ export class DSButton extends Component<DSButtonViewModel> {
         ? colors.textTertiary
         : variant === 'danger'
           ? colors.textInverted
-          : variant === 'primary'
+          : variant === 'primary' || variant === 'secondary'
             ? colors.textBrand
             : colors.textPrimary);
     const iconSize = this.viewModel.iconSize ?? 18;

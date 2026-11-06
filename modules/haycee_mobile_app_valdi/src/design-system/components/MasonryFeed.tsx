@@ -216,7 +216,7 @@ const styles = {
     marginBottom: spacing.sm,
   }),
   retryButton: new Style<View>({
-    backgroundColor: colors.textPrimary,
+    backgroundColor: colors.interactivePrimary,
     borderRadius: 16,
     paddingBottom: 8,
     paddingLeft: 14,
