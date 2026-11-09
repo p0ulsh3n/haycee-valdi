@@ -1,0 +1,6 @@
+interface:
+  display_name: "Haycee Valdi Design System"
+  short_description: "Require shared tokens and components for all app UI"
+  default_prompt: "Use $haycee-valdi-design-system to build this UI with the shared system."
+policy:
+  allow_implicit_invocation: true

@@ -1,187 +1,186 @@
 import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
-import { Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { BlurView, Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { layout, spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
+import { ProductStockCountPill } from '../../design-system/components/ProductStockCountPill';
+import { ProductVariantStockPreview } from '../../design-system/components/ProductVariantStockPreview';
 import { formatFcfa } from '../../design-system/utils/money';
 import type { LiveViewerProduct } from '../data/LiveViewerData';
-import { LiveProductNameTicker } from './LiveProductNameTicker';
 
 export interface LiveProductCardViewModel {
   product: LiveViewerProduct;
   width: number;
-  active: boolean;
-  onBuy: (product: LiveViewerProduct) => void;
+  onMore: () => void;
 }
 
-/** One reusable live offer card, including its image, title ticker, and buy action. */
+/** Reference-sized glass preview; full product details and purchase actions live in the products sheet. */
 export class LiveProductCard extends Component<LiveProductCardViewModel> {
   onRender(): void {
-    const { product, width } = this.viewModel;
-    const imageHeight = layout.live.viewer.productImageHeight;
-    const imageBorderWidth = layout.live.viewer.glassBorderWidth;
-    const imageAspectRatio = Math.max(0.1, product.imageAspectRatio ?? 1);
-    const imageWidth = imageHeight * imageAspectRatio;
-    const imageContentHeight = Math.max(1, imageHeight - imageBorderWidth * 2);
-    const imageContentWidth = Math.max(1, imageWidth - imageBorderWidth * 2);
+    const { product, width, onMore } = this.viewModel;
+    const imageSize = layout.live.viewer.productImageHeight;
+    const variantStocks = product.variantStocks ?? [];
+    const stockCount = variantStocks.length > 0
+      ? variantStocks.reduce((count, variant) => count + Math.max(0, variant.remaining), 0)
+      : Math.max(0, product.stockLeft);
+    const imageAspectRatio = product.imageAspectRatio !== undefined && product.imageAspectRatio < 0.875 ? 0.75 : 1;
+    const imageWidth = imageSize * imageAspectRatio;
 
     <view style={styles.card} width={width} height={layout.live.viewer.productCardHeight}>
-      <layout style={styles.productRow}>
-        <view
-          style={styles.productImageFrame.extend({
-            backgroundColor: product.color,
-            height: imageHeight,
-            width: imageWidth,
-          })}
-        >
-          {product.imageUrl ? (
-            <image
-              src={product.imageUrl}
-              width={imageContentWidth}
-              height={imageContentHeight}
-              objectFit="contain"
-            />
-          ) : (
-            null
-          )}
-        </view>
+      <blur style={styles.glassPanel} blurStyle="dark">
+        <view style={styles.glassTint}>
+          <layout style={styles.contentRow}>
+            <view
+              style={styles.productImage.extend({
+                backgroundColor: product.color,
+                height: imageSize,
+                width: imageWidth,
+              })}
+            >
+              {product.imageUrl ? (
+                <image
+                  src={product.imageUrl}
+                  width={imageWidth}
+                  height={imageSize}
+                  objectFit="cover"
+                />
+              ) : null}
+            </view>
 
-        <layout style={styles.productCopy}>
-          <LiveProductNameTicker title={product.title} active={this.viewModel.active} />
-          {product.stockLeft === 0 ? (
-            <label value="Rupture de stock" style={styles.stockUnavailable} numberOfLines={1} />
-          ) : product.stockLeft !== undefined && product.stockLeft <= 5 ? (
-            <label value={`Plus que ${product.stockLeft} en stock`} style={styles.stockLow} numberOfLines={1} />
-          ) : product.stockLeft !== undefined ? (
-            <label value={`${product.stockLeft} en stock`} style={styles.stockAvailable} numberOfLines={1} />
-          ) : (
-            <label value="En stock" style={styles.stockAvailable} numberOfLines={1} />
-          )}
-          <layout style={styles.priceRow}>
-            <label value={formatFcfa(product.price)} style={styles.price} numberOfLines={1} />
-            {product.originalPrice !== undefined && product.originalPrice > product.price ? (
-              <label
-                value={formatFcfa(product.originalPrice)}
-                style={styles.originalPrice}
-                textDecoration="strikethrough"
-                numberOfLines={1}
-              />
-            ) : null}
+            <layout style={styles.productCopy}>
+              <layout style={styles.titleStockRow}>
+                <label
+                  value={product.title}
+                  style={styles.title}
+                  numberOfLines={2}
+                  textOverflow="ellipsis"
+                />
+                <ProductStockCountPill
+                  count={stockCount}
+                  surfaceColor={colors.liveControlSurface}
+                  textColor={colors.backgroundDark}
+                />
+              </layout>
+              <label value={formatFcfa(product.price)} style={styles.price} numberOfLines={1} />
+              {variantStocks.length > 0 ? (
+                <view style={styles.variantStocks}>
+                  <ProductVariantStockPreview
+                    items={variantStocks}
+                    textColor={colors.textInverted}
+                    mutedColor={colors.textOnDarkSecondary}
+                  />
+                </view>
+              ) : null}
+              <layout style={styles.shippingRow}>
+                <image
+                  src={navigationIcons.deliveryTruck02}
+                  tint={colors.textInverted}
+                  width={layout.live.viewer.shippingIconSize}
+                  height={layout.live.viewer.shippingIconSize}
+                  objectFit="contain"
+                />
+                <label
+                  value={`${product.shippingLabel} · ${formatFcfa(product.shippingAmount)}`}
+                  style={styles.shippingLabel}
+                  numberOfLines={1}
+                />
+                <label value="|" style={styles.separator} numberOfLines={1} />
+                <view
+                  style={styles.moreAction}
+                  onTap={onMore}
+                  accessibilityCategory="button"
+                  accessibilityLabel={`Voir tous les produits du live, dont ${product.title}`}
+                >
+                  <label value="Voir plus" style={styles.moreLabel} numberOfLines={1} />
+                </view>
+              </layout>
+            </layout>
           </layout>
-        </layout>
-      </layout>
-
-      <layout style={styles.footer}>
-        <image
-          src={navigationIcons.deliveryTruck02}
-          tint={colors.textOnDarkSecondary}
-          width={15}
-          height={15}
-          objectFit="contain"
-        />
-        <label
-          value={`${formatFcfa(product.shippingAmount)} ${product.shippingLabel}`}
-          style={styles.footerLabel}
-          numberOfLines={1}
-        />
-      </layout>
-
-      <view
-        style={styles.buyButton}
-        onTap={() => this.viewModel.onBuy(product)}
-        accessibilityCategory="button"
-        accessibilityLabel={`Acheter ${product.title}`}
-      >
-        <label value="Acheter" style={styles.buyButtonLabel} numberOfLines={1} />
-      </view>
+        </view>
+      </blur>
     </view>;
   }
 }
 
 const styles = {
-  card: new Style<View>({
-    backgroundColor: colors.liveGlassSurface,
-    borderRadius: radius.lg,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+  card: new Style<View>({ width: '100%' }),
+  glassPanel: new Style<BlurView>({
+    borderRadius: radius.md,
+    height: layout.live.viewer.productGlassHeight,
+    width: '100%',
+  }),
+  glassTint: new Style<View>({
+    backgroundColor: colors.liveActionSurface,
+    borderRadius: radius.md,
+    height: '100%',
     padding: spacing.sm,
+    width: '100%',
   }),
-  productRow: new Style<Layout>({
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    flexGrow: 1,
-    minHeight: layout.live.viewer.productImageHeight,
-  }),
-  productImageFrame: new Style<View>({
+  contentRow: new Style<Layout>({
     alignItems: 'center',
-    borderColor: 'rgba(255, 255, 255, 0.82)',
-    borderWidth: layout.live.viewer.glassBorderWidth,
-    borderRadius: radius.sm,
+    flexDirection: 'row',
+    height: '100%',
+    width: '100%',
+  }),
+  productImage: new Style<View>({
+    alignItems: 'center',
+    borderRadius: radius.xs,
     justifyContent: 'center',
+    flexShrink: 0,
   }),
   productCopy: new Style<Layout>({
-    alignSelf: 'flex-start',
     flexDirection: 'column',
     flexGrow: 1,
     flexShrink: 1,
-    justifyContent: 'flex-start',
-    marginLeft: spacing.sm,
+    justifyContent: 'center',
+    marginLeft: spacing.md,
     minWidth: 0,
   }),
-  stockAvailable: new Style<Label>({
-    color: colors.textOnDarkSecondary,
-    font: montserrat.regular(fontSize.nano),
-    marginTop: spacing.xs,
-  }),
-  stockLow: new Style<Label>({
-    color: colors.textDanger,
-    font: montserrat.semiBold(fontSize.metadata),
-    marginTop: spacing.xs,
-  }),
-  stockUnavailable: new Style<Label>({
-    color: colors.textDanger,
-    font: montserrat.semiBold(fontSize.nano),
-    marginTop: spacing.xs,
-  }),
-  priceRow: new Style<Layout>({
-    alignItems: 'center',
+  titleStockRow: new Style<Layout>({
+    alignItems: 'flex-start',
     flexDirection: 'row',
-    marginTop: spacing.xs,
+    minWidth: 0,
+  }),
+  variantStocks: new Style<View>({ marginTop: spacing.xs, minWidth: 0, width: '100%' }),
+  title: new Style<Label>({
+    color: colors.textInverted,
+    flexGrow: 1,
+    flexShrink: 1,
+    font: montserrat.semiBold(fontSize.product),
+    lineHeight: 1.12,
+    minWidth: 0,
   }),
   price: new Style<Label>({
     color: colors.textInverted,
-    font: montserrat.extraBold(fontSize.price),
+    flexShrink: 0,
+    font: montserrat.extraBold(fontSize.body),
+    marginTop: spacing.xs,
   }),
-  originalPrice: new Style<Label>({
-    color: colors.textOnDarkSecondary,
-    font: montserrat.regular(fontSize.nano),
-    marginLeft: spacing.xs,
-  }),
-  buyButton: new Style<View>({
-    alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
-    borderRadius: radius.full,
-    height: layout.live.viewer.productButtonHeight,
-    justifyContent: 'center',
-    marginTop: spacing.sm,
-    width: '100%',
-  }),
-  buyButtonLabel: new Style<Label>({
-    color: colors.textInverted,
-    font: montserrat.extraBold(fontSize.product),
-  }),
-  footer: new Style<Layout>({
+  shippingRow: new Style<Layout>({
     alignItems: 'center',
     flexDirection: 'row',
-    height: layout.live.viewer.productFooterHeight,
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
+    minWidth: 0,
   }),
-  footerLabel: new Style<Label>({
-    color: colors.textOnDarkSecondary,
-    font: montserrat.regular(fontSize.nano),
+  shippingLabel: new Style<Label>({
+    color: colors.textInverted,
+    flexShrink: 1,
+    font: montserrat.regular(fontSize.tiny),
     marginLeft: spacing.xs,
+  }),
+  separator: new Style<Label>({
+    color: colors.textOnDarkSecondary,
+    font: montserrat.regular(fontSize.tiny),
+    marginLeft: spacing.xs,
+    marginRight: spacing.xs,
+  }),
+  moreAction: new Style<View>({ flexShrink: 0 }),
+  moreLabel: new Style<Label>({
+    color: colors.textInverted,
+    font: montserrat.semiBold(fontSize.tiny),
+    textDecoration: 'underline',
   }),
 };

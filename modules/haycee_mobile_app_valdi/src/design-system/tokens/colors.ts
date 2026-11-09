@@ -36,6 +36,8 @@ export const colors = {
   backgroundSecondary: palette.gray100,
   backgroundTertiary: palette.gray500,
   backgroundDark: palette.black,
+  backgroundDarkElevated: palette.gray900,
+  backgroundDarkSecondary: palette.gray800,
   /** Visible underlay so Live's translucent surface has something to blend with. */
   liveBackdrop: '#5F5F5F',
   /** Translucent dark material used by default transient feedback. */
@@ -86,6 +88,8 @@ export const colors = {
   offerGold: '#A77A00',
   offerDanger: palette.red,
   offerWarning: palette.orange,
+  /** Lime-to-yellow fill for the shared product stock progress bar. */
+  stockProgressGradient: 'linear-gradient(90deg, #67F667 0%, #7FF766 15%, #9AF963 30%, #B8FC61 45%, #D2FE5F 60%, #DBFE5F 75%, #E4FF5E 92%, #E5FF5E 100%)',
   offerTeal: '#008F83',
   offerMuted: palette.gray700,
   liveWalletStatusDelivered: '#E8EFE8',

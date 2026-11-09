@@ -219,11 +219,11 @@ export class MediaActionSheetContent extends StatefulComponent<MediaActionSheetC
   }
 
   private surfaceColor(): string {
-    return this.viewModel.tone === 'dark' ? colors.gray900 : colors.backgroundPrimary;
+    return this.viewModel.tone === 'dark' ? colors.backgroundDarkElevated : colors.backgroundPrimary;
   }
 
   private surfaceSecondary(): string {
-    return this.viewModel.tone === 'dark' ? colors.gray800 : colors.backgroundSecondary;
+    return this.viewModel.tone === 'dark' ? colors.backgroundDarkSecondary : colors.backgroundSecondary;
   }
 
   private primaryTextColor(): string {
@@ -327,14 +327,17 @@ export class MediaActionSheetContent extends StatefulComponent<MediaActionSheetC
     <view style={styles.bodyContent}>
       {this.renderMedia()}
       {this.viewModel.eyebrow ? (
-        <label
-          value={this.viewModel.eyebrow}
-          style={styles.eyebrow.extend({
-            backgroundColor: this.viewModel.tone === 'dark' ? colors.gray800 : colors.backgroundBrand,
-            color: colors.textInverted,
+        <view
+          style={styles.eyebrowContainer.extend({
+            backgroundColor: this.viewModel.tone === 'dark' ? colors.backgroundDarkSecondary : colors.backgroundBrand,
           })}
-          numberOfLines={1}
-        />
+        >
+          <label
+            value={this.viewModel.eyebrow}
+            style={styles.eyebrow.extend({ color: colors.textInverted })}
+            numberOfLines={1}
+          />
+        </view>
       ) : null}
       <label value={this.viewModel.title} style={styles.title.extend({ color: this.primaryTextColor() })} numberOfLines={0} />
       <label value={this.viewModel.message} style={styles.message.extend({ color: this.secondaryTextColor() })} numberOfLines={0} />
@@ -392,7 +395,7 @@ export class MediaActionSheetContent extends StatefulComponent<MediaActionSheetC
       >
         {showHandle ? (
           <layout style={styles.handleContainer}>
-            <view style={styles.handle.extend({ backgroundColor: this.viewModel.tone === 'dark' ? colors.gray500 : colors.borderDefault })} />
+            <view style={styles.handle.extend({ backgroundColor: this.viewModel.tone === 'dark' ? colors.backgroundTertiary : colors.borderDefault })} />
           </layout>
         ) : null}
         <layout style={styles.topBar}>
@@ -479,7 +482,8 @@ const styles = {
   spinner: new Style<SpinnerView>({ height: 28, width: 28 }),
   mediaFallback: new Style<View>({ alignItems: 'center', bottom: 0, justifyContent: 'center', left: 0, position: 'absolute', right: 0, top: 0 }),
   mediaFallbackLabel: new Style<Label>({ font: montserrat.semiBold(fontSize.metadata), textAlign: 'center' }),
-  eyebrow: new Style<Label>({ alignSelf: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.xs, font: montserrat.semiBold(fontSize.metadata), marginBottom: spacing.sm, paddingBottom: spacing.xs, paddingLeft: spacing.sm, paddingRight: spacing.sm, paddingTop: spacing.xs, textAlign: 'center' }),
+  eyebrowContainer: new Style<View>({ alignSelf: 'center', borderRadius: radius.xs, marginBottom: spacing.sm, paddingBottom: spacing.xs, paddingLeft: spacing.sm, paddingRight: spacing.sm, paddingTop: spacing.xs }),
+  eyebrow: new Style<Label>({ font: montserrat.semiBold(fontSize.metadata), textAlign: 'center' }),
   title: new Style<Label>({ alignSelf: 'center', font: montserrat.extraBold(fontSize.section), marginBottom: spacing.sm, textAlign: 'center' }),
   message: new Style<Label>({ alignSelf: 'center', font: montserrat.regular(fontSize.product), marginBottom: spacing.md, textAlign: 'center' }),
   benefits: new Style<View>({ flexDirection: 'column', marginBottom: spacing.md, width: '100%' }),

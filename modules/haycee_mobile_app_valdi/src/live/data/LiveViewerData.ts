@@ -76,7 +76,11 @@ export interface LiveViewerProduct {
   title: string;
   price: number;
   originalPrice?: number;
-  stockLeft?: number;
+  stockLeft: number;
+  /** Starting stock count, used with stockLeft to render an accurate progress bar. */
+  stockTotal: number;
+  /** Leaf variant combinations and their independent inventory, e.g. Vert · XL. */
+  variantStocks?: LiveProductVariantStock[];
   /** Existing interest requests from other viewers in the local demo/API data. */
   requestCount?: number;
   shippingAmount: number;
@@ -88,6 +92,16 @@ export interface LiveViewerProduct {
   imageAspectRatio?: number;
   kind: 'listing' | 'auction';
   isPinned: boolean;
+}
+
+export interface LiveProductVariantStock {
+  id: string;
+  /** Compact display path for the option combination (color, size, shade, etc.). */
+  label: string;
+  remaining: number;
+  total: number;
+  /** Optional color swatch; omit it for non-color variant categories. */
+  swatchColor?: string;
 }
 
 export interface LiveViewerCartItem {
@@ -112,9 +126,16 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
       title: item.presentationType === 'auction'
         ? 'Montre chronographe automatique édition limitée en acier inoxydable avec cadran noir, bracelet premium et verre saphir'
         : 'Sac bandoulière en cuir grainé avec chaîne dorée',
-      price: item.presentationType === 'auction' ? 18500 : 24900,
+      price: item.presentationType === 'auction' ? 1_000_000 : 24900,
       originalPrice: item.presentationType === 'auction' ? undefined : 29900,
       stockLeft: item.presentationType === 'auction' ? 3 : 4,
+      stockTotal: 12,
+      variantStocks: [
+        { id: 'black-40', label: 'Noir · 40 mm', remaining: 2, total: 4, swatchColor: '#242424' },
+        { id: 'black-42', label: 'Noir · 42 mm', remaining: 0, total: 4, swatchColor: '#242424' },
+        { id: 'silver-40', label: 'Argent · 40 mm', remaining: 2, total: 2, swatchColor: '#C9C9C9' },
+        { id: 'silver-42', label: 'Argent · 42 mm', remaining: 0, total: 2, swatchColor: '#C9C9C9' },
+      ],
       requestCount: 1,
       shippingAmount: 1500,
       shippingLabel: 'Frais de livraison',
@@ -127,6 +148,12 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
       title: 'Sac à main vintage en cuir véritable avec détails métalliques',
       price: 32900,
       stockLeft: 12,
+      stockTotal: 30,
+      variantStocks: [
+        { id: 'black-standard', label: 'Noir · Standard', remaining: 8, total: 12, swatchColor: '#242424' },
+        { id: 'camel-standard', label: 'Camel · Standard', remaining: 0, total: 8, swatchColor: '#A87955' },
+        { id: 'green-standard', label: 'Vert · Standard', remaining: 4, total: 10, swatchColor: '#52724C' },
+      ],
       shippingAmount: 1500,
       shippingLabel: 'Frais de livraison',
       color: colors.livePanelSand,
@@ -139,6 +166,12 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
       price: 41750,
       originalPrice: 45900,
       stockLeft: 0,
+      stockTotal: 16,
+      variantStocks: [
+        { id: 'white-40', label: 'Blanc · 40', remaining: 0, total: 6, swatchColor: '#FFFFFF' },
+        { id: 'white-41', label: 'Blanc · 41', remaining: 0, total: 5, swatchColor: '#FFFFFF' },
+        { id: 'white-42', label: 'Blanc · 42', remaining: 0, total: 5, swatchColor: '#FFFFFF' },
+      ],
       shippingAmount: 1500,
       shippingLabel: 'Frais de livraison',
       color: colors.livePanelBlue,

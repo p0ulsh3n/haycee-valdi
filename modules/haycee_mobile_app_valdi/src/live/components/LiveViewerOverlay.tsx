@@ -25,7 +25,6 @@ export interface LiveViewerOverlayViewModel {
   onOpenCart: () => void;
   onOpenRequest: () => void;
   onOpenProducts: () => void;
-  onProductAction: (product: LiveViewerProduct) => void;
 }
 
 /**
@@ -160,7 +159,7 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
         height={this.productSurfaceCollapsed ? 0 : layout.live.viewer.productCardHeight}
         touchEnabled={this.overlayInteractive}
       >
-        <LiveProductSurface products={model.products} onProductAction={model.onProductAction} />
+        <LiveProductSurface products={model.products} onMore={model.onOpenProducts} />
       </view>
     </view>;
   }

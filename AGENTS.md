@@ -27,22 +27,35 @@ coherent with that file. This app uses the official bzlmod configuration introdu
 - Do not modify the Valdi source checkout to implement application features.
 - Do not add product features, navigation, networking layers, design systems or marketplace/live
   functionality as part of workspace setup.
+- Design-system-first UI is mandatory across the entire app. Before implementing or changing any
+  screen, component, layout, visual style, interaction state, loading state, feedback, sheet, tab,
+  card, or navigation UI, read `.codex/skills/haycee-valdi-design-system/SKILL.md` and
+  `docs/design-system/component-catalog.md`, then inspect the public barrel and matching source.
+  Reuse the existing design-system tokens/components. If the required reusable token or pattern
+  does not exist, implement it in `src/design-system` first, export it when it is public, update
+  the catalog and focused design-system guide, then compose the requested screen in the same task.
+  No screen-local substitute, duplicated shared style, or temporary UI implementation may bypass
+  this sequence.
 
 ## Reference and agent workflow
 
-1. Read the relevant official skill under `.codex/skills/`.
+1. For any UI/design task, first read `.codex/skills/haycee-valdi-design-system/SKILL.md` and
+   `docs/design-system/component-catalog.md`. Search and reuse the existing system; when a shared
+   piece is missing, add it to the design system and catalog before using it in the screen.
+2. Read the relevant official skill under `.codex/skills/`.
    For workstation/editor setup, also read `haycee-vscode-wsl`; for builds and validation,
    also read `haycee-valdi-build`.
-2. For every labeled action button, read `.codex/skills/haycee-valdi-buttons/SKILL.md`, apply its
+3. For every labeled action button, read `.codex/skills/haycee-valdi-buttons/SKILL.md`, apply its
    variant decision rules, and use the shared `DSButton` component.
-3. For any interactive screen or component with taps, navigation, buttons, dialogs/sheets,
+4. For any interactive screen or component with taps, navigation, buttons, dialogs/sheets,
    submissions, or pagination, read `.codex/skills/haycee-valdi-idempotency/SKILL.md` and apply
    its action-specific guard patterns.
-4. Query `docs/valdi-reference/API_INDEX.json` and follow its `source` pointer.
-5. Confirm the import and signature in the pinned/reference source before coding.
-6. Make the smallest module-scoped change.
-7. Run `pwsh -File scripts/valdi-validate.ps1` or the narrower Valdi command available.
-8. Update documentation only when the verified source/version evidence changes.
+5. Query `docs/valdi-reference/API_INDEX.json` and follow its `source` pointer.
+6. Confirm the import and signature in the pinned/reference source before coding.
+7. Make the smallest module-scoped change while keeping shared UI behavior in the design system.
+8. Run `pwsh -File scripts/valdi-validate.ps1` or the narrower Valdi command available.
+9. Update the component catalog and focused design-system documentation whenever the design system
+   changes; update the Valdi reference documentation when verified source/version evidence changes.
 
 `docs/valdi-reference/SOURCE_MANIFEST.json` is the version ledger. The reference checkout is
 outside this application tree and must remain read-only during application development.

@@ -30,6 +30,25 @@ export const layout = {
       posterAspectRatio: 0.75,
     },
   },
+  product: {
+    stockIndicator: {
+      progressHeight: 8,
+      progressMinWidth: 48,
+    },
+    stockCountPill: {
+      height: 20,
+    },
+    variantStockPreview: {
+      headingHeight: 20,
+      holdDurationMilliseconds: 4200,
+      iconSize: 12,
+      itemsPerPage: 2,
+      lowStockThreshold: 5,
+      rowHeight: 17,
+      tickerHeight: 34,
+      transitionDurationMilliseconds: 850,
+    },
+  },
   home: {
     header: {
       topPadding: 12,
@@ -150,14 +169,12 @@ export const layout = {
       productCountBadgeSize: 18,
       actionButtonSize: 40,
       actionRailWidth: 56,
-      productCardHeight: 174,
+      productCardHeight: 148,
       productCardWidth: 312,
-      productImageHeight: 72,
-      productButtonHeight: 38,
-      productFooterHeight: 18,
+      productGlassHeight: 148,
+      productImageHeight: 64,
+      shippingIconSize: 14,
       productAutoAdvanceMilliseconds: 5000,
-      productTickerHoldMilliseconds: 900,
-      productTickerDurationMilliseconds: 16000,
       wallet: {
         tabHeight: 44,
       },

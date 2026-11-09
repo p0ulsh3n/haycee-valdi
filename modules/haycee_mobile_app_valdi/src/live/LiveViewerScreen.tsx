@@ -444,7 +444,6 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
             onOpenCart={this.handleOpenCart}
             onOpenRequest={this.handleOpenRequestSheet}
             onOpenProducts={this.handleProducts}
-            onProductAction={this.handleProductAction}
           />
         ) : null}
       </view>

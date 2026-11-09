@@ -70,6 +70,8 @@ export interface TickerViewModel {
   style?: Style<ScrollView>;
   /** Optional label style; the component supplies a design-system body style by default. */
   textStyle?: Style<Label>;
+  /** Optional rich renderer for each rotating page, called once while rendering (not per animation frame). */
+  renderRotateItem?: (item: string, index: number) => void;
   /** Number of visible text lines. Defaults to one. */
   numberOfLines?: number;
   /** Called inside the rotate animation transaction, alongside the track movement. */
@@ -295,6 +297,7 @@ export class Ticker extends StatefulComponent<TickerViewModel, TickerState> {
       marqueeGap: this.viewModel.marqueeGap ?? 32,
       loopDelayMs: this.viewModel.loopDelayMs ?? 0,
       preserveMarqueePositionOnItemsChange: this.viewModel.preserveMarqueePositionOnItemsChange ?? false,
+      hasRotateItemRenderer: Boolean(this.viewModel.renderRotateItem),
     });
   }
 
@@ -670,7 +673,9 @@ export class Ticker extends StatefulComponent<TickerViewModel, TickerState> {
               key={`ticker-page-${index}`}
               style={this.getPageStyle()}
             >
-              {leadingIcons[index] ? (
+              {this.viewModel.renderRotateItem ? (
+                this.viewModel.renderRotateItem(item, index)
+              ) : leadingIcons[index] ? (
                 <layout style={styles.pageWithLeadingIcon}>
                   <image
                     src={leadingIcons[index]}

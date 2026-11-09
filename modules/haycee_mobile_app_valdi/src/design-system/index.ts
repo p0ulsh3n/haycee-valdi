@@ -40,6 +40,15 @@ export { FeatureDiscoverySheet } from './components/FeatureDiscoverySheet';
 export type { FeatureDiscoverySheetViewModel } from './components/FeatureDiscoverySheet';
 export { UpsellSheet } from './components/UpsellSheet';
 export type { UpsellSheetViewModel } from './components/UpsellSheet';
+export { LegalUpdateSheet } from './components/LegalUpdateSheet';
+export { getLegalUpdateSheetNavigationOptions } from './components/LegalUpdateSheet';
+export type {
+  LegalDocumentKind,
+  LegalUpdateChange,
+  LegalUpdateDocument,
+  LegalUpdateSection,
+  LegalUpdateSheetViewModel,
+} from './components/LegalUpdateSheet';
 export type {
   MediaActionLayout,
   MediaActionSheetBenefit,
@@ -95,5 +104,14 @@ export {
 export type { MasonryFeedViewModel, MasonryItem } from './components/MasonryFeed';
 export { MasonryProductCard } from './components/MasonryProductCard';
 export type { MasonryProduct, MasonryProductCardViewModel } from './components/MasonryProductCard';
+export { ProductStockIndicator } from './components/ProductStockIndicator';
+export type { ProductStockIndicatorViewModel } from './components/ProductStockIndicator';
+export { ProductStockCountPill } from './components/ProductStockCountPill';
+export type { ProductStockCountPillViewModel } from './components/ProductStockCountPill';
+export { ProductVariantStockPreview } from './components/ProductVariantStockPreview';
+export type {
+  ProductVariantStockItem,
+  ProductVariantStockPreviewViewModel,
+} from './components/ProductVariantStockPreview';
 export { Tooltip } from './components/Tooltip';
 export type { TooltipPlacement, TooltipViewModel } from './components/Tooltip';
