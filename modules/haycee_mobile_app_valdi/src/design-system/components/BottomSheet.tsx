@@ -15,6 +15,7 @@ import { radius } from '../tokens/radius';
 import { spacing } from '../tokens/spacing';
 import { noBounceScrollAttributes } from '../tokens/scrollBehavior';
 import { transformText, typography, TextCase } from '../tokens/typography';
+import { AsyncActionButton } from './AsyncActionButton';
 
 /**
  * Valdi exposes element refs as a holder interface. This adapter keeps one
@@ -68,15 +69,16 @@ export interface BottomSheetViewModel {
   /** Optional standard action at the bottom of the sheet. */
   footerLabel?: string;
   /** Called when the optional footer action is tapped. */
-  onFooterTap?: () => void;
+  onFooterTap?: () => void | Promise<unknown>;
   /** Footer surface; defaults to transparent to support floating actions. */
   footerBackground?: 'transparent' | 'surface';
 }
 
 export interface BottomSheetFooterViewModel {
   label: string;
-  onTap: () => void;
+  onTap: () => void | Promise<unknown>;
   disabled?: boolean;
+  loading?: boolean;
   background?: 'transparent' | 'surface';
 }
 
@@ -106,17 +108,18 @@ export const BOTTOM_SHEET_DEFAULTS = {
 /** Shared centered bottom-sheet action. `surface` adds an opaque footer backing. */
 export class BottomSheetFooter extends Component<BottomSheetFooterViewModel> {
   onRender(): void {
-    const { label, onTap, disabled = false, background = BOTTOM_SHEET_DEFAULTS.footerBackground } = this.viewModel;
+    const { label, onTap, disabled = false, loading = false, background = BOTTOM_SHEET_DEFAULTS.footerBackground } = this.viewModel;
     <view style={background === 'surface' ? footerStyles.surface : footerStyles.transparent}>
-      <view
-        style={footerStyles.button}
-        opacity={disabled ? 0.5 : 1}
-        onTapDisabled={disabled}
+      <AsyncActionButton
+        title={transformText(label, 'none')}
         onTap={onTap}
-        accessibilityCategory="button"
-      >
-        <label value={label} style={footerStyles.label} numberOfLines={1} />
-      </view>
+        buttonStyle={footerStyles.button.extend({ opacity: disabled ? 0.5 : 1 })}
+        labelStyle={footerStyles.label}
+        contentStyle={footerStyles.content}
+        spinnerColor={colors.textInverted}
+        disabled={disabled}
+        loading={loading}
+      />
     </view>;
   }
 }
@@ -327,6 +330,7 @@ const footerStyles = {
     paddingRight: spacing.xl,
   }),
   label: typography.button.extend({ color: colors.textInverted }),
+  content: new Style<View>({ alignItems: 'center', flexDirection: 'row' }),
 };
 
 const styles = {

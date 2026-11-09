@@ -10,6 +10,7 @@ export const palette = {
 
   black: '#000000',
   gray900: '#1F1F1F',
+  gray800: '#4A4A4A',
   gray700: '#5F5F5F',
   gray500: '#8A8A8A',
   gray300: '#C9C9C9',
@@ -33,9 +34,10 @@ export const palette = {
 export const colors = {
   backgroundPrimary: palette.white,
   backgroundSecondary: palette.gray100,
+  backgroundTertiary: palette.gray500,
   backgroundDark: palette.black,
   /** Visible underlay so Live's translucent surface has something to blend with. */
-  liveBackdrop: '#1D2730',
+  liveBackdrop: '#5F5F5F',
   /** Translucent dark material used by default transient feedback. */
   backgroundTransient: 'rgba(72, 72, 72, 0.82)',
   backgroundProfileHeader: 'rgba(0, 0, 0, 0.48)',
@@ -54,7 +56,7 @@ export const colors = {
   liveGlassBorder: 'rgba(255, 255, 255, 0.34)',
   /** Translucent dark material used over Live content, including its action buttons. */
   liveActionSurface: 'rgba(8, 14, 18, 0.42)',
-  liveViewerBadgeSurface: '#080E12',
+  liveChatUsername: '#B6B6B8',
   liveViewerBadgeGradient: `linear-gradient(135deg, rgba(137, 35, 160, 0.7) 0%, #F1A322 22.58%, ${palette.brandPurple} 100%)`,
   liveControlSurface: 'rgba(255, 255, 255, 0.88)',
   liveChatSurface: 'rgba(255, 255, 255, 0.76)',
@@ -65,10 +67,32 @@ export const colors = {
   liveCardBadgePromotion: palette.brandPurple,
   liveCardBadgeNew: '#DCEBFF',
   liveCardBadgeLimited: palette.black,
+  productRatingStar: '#FF9529',
+  productRatingStarEmpty: '#EAEAEA',
+  productRatingText: '#374151',
+  productDiscountSurface: '#FFF0F3',
+  productBadgeBestSeller: palette.orange,
+  productBadgeTrending: '#FF3A67',
+  productBadgeHot: palette.red,
+  productBadgeLoved: '#D63384',
+  productBadgeTopPick: palette.brandPurple,
+  productBadgeNew: palette.green,
+  productBadgeElite: '#C9960C',
+  productBadgeCertified: palette.gray700,
+  productBadgeOfficial: palette.blue,
+  productBadgeAuthorized: '#4A90D9',
+  offerAccent: palette.blue,
+  offerPositive: palette.green,
+  offerGold: '#A77A00',
+  offerDanger: palette.red,
+  offerWarning: palette.orange,
+  offerTeal: '#008F83',
+  offerMuted: palette.gray700,
   liveWalletStatusDelivered: '#E8EFE8',
   liveWalletStatusPending: '#F1EDE2',
 
   textPrimary: palette.black,
+  textPlaceholder: palette.gray800,
   textSecondary: palette.gray700,
   textTertiary: palette.gray500,
   textInverted: palette.white,
@@ -80,11 +104,11 @@ export const colors = {
 
   interactivePrimary: palette.brandPurple,
   interactivePrimaryPressed: palette.brandPurplePressed,
-  /** Filled primary call to action. */
+  /** CTA button surface (purple). */
   buttonPrimary: palette.brandPurple,
-  /** Neutral state shown after following a seller. */
-  buttonFollowing: palette.gray100,
-  /** Third button color: filled secondary action. */
+  /** Light neutral fill used by the neutral button variant. */
+  buttonNeutral: palette.gray100,
+  /** Black filled button surface. */
   buttonSecondary: palette.black,
   interactiveDisabled: palette.gray300,
   interactiveDanger: palette.red,

@@ -2,6 +2,7 @@ export { colors, palette } from './tokens/colors';
 export { radius } from './tokens/radius';
 export { layout, spacing } from './tokens/spacing';
 export { noBounceScrollAttributes } from './tokens/scrollBehavior';
+export { runNavigationAction } from './utils/NavigationActionGate';
 export {
   formatFcfa,
   formatIntegerWithDotSeparator,
@@ -22,7 +23,9 @@ export {
   uppercase,
 } from './tokens/typography';
 export { DSButton } from './components/DSButton';
-export type { DSButtonVariant, DSButtonViewModel } from './components/DSButton';
+export type { DSButtonSize, DSButtonVariant, DSButtonViewModel } from './components/DSButton';
+export { AsyncActionButton } from './components/AsyncActionButton';
+export type { AsyncActionButtonViewModel } from './components/AsyncActionButton';
 export {
   SnackBarComponent,
   SnackBarManager,
@@ -33,6 +36,18 @@ export { InAppBannerComponent, InAppBannerManager } from './components/InAppBann
 export type { InAppBannerConfig } from './components/InAppBanner';
 export { AlertDialog } from './components/AlertDialog';
 export type { AlertDialogViewModel } from './components/AlertDialog';
+export { FeatureDiscoverySheet } from './components/FeatureDiscoverySheet';
+export type { FeatureDiscoverySheetViewModel } from './components/FeatureDiscoverySheet';
+export { UpsellSheet } from './components/UpsellSheet';
+export type { UpsellSheetViewModel } from './components/UpsellSheet';
+export type {
+  MediaActionLayout,
+  MediaActionSheetBenefit,
+  MediaActionSheetButtonTone,
+  MediaActionSheetMediaType,
+  MediaActionSheetTone,
+  MediaActionSheetViewModel,
+} from './components/MediaActionSheetContent';
 export { ActionSheet } from './components/ActionSheet';
 export type { ActionSheetOption, ActionSheetViewModel } from './components/ActionSheet';
 export { BottomTabsNavigation, defaultBottomTabs } from './components/BottomTabsNavigation';
@@ -46,12 +61,15 @@ export { DSBadge } from './components/DSBadge';
 export type { DSBadgeVariant, DSBadgeViewModel } from './components/DSBadge';
 export { TabChips } from './components/TabChips';
 export type { TabChipItem, TabChipsViewModel } from './components/TabChips';
+export { RadioSelection } from './components/RadioSelection';
+export type { RadioSelectionViewModel } from './components/RadioSelection';
 export { Ticker } from './components/Ticker';
 export type {
   TickerDirection,
   TickerMode,
   TickerOrientation,
   TickerRotateTransition,
+  TickerVerticalAlignment,
   TickerViewModel,
 } from './components/Ticker';
 export {

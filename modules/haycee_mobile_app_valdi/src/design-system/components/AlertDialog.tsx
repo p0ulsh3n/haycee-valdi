@@ -2,11 +2,12 @@ import { Style } from 'valdi_core/src/Style';
 import { when } from 'valdi_core/src/utils/When';
 import { Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
-import { NavigationPageComponent } from 'valdi_navigation/src/NavigationPageComponent';
+import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { colors } from '../tokens/colors';
 import { radius } from '../tokens/radius';
 import { spacing } from '../tokens/spacing';
 import { transformText, typography, TextCase } from '../tokens/typography';
+import { AsyncActionButton } from './AsyncActionButton';
 
 export interface AlertDialogViewModel {
   title: string;
@@ -21,18 +22,52 @@ export interface AlertDialogViewModel {
   /** Used only when showOverlay is true. */
   overlayOpacity?: number;
   dismissOnOverlayTap?: boolean;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<unknown>;
   onCancel?: () => void;
 }
 
+interface AlertDialogState {
+  isConfirming: boolean;
+}
+
 @NavigationPage(module)
-export class AlertDialog extends NavigationPageComponent<AlertDialogViewModel> {
-  private handleConfirm = (): void => {
-    this.viewModel.onConfirm();
-    this.navigationController.dismiss(true);
+export class AlertDialog extends NavigationPageStatefulComponent<AlertDialogViewModel, AlertDialogState> {
+  state: AlertDialogState = { isConfirming: false };
+  private confirmPending = false;
+
+  private handleConfirm = (): void | Promise<unknown> => {
+    if (this.confirmPending) return;
+    this.confirmPending = true;
+
+    let result: void | Promise<unknown>;
+    try {
+      result = this.viewModel.onConfirm();
+    } catch (error) {
+      this.confirmPending = false;
+      throw error;
+    }
+
+    if (!result || typeof result.then !== 'function') {
+      this.navigationController.dismiss(true);
+      return;
+    }
+
+    this.setState({ isConfirming: true });
+    return result.then(
+      () => {
+        if (!this.isDestroyed()) this.navigationController.dismiss(true);
+      },
+      error => {
+        if (!this.isDestroyed()) this.setState({ isConfirming: false });
+        console.warn('Alert dialog confirmation failed.', error);
+      },
+    ).finally(() => {
+      this.confirmPending = false;
+    });
   };
 
   private handleCancel = (): void => {
+    if (this.confirmPending) return;
     this.viewModel.onCancel?.();
     this.navigationController.dismiss(true);
   };
@@ -49,6 +84,7 @@ export class AlertDialog extends NavigationPageComponent<AlertDialogViewModel> {
         <view
           style={styles.overlay}
           opacity={this.viewModel.overlayOpacity ?? 0.56}
+          onTapDisabled={this.state.isConfirming}
           onTap={this.handleOverlayTap}
         />;
       })}
@@ -69,7 +105,12 @@ export class AlertDialog extends NavigationPageComponent<AlertDialogViewModel> {
         </layout>
         <view style={styles.divider} />
         <layout style={styles.actions}>
-          <view style={styles.action} onTap={this.handleCancel} accessibilityCategory="button">
+          <view
+            style={this.state.isConfirming ? styles.actionDisabled : styles.action}
+            onTapDisabled={this.state.isConfirming}
+            onTap={this.handleCancel}
+            accessibilityCategory="button"
+          >
             <label
               style={styles.cancelLabel}
               value={transformText(this.viewModel.cancelLabel ?? 'Annuler', this.viewModel.textCase)}
@@ -77,18 +118,15 @@ export class AlertDialog extends NavigationPageComponent<AlertDialogViewModel> {
             />
           </view>
           <view style={styles.actionDivider} />
-          <view style={styles.action} onTap={this.handleConfirm} accessibilityCategory="button">
-            <label
-              style={
-                this.viewModel.confirmStyle === 'danger' ? styles.dangerLabel : styles.confirmLabel
-              }
-              value={transformText(
-                this.viewModel.confirmLabel ?? 'Confirmer',
-                this.viewModel.textCase,
-              )}
-              numberOfLines={1}
-            />
-          </view>
+          <AsyncActionButton
+            title={transformText(this.viewModel.confirmLabel ?? 'Confirmer', this.viewModel.textCase)}
+            onTap={this.handleConfirm}
+            buttonStyle={styles.action}
+            labelStyle={this.viewModel.confirmStyle === 'danger' ? styles.dangerLabel : styles.confirmLabel}
+            contentStyle={styles.confirmContent}
+            spinnerColor={this.viewModel.confirmStyle === 'danger' ? colors.textDanger : colors.interactivePrimary}
+            loading={this.state.isConfirming}
+          />
         </layout>
       </view>
     </layout>;
@@ -139,6 +177,17 @@ const styles = {
   action: new Style<View>({
     alignItems: 'center',
     flexGrow: 1,
+    justifyContent: 'center',
+  }),
+  actionDisabled: new Style<View>({
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+    opacity: 0.5,
+  }),
+  confirmContent: new Style<View>({
+    alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
   }),
   actionDivider: new Style<View>({

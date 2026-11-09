@@ -15,6 +15,7 @@ import type { LiveViewerMessage } from '../data/LiveViewerData';
 
 export interface LiveChatFeedViewModel {
   messages: LiveViewerMessage[];
+  avatarBorderColor?: string;
 }
 
 const LIVE_CHAT_MASK_IMAGE =
@@ -26,16 +27,30 @@ const LIVE_CHAT_MASK_IMAGE_AT_BOTTOM =
 const LIVE_CHAT_MASK_IMAGE_NO_SCROLL = 'linear-gradient(#000000 0%, #000000 100%)';
 const SCROLL_EDGE_THRESHOLD = 1;
 
-class LiveChatMessageRow extends Component<{ message: LiveViewerMessage }> {
+class LiveChatMessageRow extends Component<{ message: LiveViewerMessage; avatarBorderColor?: string }> {
   onRender(): void {
-    const { message } = this.viewModel;
+    const { message, avatarBorderColor } = this.viewModel;
     const username = normalizeUsername(message.username);
     <view style={styles.messageRow}>
       <view style={styles.avatarSlot}>
-        <view style={styles.avatarFallback}>
+        <view
+          style={styles.avatarFallback.extend({
+            borderColor: avatarBorderColor ?? 'transparent',
+            borderWidth: avatarBorderColor ? 1 : 0,
+          })}
+        >
           <label value={username.slice(0, 1).toUpperCase()} style={styles.avatarInitial} numberOfLines={1} />
         </view>
-        {message.avatarUrl ? <image src={message.avatarUrl} style={styles.avatar} objectFit="cover" /> : null}
+        {message.avatarUrl ? (
+          <image
+            src={message.avatarUrl}
+            style={styles.avatar.extend({
+              borderColor: avatarBorderColor ?? 'transparent',
+              borderWidth: avatarBorderColor ? 1 : 0,
+            })}
+            objectFit="cover"
+          />
+        ) : null}
       </view>
       <view style={styles.messageCopy}>
         <label
@@ -128,7 +143,13 @@ export class LiveChatFeed extends Component<LiveChatFeedViewModel> {
       onContentSizeChange={this.handleContentSizeChange}
     >
       <layout style={styles.content}>
-        {messages.map(message => <LiveChatMessageRow key={message.id} message={message} />)}
+        {messages.map(message => (
+          <LiveChatMessageRow
+            key={message.id}
+            message={message}
+            avatarBorderColor={this.viewModel.avatarBorderColor}
+          />
+        ))}
       </layout>
     </scroll>;
   }
@@ -178,9 +199,7 @@ const styles = {
     maxWidth: '100%',
   }),
   avatar: new Style<ImageView>({
-    borderColor: 'rgba(255, 255, 255, 0.82)',
     borderRadius: radius.full,
-    borderWidth: 1,
     height: layout.live.viewer.sellerAvatarSize,
     left: 0,
     position: 'absolute',
@@ -198,9 +217,7 @@ const styles = {
   avatarFallback: new Style<View>({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.16)',
-    borderColor: 'rgba(255, 255, 255, 0.82)',
     borderRadius: radius.full,
-    borderWidth: 1,
     height: layout.live.viewer.sellerAvatarSize,
     justifyContent: 'center',
     width: layout.live.viewer.sellerAvatarSize,
@@ -214,6 +231,6 @@ const styles = {
     flexGrow: 1,
     flexShrink: 1,
   }),
-  username: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.body) }),
-  messageText: new Style<Label>({ color: colors.textInverted, font: montserrat.regular(fontSize.metadata), marginTop: 1 }),
+  username: new Style<Label>({ color: colors.liveChatUsername, font: montserrat.semiBold(fontSize.body) }),
+  messageText: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.body), marginTop: 1 }),
 };

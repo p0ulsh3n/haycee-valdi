@@ -29,6 +29,7 @@ export class MessageBubble extends StatefulComponent<MessageBubbleViewModel, Mes
   private static activeVoiceBubble?: MessageBubble;
   private playbackRequest = 0;
   private playbackTimer?: number;
+  private playbackPending = false;
 
   onDestroy(): void {
     if (MessageBubble.activeVoiceBubble === this) {
@@ -111,11 +112,16 @@ export class MessageBubble extends StatefulComponent<MessageBubbleViewModel, Mes
   }
 
   private toggleVoicePlayback = async (fileUri: string, durationMillis: number): Promise<void> => {
-    if (MessageBubble.activeVoiceBubble === this && (this.state.isVoicePlaying || this.state.isVoiceLoading)) {
+    if (this.playbackPending) return;
+
+    if (MessageBubble.activeVoiceBubble === this && this.state.isVoicePlaying) {
       this.stopVoicePlayback(true);
       return;
     }
 
+    if (MessageBubble.activeVoiceBubble === this && this.state.isVoiceLoading) return;
+
+    this.playbackPending = true;
     MessageBubble.activeVoiceBubble?.stopVoicePlayback(true);
     MessageBubble.activeVoiceBubble = this;
     const request = ++this.playbackRequest;
@@ -149,6 +155,8 @@ export class MessageBubble extends StatefulComponent<MessageBubbleViewModel, Mes
         this.setState({ isVoiceLoading: false, isVoicePlaying: false });
       }
       console.warn('Unable to prepare voice message for playback.', error);
+    } finally {
+      this.playbackPending = false;
     }
   };
 

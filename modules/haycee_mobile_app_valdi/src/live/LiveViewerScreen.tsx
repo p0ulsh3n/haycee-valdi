@@ -8,35 +8,43 @@ import { getBottomSheetNavigationOptions } from '../design-system/components/Bot
 import { colors } from '../design-system/tokens/colors';
 import { formatFcfa } from '../design-system/utils/money';
 import { normalizeUsername } from '../design-system/utils/identity';
+import { runNavigationAction } from '../design-system/utils/NavigationActionGate';
 import { layout, spacing } from '../design-system/tokens/spacing';
 import type { MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { SellerProfileScreen } from '../sellers/SellerProfileScreen';
 import { createDemoSellerLiveItems, createDemoSellerStoreProducts } from '../sellers/data/SellerStorefrontData';
 import { LiveViewerOverlay } from './components/LiveViewerOverlay';
+import { LiveReactionTrail } from './components/LiveReactionTrail';
 import { UpcomingLiveScreen } from './UpcomingLiveScreen';
-import { JoinAlert } from './components/JoinAlert';
+import { LiveStreamAlerts } from './components/LiveStreamAlerts';
+import type { LiveStreamAlertEntry, LiveStreamAlertType } from './components/LiveStreamAlerts';
 import { LiveProductsSheet } from './components/LiveProductsSheet';
 import { LiveCartSheet } from './components/LiveCartSheet';
 import { LiveRequestSheet } from './components/LiveRequestSheet';
 import { LiveSellerProfileSheet } from './components/LiveSellerProfileSheet';
+import { LiveFollowPromptSheet } from './components/LiveFollowPromptSheet';
 import { LiveWalletSheet } from './components/LiveWalletSheet';
 import { LiveViewerHeader } from './components/LiveViewerHeader';
 import type { LiveFeedItem } from './data/LiveFeedData';
 import { createLiveViewerDemoContent } from './data/LiveViewerData';
 import type { LiveViewerCartItem, LiveViewerDemoContent, LiveViewerMessage, LiveViewerProduct } from './data/LiveViewerData';
 
+const seenFollowPromptLiveIds = new Set<string>();
+
 interface LiveViewerScreenViewModel {
   item: LiveFeedItem;
+  /** Initial viewer-specific follow state supplied by the caller when available. */
+  initialIsFollowing?: boolean;
 }
 
 interface LiveViewerScreenState {
-  isLiked: boolean;
   isFollowing: boolean;
   likeCount: number;
   commentDraft: string;
   messages: LiveViewerMessage[];
   cartItems: LiveViewerCartItem[];
   requestedProductIds: string[];
+  streamAlertEntries: LiveStreamAlertEntry[];
 }
 
 /**
@@ -46,30 +54,41 @@ interface LiveViewerScreenState {
 @NavigationPage(module)
 export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewerScreenViewModel, LiveViewerScreenState> {
   state: LiveViewerScreenState = {
-    isLiked: false,
-    isFollowing: true,
+    isFollowing: false,
     likeCount: 0,
     commentDraft: '',
     messages: [],
     cartItems: [],
     requestedProductIds: [],
+    streamAlertEntries: [],
   };
 
   private demoContent?: LiveViewerDemoContent;
   private messageSequence = 0;
+  private pendingHeartCount = 0;
+  private heartCountFlushScheduled = false;
+  private streamAlertSequence = 0;
+  private streamAlertDemoCycle = 0;
+  private hasShownFollowPrompt = false;
 
   onCreate(): void {
     const item = this.viewModel.item;
     this.demoContent = createLiveViewerDemoContent(item);
     this.state = {
-      isLiked: false,
-      isFollowing: true,
+      isFollowing: this.viewModel.initialIsFollowing ?? false,
       likeCount: Math.max(0, Math.round(item.viewers * 3.4)),
       commentDraft: '',
       messages: this.demoContent.messages,
       cartItems: [],
       requestedProductIds: [],
+      streamAlertEntries: [],
     };
+    if (item.status === 'live') {
+      this.scheduleStreamAlertDemoCycle();
+      if (!this.state.isFollowing) {
+        this.setTimeoutDisposable(this.showFollowPrompt, FOLLOW_PROMPT_DELAY_MS);
+      }
+    }
   }
 
   private handleBack = (): void => {
@@ -77,37 +96,122 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   };
 
   private handleOpenLiveItem = (item: LiveFeedItem): void => {
-    this.navigationController.push(LiveViewerScreen, { item }, {}, { animated: true });
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.push(LiveViewerScreen, { item }, {}, { animated: true });
+    });
   };
 
-  private handleLike = (): void => {
-    const isLiked = !this.state.isLiked;
-    this.setState({
-      isLiked,
-      likeCount: Math.max(0, this.state.likeCount + (isLiked ? 1 : -1)),
+  private handleHeartEmitted = (): void => {
+    this.pendingHeartCount += 1;
+    if (this.heartCountFlushScheduled) return;
+
+    this.heartCountFlushScheduled = true;
+    this.setTimeoutDisposable(() => {
+      this.heartCountFlushScheduled = false;
+      const emittedCount = this.pendingHeartCount;
+      this.pendingHeartCount = 0;
+      if (emittedCount > 0 && !this.isDestroyed()) {
+        this.setState({ likeCount: this.state.likeCount + emittedCount });
+      }
+    }, 150);
+  };
+
+  private addDemoStreamAlert = (type: LiveStreamAlertType, messageIndex: number): void => {
+    const messages = this.demoContent?.messages ?? [];
+    const message = messages[messageIndex % Math.max(1, messages.length)];
+    const demoNames = ['Nadia', 'Mariam', 'Awa', 'Maya', 'Lina', 'Sarah'];
+    const username = message?.username ?? demoNames[messageIndex % demoNames.length];
+    const entry: LiveStreamAlertEntry = {
+      id: `${this.viewModel.item.id}-stream-alert-${this.streamAlertSequence++}`,
+      username,
+      avatarUrl: message?.avatarUrl,
+      type,
+    };
+    this.setState({ streamAlertEntries: [...this.state.streamAlertEntries.slice(-23), entry] });
+  };
+
+  private scheduleStreamAlertDemoCycle = (): void => {
+    const cycleOffset = this.streamAlertDemoCycle++ * 3;
+    const events: Array<{ type: LiveStreamAlertType; messageIndex: number; delayMs: number }> = [
+      { type: 'join', messageIndex: cycleOffset + 1, delayMs: 250 },
+      { type: 'share', messageIndex: cycleOffset + 2, delayMs: 400 },
+      { type: 'join', messageIndex: cycleOffset + 3, delayMs: 750 },
+      { type: 'share', messageIndex: cycleOffset + 4, delayMs: 1150 },
+      { type: 'join', messageIndex: cycleOffset + 5, delayMs: 1650 },
+    ];
+    events.forEach(event => {
+      this.setTimeoutDisposable(() => this.addDemoStreamAlert(event.type, event.messageIndex), event.delayMs);
     });
+    this.setTimeoutDisposable(this.scheduleStreamAlertDemoCycle, 7000);
   };
 
   private handleToggleFollow = (): void => {
     this.setState({ isFollowing: !this.state.isFollowing });
   };
 
+  private showFollowPrompt = (): void => {
+    const liveId = this.viewModel.item.id;
+    if (
+      this.isDestroyed()
+      || this.state.isFollowing
+      || this.hasShownFollowPrompt
+      || seenFollowPromptLiveIds.has(liveId)
+      || this.viewModel.item.status !== 'live'
+    ) {
+      return;
+    }
+
+    const opened = runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveFollowPromptSheet,
+        {
+          sellerName: this.viewModel.item.hostName,
+          sellerAvatarUrl: this.viewModel.item.vendorAvatarUrl,
+          onFollow: this.followFromPrompt,
+          showOverlay: false,
+          enableGestures: true,
+        },
+        {},
+        {
+          animated: true,
+          wrapInPlatformNavigationController: false,
+          ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
+        },
+      );
+    });
+
+    if (opened) {
+      this.hasShownFollowPrompt = true;
+      seenFollowPromptLiveIds.add(liveId);
+      return;
+    }
+
+    // A different native navigation transition may be in flight at the due time.
+    this.setTimeoutDisposable(this.showFollowPrompt, 900);
+  };
+
+  private followFromPrompt = (): void => {
+    if (!this.state.isFollowing) this.setState({ isFollowing: true });
+  };
+
   private handleOpenSellerProfile = (): void => {
-    this.navigationController.present(
-      LiveSellerProfileSheet,
-      {
-        item: this.viewModel.item,
-        isFollowing: this.state.isFollowing,
-        onToggleFollow: this.handleToggleFollow,
-        onOpenStore: this.handleOpenSellerStore,
-      },
-      {},
-      {
-        animated: true,
-        wrapInPlatformNavigationController: false,
-        ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
-      },
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveSellerProfileSheet,
+        {
+          item: this.viewModel.item,
+          isFollowing: this.state.isFollowing,
+          onToggleFollow: this.handleToggleFollow,
+          onOpenStore: this.handleOpenSellerStore,
+        },
+        {},
+        {
+          animated: true,
+          wrapInPlatformNavigationController: false,
+          ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
+        },
+      );
+    });
   };
 
   private handleOpenSellerStore = (): void => {
@@ -162,28 +266,32 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
       },
       ...createDemoSellerLiveItems(firstProduct).slice(2),
     ];
-    this.navigationController.push(
-      SellerProfileScreen,
-      {
-        product: firstProduct,
-        sellerProducts,
-        sellerLiveItems,
-        onOpenLive: (sellerLiveItem: LiveFeedItem) => {
-          if (sellerLiveItem.status === 'upcoming') {
-            this.navigationController.push(
-              UpcomingLiveScreen,
-              { item: sellerLiveItem, onOpenLive: this.handleOpenLiveItem },
-              {},
-              { animated: true },
-            );
-            return;
-          }
-          this.navigationController.push(LiveViewerScreen, { item: sellerLiveItem }, {}, { animated: true });
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.push(
+        SellerProfileScreen,
+        {
+          product: firstProduct,
+          sellerProducts,
+          sellerLiveItems,
+          onOpenLive: (sellerLiveItem: LiveFeedItem) => {
+            runNavigationAction(this.navigationController, () => {
+              if (sellerLiveItem.status === 'upcoming') {
+                this.navigationController.push(
+                  UpcomingLiveScreen,
+                  { item: sellerLiveItem, onOpenLive: this.handleOpenLiveItem },
+                  {},
+                  { animated: true },
+                );
+                return;
+              }
+              this.navigationController.push(LiveViewerScreen, { item: sellerLiveItem }, {}, { animated: true });
+            });
+          },
         },
-      },
-      {},
-      { animated: true },
-    );
+        {},
+        { animated: true },
+      );
+    });
   };
 
   private handleDraftChange = (event: EditTextEvent): void => {
@@ -210,67 +318,75 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   };
 
   private handleWallet = (): void => {
-    this.navigationController.present(
-      LiveWalletSheet,
-      {},
-      {},
-      {
-        animated: true,
-        wrapInPlatformNavigationController: false,
-        ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
-      },
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveWalletSheet,
+        {},
+        {},
+        {
+          animated: true,
+          wrapInPlatformNavigationController: false,
+          ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
+        },
+      );
+    });
   };
 
   private handleProducts = (): void => {
     const products = this.demoContent?.products;
     if (!products) return;
     const sheetOptions = { transparentPageBackground: true };
-    this.navigationController.present(
-      LiveProductsSheet,
-      {
-        products,
-        cartItems: this.state.cartItems,
-        onCartChange: this.handleCartChange,
-        onBuy: this.handleProductAction,
-        onCheckout: this.handleCheckout,
-      },
-      {},
-      { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions(sheetOptions) },
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveProductsSheet,
+        {
+          products,
+          cartItems: this.state.cartItems,
+          onCartChange: this.handleCartChange,
+          onBuy: this.handleProductAction,
+          onCheckout: this.handleCheckout,
+        },
+        {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions(sheetOptions) },
+      );
+    });
   };
 
   private handleOpenCart = (): void => {
     const sheetOptions = { transparentPageBackground: true };
-    this.navigationController.present(
-      LiveCartSheet,
-      {
-        cartItems: this.state.cartItems,
-        onCartChange: this.handleCartChange,
-        onCheckout: this.handleCheckout,
-      },
-      {},
-      { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions(sheetOptions) },
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveCartSheet,
+        {
+          cartItems: this.state.cartItems,
+          onCartChange: this.handleCartChange,
+          onCheckout: this.handleCheckout,
+        },
+        {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions(sheetOptions) },
+      );
+    });
   };
 
   private handleOpenRequestSheet = (): void => {
     const products = this.demoContent?.products;
     if (!products?.length) return;
-    this.navigationController.present(
-      LiveRequestSheet,
-      {
-        products,
-        requestedProductIds: this.state.requestedProductIds,
-        onRequest: this.handleRequestProduct,
-      },
-      {},
-      {
-        animated: true,
-        wrapInPlatformNavigationController: false,
-        ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
-      },
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveRequestSheet,
+        {
+          products,
+          requestedProductIds: this.state.requestedProductIds,
+          onRequest: this.handleRequestProduct,
+        },
+        {},
+        {
+          animated: true,
+          wrapInPlatformNavigationController: false,
+          ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
+        },
+      );
+    });
   };
 
   private handleRequestProduct = (product: LiveViewerProduct): void => {
@@ -304,24 +420,26 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
         <LiveViewerHeader
           item={item}
           isFollowing={this.state.isFollowing}
+          likeCount={this.state.likeCount}
           onBack={this.handleBack}
           onShare={this.handleShare}
           onOpenProfile={this.handleOpenSellerProfile}
           onToggleFollow={this.handleToggleFollow}
         />
 
-        <view style={styles.stageCenter} />
+        <view style={styles.stageCenter}>
+          {isLive ? (
+            <LiveReactionTrail onHeartEmitted={this.handleHeartEmitted} />
+          ) : null}
+        </view>
 
         {isLive ? (
           <LiveViewerOverlay
             messages={this.state.messages}
             commentDraft={this.state.commentDraft}
-            likeCount={this.state.likeCount}
-            isLiked={this.state.isLiked}
             products={content.products}
             onDraftChange={this.handleDraftChange}
             onSendComment={this.handleSendComment}
-            onLike={this.handleLike}
             onWallet={this.handleWallet}
             onOpenCart={this.handleOpenCart}
             onOpenRequest={this.handleOpenRequestSheet}
@@ -333,12 +451,14 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
 
       {isLive ? (
         <view style={styles.joinAlertPosition.extend({ top: topInset + 88 })}>
-          <JoinAlert username="Nadia" />
+          <LiveStreamAlerts entries={this.state.streamAlertEntries} />
         </view>
       ) : null}
     </view>;
   }
 }
+
+const FOLLOW_PROMPT_DELAY_MS = 30_000;
 
 const styles = {
   screen: new Style<View>({
@@ -351,15 +471,14 @@ const styles = {
     flexShrink: 1,
   }),
   stageCenter: new Style<View>({
-    alignItems: 'center',
+    alignItems: 'stretch',
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingLeft: spacing.xxxl,
-    paddingRight: spacing.xxxl,
+    flexShrink: 1,
   }),
   joinAlertPosition: new Style<View>({
-    left: layout.live.viewer.horizontalPadding,
+    left: 0,
     position: 'absolute',
+    right: 0,
     zIndex: 4,
   }),
 };

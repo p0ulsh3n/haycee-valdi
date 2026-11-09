@@ -2,8 +2,9 @@ import { StatefulComponent } from 'valdi_core/src/Component';
 import { AnimationCurve } from 'valdi_core/src/AnimationOptions';
 import { Style } from 'valdi_core/src/Style';
 import { TouchEvent, TouchEventState } from 'valdi_tsx/src/GestureEvents';
-import { EditTextEvent, Label, Layout, TextView, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { EditTextEvent, Label, Layout, SpinnerView, TextView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
+import { AsyncActionButton } from '../../design-system/components/AsyncActionButton';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
@@ -13,8 +14,8 @@ import { cancelVoiceRecording, finishVoiceRecording, requestVoicePermission, sta
 interface VoiceClip { fileUri: string; durationMillis: number; waveform: number[] }
 
 interface MessageComposerViewModel {
-  onSend: (text: string) => void;
-  onOpenGallery: () => void;
+  onSend: (text: string) => void | Promise<void>;
+  onOpenGallery: () => void | Promise<void>;
   onSendVoice: (clip: VoiceClip) => void;
   onInputBegin?: () => void;
   bottomInset?: number;
@@ -31,6 +32,8 @@ interface MessageComposerState {
   recordingHintArrowVisible: boolean;
   recordingLocked: boolean;
   lockProgress: number;
+  isSending: boolean;
+  microphonePermissionPending: boolean;
 }
 
 export class MessageComposer extends StatefulComponent<MessageComposerViewModel, MessageComposerState> {
@@ -38,7 +41,7 @@ export class MessageComposer extends StatefulComponent<MessageComposerViewModel,
     text: '', recording: false, cancelRecording: false, recordingError: false,
     microphoneReady: false, recordingElapsedSeconds: 0, recordingMicVisible: true,
     recordingHintArrowVisible: false,
-    recordingLocked: false, lockProgress: 0,
+    recordingLocked: false, lockProgress: 0, isSending: false, microphonePermissionPending: false,
   };
   private recordingStarted = false;
   private recordingStartedAt = 0;
@@ -47,6 +50,9 @@ export class MessageComposer extends StatefulComponent<MessageComposerViewModel,
   private recordingTouchActive = false;
   private recordingTouchStartX = 0;
   private recordingTouchStartY = 0;
+  private recordingStartPending = false;
+  private sendPending = false;
+  private microphonePermissionPending = false;
 
   onDestroy(): void {
     this.clearRecordingTimer();
@@ -63,25 +69,40 @@ export class MessageComposer extends StatefulComponent<MessageComposerViewModel,
   private handleEditBegin = (): void => this.viewModel.onInputBegin?.();
 
   private handleMicTouchStart = async (_event: TouchEvent): Promise<void> => {
-    if (this.state.microphoneReady || this.state.recording) return;
+    if (this.state.microphoneReady || this.state.recording || this.microphonePermissionPending) return;
+    this.microphonePermissionPending = true;
+    this.setState({ microphonePermissionPending: true });
     try {
       await requestVoicePermission();
       if (!this.isDestroyed()) this.setState({ microphoneReady: true, recordingError: false });
     } catch (error) {
       if (!this.isDestroyed()) this.setState({ recordingError: true });
       console.warn('Microphone permission was not granted.', error);
+    } finally {
+      this.microphonePermissionPending = false;
+      if (!this.isDestroyed()) this.setState({ microphonePermissionPending: false });
     }
   };
 
-  private handleSend = (): void => {
+  private handleSend = async (): Promise<void> => {
+    if (this.sendPending || this.state.isSending) return;
     const text = this.state.text.trim();
     if (!text) return;
-    this.setState({ text: '' });
-    this.viewModel.onSend(text);
+    this.sendPending = true;
+    this.setState({ text: '', isSending: true });
+    try {
+      await this.viewModel.onSend(text);
+    } catch (error) {
+      console.warn('Unable to send message.', error);
+    } finally {
+      this.sendPending = false;
+      if (!this.isDestroyed()) this.setState({ isSending: false });
+    }
   };
 
   private handleStartHold = async (_event: TouchEvent): Promise<void> => {
-    if (this.state.text.trim() || this.state.recording || !this.state.microphoneReady) return;
+    if (this.state.text.trim() || this.state.recording || this.recordingStartPending || !this.state.microphoneReady) return;
+    this.recordingStartPending = true;
     this.releaseBeforePermission = false;
     this.recordingStarted = false;
     this.setStateAnimated(
@@ -115,6 +136,8 @@ export class MessageComposer extends StatefulComponent<MessageComposerViewModel,
         this.setStateAnimated({ recording: false, recordingError: true }, { duration: 0.22, curve: AnimationCurve.EaseInOut, beginFromCurrentState: true });
       }
       console.warn('Unable to start voice recording.', error);
+    } finally {
+      this.recordingStartPending = false;
     }
   };
 
@@ -294,15 +317,19 @@ export class MessageComposer extends StatefulComponent<MessageComposerViewModel,
               />
             </view>
             <view style={styles.inputActions}>
-              <view
-                style={styles.inputIconButton}
-                opacity={this.state.recording ? 0 : 1}
-                translationX={this.state.recording ? 14 : 0}
-                onTap={this.viewModel.onOpenGallery}
-                onTapDisabled={this.state.recording}
-                accessibilityCategory="button"
-              >
-                <image src={navigationIcons.album02} tint={colors.textSecondary} width={21} height={21} objectFit="contain" />
+              <view opacity={this.state.recording ? 0 : 1} translationX={this.state.recording ? 14 : 0}>
+                <AsyncActionButton
+                  title=""
+                  onTap={this.viewModel.onOpenGallery}
+                  buttonStyle={styles.inputIconButton}
+                  labelStyle={styles.actionSpacer}
+                  contentStyle={styles.actionIconContent}
+                  icon={navigationIcons.album02}
+                  iconSize={21}
+                  iconTint={colors.textSecondary}
+                  spinnerColor={colors.textSecondary}
+                  disabled={this.state.recording}
+                />
               </view>
               {!hasText ? (
                 <view
@@ -316,21 +343,34 @@ export class MessageComposer extends StatefulComponent<MessageComposerViewModel,
                   touchAreaExtension={12}
                   accessibilityCategory="button"
                 >
-                  <image
-                    src={navigationIcons.mic02}
-                    tint={this.state.recording ? colors.textInverted : colors.textSecondary}
-                    width={21}
-                    height={21}
-                    objectFit="contain"
-                  />
+                  {this.state.microphonePermissionPending ? (
+                    <spinner color={colors.textSecondary} style={styles.microphoneSpinner} />
+                  ) : (
+                    <image
+                      src={navigationIcons.mic02}
+                      tint={this.state.recording ? colors.textInverted : colors.textSecondary}
+                      width={21}
+                      height={21}
+                      objectFit="contain"
+                    />
+                  )}
                 </view>
               ) : null}
             </view>
           </view>
-          {hasText ? (
-            <view style={styles.sendButton} onTap={this.handleSend} accessibilityCategory="button">
-              <image src={navigationIcons.sent} tint={colors.textInverted} width={22} height={22} objectFit="contain" />
-            </view>
+          {hasText || this.state.isSending ? (
+            <AsyncActionButton
+              title=""
+              onTap={this.handleSend}
+              buttonStyle={styles.sendButton}
+              labelStyle={styles.actionSpacer}
+              contentStyle={styles.actionIconContent}
+              icon={navigationIcons.sent}
+              iconSize={22}
+              iconTint={colors.textInverted}
+              spinnerColor={colors.textInverted}
+              loading={this.state.isSending}
+            />
           ) : null}
         </view>
         <view
@@ -446,6 +486,9 @@ const styles = {
   inputTextSlot: new Style<View>({ flexGrow: 1, flexShrink: 1 }),
   inputActions: new Style<View>({ alignItems: 'center', flexDirection: 'row', flexShrink: 0 }),
   inputIconButton: new Style<View>({ alignItems: 'center', borderRadius: radius.full, height: 34, justifyContent: 'center', width: 34 }),
+  actionIconContent: new Style<View>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }),
+  actionSpacer: new Style<Label>({ color: 'transparent', font: montserrat.regular(fontSize.nano) }),
+  microphoneSpinner: new Style<SpinnerView>({ height: 20, width: 20 }),
   recordingMicButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundMessageSent, borderRadius: radius.full, height: 34, justifyContent: 'center', width: 34 }),
   sendButton: new Style<View>({
     alignItems: 'center', backgroundColor: colors.backgroundMessageSent, borderRadius: radius.full, flexShrink: 0,

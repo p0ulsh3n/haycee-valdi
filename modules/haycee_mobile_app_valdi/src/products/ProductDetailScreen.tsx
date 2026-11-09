@@ -4,6 +4,7 @@ import { AnimationCurve } from 'valdi_core/src/AnimationOptions';
 import { Device } from 'valdi_core/src/Device';
 import { ElementRef } from 'valdi_core/src/ElementRef';
 import { Style } from 'valdi_core/src/Style';
+import { createReusableCallback } from 'valdi_core/src/utils/Callback';
 import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
 import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { Asset } from 'valdi_tsx/src/Asset';
@@ -13,7 +14,11 @@ import { ImageView, Label, Layout, ScrollView, View } from 'valdi_tsx/src/Native
 import navigationIcons from '../../res/navigation-icons';
 import { Hairline } from '../design-system/components/Hairline';
 import { ImageCarousel } from '../design-system/components/ImageCarousel';
+import { MasonryFeed } from '../design-system/components/MasonryFeed';
+import type { MasonryItem } from '../design-system/components/MasonryFeed';
+import { MasonryProductCard, estimateMasonryProductCardHeight } from '../design-system/components/MasonryProductCard';
 import { TransientFeedback } from '../design-system/components/SnackBar';
+import { runNavigationAction } from '../design-system/utils/NavigationActionGate';
 import { colors } from '../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { formatPriceLabel } from '../design-system/utils/money';
@@ -69,19 +74,6 @@ class ProductAccordion extends Component<ProductAccordionViewModel> {
   }
 }
 
-class ProductRecommendationTile extends Component<{ product: MasonryProduct }> {
-  onRender(): void {
-    const product = this.viewModel.product;
-    <view style={styles.recommendationTile} accessibilityCategory="button">
-      <view style={styles.recommendationImage} backgroundColor={product.color}>
-        {product.imageUrl ? <image src={product.imageUrl} width="100%" height="100%" objectFit="cover" /> : null}
-      </view>
-      <label value={transformText(product.title, 'capitalize')} style={styles.recommendationTitle} numberOfLines={2} />
-      <label value={formatPriceLabel(product.price)} style={styles.recommendationPrice} numberOfLines={1} />
-    </view>;
-  }
-}
-
 /**
  * Product detail page opened directly from a product card.
  *
@@ -101,7 +93,9 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   };
 
   private readonly stickyTitleRef = new ElementRef<Label>();
+  private readonly stickyPriceRef = new ElementRef<Label>();
   private readonly headerBackgroundRef = new ElementRef<View>();
+  private readonly bottomBarRef = new ElementRef<View>();
   private readonly stickyVendorRef = new ElementRef<View>();
   private readonly mediaFavoriteIconRef = new ElementRef<ImageView>();
   private contentOffsetY = 0;
@@ -114,6 +108,7 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   private stickyVendorVisible = false;
   private stickyTitleVisible = false;
   private headerBackgroundVisible = false;
+  private recommendationsSectionVisible = false;
 
   onCreate(): void {
     const product = this.viewModel.product;
@@ -147,15 +142,17 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   };
 
   private handleOpenImageViewer = (): void => {
-    this.navigationController.push(
-      ProductImageViewerScreen,
-      {
-        product: this.viewModel.product,
-        initialIndex: this.state.galleryIndex,
-        sellerProducts: this.productsFromSameSeller(),
-      },
-      {},
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.push(
+        ProductImageViewerScreen,
+        {
+          product: this.viewModel.product,
+          initialIndex: this.state.galleryIndex,
+          sellerProducts: this.productsFromSameSeller(),
+        },
+        {},
+      );
+    });
   };
 
   private productsFromSameSeller(): MasonryProduct[] {
@@ -171,11 +168,13 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   }
 
   private handleOpenSeller = (): void => {
-    this.navigationController.push(
-      SellerProfileScreen,
-      { product: this.viewModel.product, sellerProducts: this.productsFromSameSeller() },
-      {},
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.push(
+        SellerProfileScreen,
+        { product: this.viewModel.product, sellerProducts: this.productsFromSameSeller() },
+        {},
+      );
+    });
   };
 
   private showFeedback = (message: string): void => {
@@ -323,15 +322,55 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
 
     this.stickyTitleVisible = shouldShowTitle;
     const title = this.stickyTitleRef.single();
-    if (!title) return;
+    const price = this.stickyPriceRef.single();
+    if (!title || !price) return;
 
     this.animate(
       { duration: 0.22, curve: AnimationCurve.EaseInOut, beginFromCurrentState: true },
       () => {
         title.setAttribute('opacity', shouldShowTitle ? 1 : 0);
-        title.setAttribute('translationY', shouldShowTitle ? 0 : -6);
+        title.setAttribute('translationY', shouldShowTitle ? 0 : -4);
+        price.setAttribute('opacity', shouldShowTitle ? 1 : 0);
+        price.setAttribute('translationY', shouldShowTitle ? 0 : -4);
       },
     );
+  };
+
+  private handleRecommendationsVisibility = (isVisible: boolean): void => {
+    if (this.recommendationsSectionVisible === isVisible) return;
+    this.recommendationsSectionVisible = isVisible;
+
+    const bottomBar = this.bottomBarRef.single();
+    if (!bottomBar) return;
+
+    this.animate(
+      { duration: 0.24, curve: AnimationCurve.EaseInOut, beginFromCurrentState: true },
+      () => {
+        bottomBar.setAttribute('opacity', isVisible ? 0 : 1);
+        bottomBar.setAttribute('translationY', isVisible ? 28 : 0);
+      },
+    );
+  };
+
+  private estimateRecommendationHeight = (item: MasonryItem, columnWidth: number): number => (
+    estimateMasonryProductCardHeight(item as MasonryProduct, columnWidth)
+  );
+
+  private renderRecommendation = (item: MasonryItem, columnWidth: number): void => {
+    const product = item as MasonryProduct;
+    const recommendations = (this.viewModel.recommendations ?? []).filter(candidate => candidate.id !== product.id);
+    <MasonryProductCard
+      product={product}
+      columnWidth={columnWidth}
+      onTap={createReusableCallback(() => this.handleRecommendationTap(product, recommendations))}
+      onQuickAdd={createReusableCallback(() => this.showFeedback('Ajouté au panier'))}
+    />;
+  };
+
+  private handleRecommendationTap = (product: MasonryProduct, recommendations: MasonryProduct[]): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.push(ProductDetailScreen, { product, recommendations }, {});
+    });
   };
 
   private renderHeader(): void {
@@ -340,12 +379,21 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
         <image src={navigationIcons.arrowLeft01Round} tint={colors.textPrimary} width={24} height={24} objectFit="contain" />
       </view>
       <view style={styles.stickyTitleSlot}>
-        <label
-          ref={this.stickyTitleRef}
-          value={transformText(this.viewModel.product.title, 'capitalize')}
-          style={styles.stickyTitle}
-          numberOfLines={1}
-        />
+        <layout style={styles.stickyTitleContent}>
+          <label
+            ref={this.stickyTitleRef}
+            value={transformText(this.viewModel.product.title, 'capitalize')}
+            style={styles.stickyTitle}
+            numberOfLines={1}
+            textOverflow="ellipsis"
+          />
+          <label
+            ref={this.stickyPriceRef}
+            value={formatPriceLabel(this.viewModel.product.price)}
+            style={styles.stickyPrice}
+            numberOfLines={1}
+          />
+        </layout>
       </view>
       <layout style={styles.headerActions}>
         <view style={styles.headerButton} onTap={() => this.showFeedback('Recherche')} accessibilityCategory="button">
@@ -578,17 +626,22 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   }
 
   private renderBottomBar(bottomInset: number): void {
-    <view style={bottomInset > 0 ? styles.bottomBar.extend({ paddingBottom: bottomInset + spacing.sm }) : styles.bottomBar}>
+    <view
+      ref={this.bottomBarRef}
+      style={bottomInset > 0 ? styles.bottomBar.extend({ paddingBottom: bottomInset + spacing.sm }) : styles.bottomBar}
+      opacity={this.recommendationsSectionVisible ? 0 : 1}
+      translationY={this.recommendationsSectionVisible ? 28 : 0}
+    >
       <Hairline color={colors.borderDefault} />
       <layout style={styles.bottomActions}>
-        <view style={styles.bottomMessage} onTap={this.handleMessageSeller} accessibilityCategory="button">
+        <view style={styles.bottomMessage} onTap={this.recommendationsSectionVisible ? undefined : this.handleMessageSeller} accessibilityCategory="button">
           <image src={navigationIcons.bubbleChat} tint={colors.textPrimary} width={20} height={20} objectFit="contain" />
           <label value="Message" style={styles.bottomMessageLabel} numberOfLines={1} />
         </view>
-        <view style={styles.bottomAdd} onTap={this.handleAddToCart} accessibilityCategory="button">
+        <view style={styles.bottomAdd} onTap={this.recommendationsSectionVisible ? undefined : this.handleAddToCart} accessibilityCategory="button">
           <label value="Ajouter" style={styles.bottomAddText} />
         </view>
-        <view style={styles.bottomBuy} onTap={this.handleBuyNow} accessibilityCategory="button">
+        <view style={styles.bottomBuy} onTap={this.recommendationsSectionVisible ? undefined : this.handleBuyNow} accessibilityCategory="button">
           <label value="Acheter" style={styles.bottomBuyText} />
         </view>
       </layout>
@@ -669,13 +722,17 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
           <Hairline color={colors.borderDefault} />
           {this.renderAccordions(product)}
           {this.viewModel.recommendations && this.viewModel.recommendations.length > 0 ? (
-            <layout style={styles.recommendations}>
+            <layout style={styles.recommendations} onVisibilityChanged={this.handleRecommendationsVisibility}>
               <label value="Vous aimerez aussi" style={styles.sectionTitle} />
-              <scroll {...noBounceScrollAttributes} horizontal={true} showsHorizontalScrollIndicator={false} style={styles.recommendationScroll}>
-                <layout style={styles.recommendationContent}>
-                  {this.viewModel.recommendations.map(item => <ProductRecommendationTile key={item.id} product={item} />)}
-                </layout>
-              </scroll>
+              <view style={styles.recommendationFeed}>
+                <MasonryFeed
+                  items={this.viewModel.recommendations}
+                  hasMore={false}
+                  renderItem={this.renderRecommendation}
+                  estimateItemHeight={this.estimateRecommendationHeight}
+                  endLabel=""
+                />
+              </view>
             </layout>
           ) : null}
           <view height={bottomInset + 112} />
@@ -791,10 +848,22 @@ const styles = {
     top: 0,
     zIndex: 1,
   }),
+  stickyTitleContent: new Style<Layout>({ alignItems: 'center', flexDirection: 'column', justifyContent: 'center', width: '100%' }),
   stickyTitle: typography.button.extend({
+    flexShrink: 1,
     opacity: 0,
     textAlign: 'center',
     translationY: -6,
+    width: '100%',
+  }),
+  stickyPrice: typography.caption.extend({
+    color: colors.textPrimary,
+    font: montserrat.semiBold(fontSize.metadata),
+    marginTop: 2,
+    opacity: 0,
+    textAlign: 'center',
+    translationY: -4,
+    width: '100%',
   }),
   media: new Style<View>({
     alignItems: 'center',
@@ -1096,12 +1165,7 @@ const styles = {
     paddingRight: spacing.xl,
   }),
   recommendations: new Style<Layout>({ paddingBottom: spacing.xl, paddingTop: spacing.xxl }),
-  recommendationScroll: new Style<ScrollView>({ marginTop: spacing.md }),
-  recommendationContent: new Style<Layout>({ flexDirection: 'row' }),
-  recommendationTile: new Style<View>({ marginRight: spacing.md, width: 140 }),
-  recommendationImage: new Style<View>({ borderRadius: radius.md, height: 175, width: 140 }),
-  recommendationTitle: typography.productTitle.extend({ marginTop: spacing.sm }),
-  recommendationPrice: typography.price.extend({ marginTop: spacing.xs }),
+  recommendationFeed: new Style<View>({ marginLeft: -spacing.lg, marginRight: -spacing.lg, marginTop: spacing.md }),
   bottomBar: new Style<View>({
     backgroundColor: colors.backgroundPrimary,
     bottom: 0,

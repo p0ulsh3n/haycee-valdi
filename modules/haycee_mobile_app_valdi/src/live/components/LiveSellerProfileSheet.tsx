@@ -191,7 +191,7 @@ const styles = {
   actionContent: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }),
   secondaryActionButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonSecondary, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
   secondaryActionLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.label), marginLeft: spacing.sm, textAlign: 'center' }),
-  followingActionButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonFollowing, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
+  followingActionButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonNeutral, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
   followingActionLabel: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.label), marginLeft: spacing.sm, textAlign: 'center' }),
 };
 

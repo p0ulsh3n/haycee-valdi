@@ -3,16 +3,17 @@ import { createReusableCallback } from 'valdi_core/src/utils/Callback';
 import { when } from 'valdi_core/src/utils/When';
 import { Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
-import { NavigationPageComponent } from 'valdi_navigation/src/NavigationPageComponent';
+import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { colors } from '../tokens/colors';
 import { radius } from '../tokens/radius';
 import { spacing } from '../tokens/spacing';
 import { transformText, typography, TextCase } from '../tokens/typography';
+import { AsyncActionButton } from './AsyncActionButton';
 
 export interface ActionSheetOption {
   label: string;
   style?: 'default' | 'danger' | 'cancel';
-  onTap: () => void;
+  onTap: () => void | Promise<unknown>;
 }
 
 export interface ActionSheetViewModel {
@@ -27,14 +28,48 @@ export interface ActionSheetViewModel {
   dismissOnOverlayTap?: boolean;
 }
 
+interface ActionSheetState {
+  pendingOptionIndex: number;
+}
+
 @NavigationPage(module)
-export class ActionSheet extends NavigationPageComponent<ActionSheetViewModel> {
-  private handleOption = (option: ActionSheetOption): void => {
-    option.onTap();
-    this.navigationController.dismiss(true);
+export class ActionSheet extends NavigationPageStatefulComponent<ActionSheetViewModel, ActionSheetState> {
+  state: ActionSheetState = { pendingOptionIndex: -1 };
+  private actionPending = false;
+
+  private handleOption = (option: ActionSheetOption, index: number): void | Promise<void> => {
+    if (this.actionPending) return;
+    this.actionPending = true;
+
+    let result: void | Promise<unknown>;
+    try {
+      result = option.onTap();
+    } catch (error) {
+      this.actionPending = false;
+      throw error;
+    }
+
+    if (!result || typeof result.then !== 'function') {
+      this.navigationController.dismiss(true);
+      return;
+    }
+
+    this.setState({ pendingOptionIndex: index });
+    return result.then(
+      () => {
+        if (!this.isDestroyed()) this.navigationController.dismiss(true);
+      },
+      error => {
+        if (!this.isDestroyed()) this.setState({ pendingOptionIndex: -1 });
+        console.warn(`Action sheet option failed: ${option.label}`, error);
+      },
+    ).finally(() => {
+      this.actionPending = false;
+    });
   };
 
   private handleCancel = (): void => {
+    if (this.actionPending) return;
     const cancelOption = this.viewModel.options.find(option => option.style === 'cancel');
     cancelOption?.onTap();
     this.navigationController.dismiss(true);
@@ -54,6 +89,7 @@ export class ActionSheet extends NavigationPageComponent<ActionSheetViewModel> {
         <view
           style={styles.overlay}
           opacity={this.viewModel.overlayOpacity ?? 0.56}
+          onTapDisabled={this.state.pendingOptionIndex >= 0}
           onTap={this.handleOverlayTap}
         />;
       })}
@@ -75,21 +111,25 @@ export class ActionSheet extends NavigationPageComponent<ActionSheetViewModel> {
             {when(index > 0, () => {
               <view style={styles.divider} />;
             })}
-            <view
-              style={styles.option}
-              onTap={createReusableCallback(() => this.handleOption(option))}
-              accessibilityCategory="button"
-            >
-              <label
-                style={option.style === 'danger' ? styles.dangerLabel : styles.optionLabel}
-                value={transformText(option.label, this.viewModel.textCase)}
-                numberOfLines={1}
-              />
-            </view>
+            <AsyncActionButton
+              title={transformText(option.label, this.viewModel.textCase)}
+              onTap={createReusableCallback(() => this.handleOption(option, index))}
+              buttonStyle={styles.option}
+              labelStyle={option.style === 'danger' ? styles.dangerLabel : styles.optionLabel}
+              contentStyle={styles.optionContent}
+              spinnerColor={option.style === 'danger' ? colors.textDanger : colors.borderFocus}
+              disabled={this.state.pendingOptionIndex >= 0 && this.state.pendingOptionIndex !== index}
+              loading={this.state.pendingOptionIndex === index}
+            />
           </layout>
         ))}
       </view>
-      <view style={styles.cancel} onTap={this.handleCancel} accessibilityCategory="button">
+      <view
+        style={styles.cancel}
+        onTapDisabled={this.state.pendingOptionIndex >= 0}
+        onTap={this.handleCancel}
+        accessibilityCategory="button"
+      >
         <label
           style={styles.cancelLabel}
           value={transformText(
@@ -134,9 +174,12 @@ const styles = {
   headerLabel: typography.caption.extend({ color: colors.textSecondary, textAlign: 'center' }),
   option: new Style<View>({
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
     minHeight: 56,
+    width: '100%',
   }),
+  optionContent: new Style<View>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }),
   divider: new Style<View>({
     backgroundColor: colors.borderDefault,
     height: 1,

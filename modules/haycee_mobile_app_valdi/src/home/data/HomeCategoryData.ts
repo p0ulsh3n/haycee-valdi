@@ -16,18 +16,26 @@ export interface HomeCategoryDefinition {
   dealsProducts: HomeProduct[];
 }
 
+export interface HomeSubcategory {
+  id: string;
+  label: string;
+  panelColor: string;
+}
+
 const product = (
   id: string,
   title: string,
   price: string,
   color: string,
   galleryColors?: string[],
+  metadata: Partial<HomeProduct> = {},
 ): HomeProduct => ({
   id,
   title,
   price: formatPriceLabel(price),
   color,
   ...(galleryColors ? { galleryColors } : {}),
+  ...metadata,
 });
 
 const banner = (id: string, eyebrow: string, title: string, color: string): HomePromoBanner => ({
@@ -51,18 +59,42 @@ export const homeCategoryDefinitions: HomeCategoryDefinition[] = [
         '#E8D8CF',
         '#E5D7E8',
         '#D7E2E9',
-      ]),
-      product('all-p2', 'Sneakers everyday', '59,00 €', '#D7E2E9'),
+      ], {
+        originalPrice: '32,90 €',
+        discountLabel: '-24%',
+        popularityBadge: 'BADGE_BEST_SELLER',
+        isFlashSale: true,
+        stockCount: 4,
+        stockTotal: 50,
+        offer: { type: 'OFFER_FLASH_SALE_COUNTDOWN', params: { pct: '-24%' }, endsAt: new Date(Date.now() + 45 * 60 * 1000).toISOString() },
+        rating: '4.8',
+        reviewCount: '32',
+      }),
+      product('all-p2', 'Sneakers everyday', '59,00 €', '#D7E2E9', undefined, {
+        isLive: true,
+        popularityBadge: 'BADGE_HOT',
+        offer: { type: 'OFFER_LIVE_EXCLUSIVE' },
+        rating: '4.7',
+        reviewCount: '12',
+      }),
       product('all-p3', 'Montre classique', '39,90 €', '#E4E0D4'),
       product('all-p4', 'Accessoire signature', '18,50 €', '#E5D7E8'),
     ],
     trendingProducts: [
-      product('all-t1', 'Look quotidien', '49,90 €', '#E5D7E8'),
+      product('all-t1', 'Look quotidien', '49,90 €', '#E5D7E8', undefined, {
+        popularityBadge: 'BADGE_TRENDING',
+        offer: { type: 'SOCIAL_IN_CART', params: { count: 28 } },
+        rating: '4.9',
+        reviewCount: '18',
+      }),
       product('all-t2', 'Édition studio', '79,00 €', '#D7E2E9'),
       product('all-t3', 'Essentiel neutre', '34,90 €', '#E4E0D4'),
     ],
     dealsProducts: [
-      product('all-d1', 'Sélection du jour', '29,90 €', '#E8D8CF'),
+      product('all-d1', 'Sélection du jour', '29,90 €', '#E8D8CF', undefined, {
+        popularityBadge: 'BADGE_NEW',
+        offer: { type: 'OFFER_FREE_SHIPPING', params: { amount: '20.000 FCFA' } },
+      }),
       product('all-d2', 'Dernières pièces', '19,90 €', '#D7E2E9'),
     ],
   },
@@ -277,4 +309,92 @@ export const homeCategoryDefinitions: HomeCategoryDefinition[] = [
 
 export const getHomeCategory = (id: string): HomeCategoryDefinition => {
   return homeCategoryDefinitions.find(category => category.id === id) ?? homeCategoryDefinitions[0];
+};
+
+/** Demo subcategory directory; replace these entries with the category API response. */
+export const homeSubcategoriesByCategory: Record<string, HomeSubcategory[]> = {
+  fashion: [
+    { id: 'blouses-shirts', label: 'Blouses et chemises', panelColor: '#B8D3F0' },
+    { id: 'trousers', label: 'Pantalons', panelColor: '#C99A83' },
+    { id: 'outerwear', label: 'Manteaux et vestes', panelColor: '#88C9A7' },
+    { id: 'knitwear', label: 'Pulls, cols roulés et cardigans', panelColor: '#E9C7D0' },
+    { id: 'jeans', label: 'Jeans', panelColor: '#839BC8' },
+    { id: 'jumpsuits', label: 'Combinaisons', panelColor: '#E8C6B3' },
+    { id: 'sets', label: 'Ensembles', panelColor: '#67BBA0' },
+    { id: 'long-sleeve-tops', label: 'Hauts à manches longues', panelColor: '#E7BFD2' },
+    { id: 'blazers', label: 'Blazers, gilets et vestes habillées', panelColor: '#C95C83' },
+  ],
+  sneakers: [
+    { id: 'low-sneakers', label: 'Sneakers basses', panelColor: '#D5D8E4' },
+    { id: 'high-top-sneakers', label: 'Sneakers montantes', panelColor: '#C8B4D1' },
+    { id: 'running-shoes', label: 'Chaussures de running', panelColor: '#B5D8D2' },
+    { id: 'casual-shoes', label: 'Chaussures de ville', panelColor: '#D7B9A8' },
+    { id: 'sandals', label: 'Sandales', panelColor: '#E8D5AD' },
+    { id: 'shoe-care', label: 'Entretien et accessoires', panelColor: '#C8D3DF' },
+  ],
+  watches: [
+    { id: 'analog-watches', label: 'Montres classiques', panelColor: '#D8C7A7' },
+    { id: 'smart-watches', label: 'Montres connectées', panelColor: '#B8C6D8' },
+    { id: 'watch-straps', label: 'Bracelets de montre', panelColor: '#C99F87' },
+    { id: 'watch-jewelry', label: 'Bijoux de montre', panelColor: '#E3D8B8' },
+  ],
+  beauty: [
+    { id: 'skincare', label: 'Soins du visage', panelColor: '#F0CFC5' },
+    { id: 'makeup', label: 'Maquillage', panelColor: '#E4B9C9' },
+    { id: 'haircare', label: 'Soins des cheveux', panelColor: '#C8B5A6' },
+    { id: 'fragrance', label: 'Parfums', panelColor: '#E8D6B7' },
+    { id: 'bodycare', label: 'Soins du corps', panelColor: '#D9C4E3' },
+  ],
+  home: [
+    { id: 'lighting', label: 'Luminaires', panelColor: '#D9C798' },
+    { id: 'decor', label: 'Décoration', panelColor: '#D5BCAF' },
+    { id: 'textiles', label: 'Textiles et linge de maison', panelColor: '#B9CBD8' },
+    { id: 'furniture', label: 'Meubles', panelColor: '#AFC6BB' },
+    { id: 'kitchen', label: 'Cuisine et art de la table', panelColor: '#E2D1B5' },
+  ],
+  electronics: [
+    { id: 'phones', label: 'Téléphones et accessoires', panelColor: '#AFC3E7' },
+    { id: 'audio', label: 'Audio', panelColor: '#C5B8D9' },
+    { id: 'computers', label: 'Ordinateurs et tablettes', panelColor: '#B7C9CF' },
+    { id: 'gaming', label: 'Jeux vidéo', panelColor: '#B7D3B4' },
+    { id: 'smart-home', label: 'Maison connectée', panelColor: '#D9C8A8' },
+  ],
+  sport: [
+    { id: 'sportswear', label: 'Vêtements de sport', panelColor: '#B8D6C3' },
+    { id: 'training', label: 'Fitness et musculation', panelColor: '#D6C2AF' },
+    { id: 'outdoor', label: 'Outdoor et randonnée', panelColor: '#B6CCB5' },
+    { id: 'team-sports', label: 'Sports collectifs', panelColor: '#B6C8E0' },
+    { id: 'sports-accessories', label: 'Accessoires de sport', panelColor: '#E2D1A8' },
+  ],
+  bags: [
+    { id: 'handbags', label: 'Sacs à main', panelColor: '#D9B9A8' },
+    { id: 'backpacks', label: 'Sacs à dos', panelColor: '#B9C9D8' },
+    { id: 'crossbody-bags', label: 'Sacs bandoulière', panelColor: '#C8B9D5' },
+    { id: 'luggage', label: 'Valises et voyage', panelColor: '#B6CDBE' },
+    { id: 'wallets', label: 'Portefeuilles et pochettes', panelColor: '#E1C99E' },
+  ],
+  jewelry: [
+    { id: 'necklaces', label: 'Colliers', panelColor: '#E4D3A3' },
+    { id: 'earrings', label: 'Boucles d’oreilles', panelColor: '#D4B8C9' },
+    { id: 'rings', label: 'Bagues', panelColor: '#D7C6A6' },
+    { id: 'bracelets', label: 'Bracelets', panelColor: '#C5D2DC' },
+    { id: 'hair-accessories', label: 'Accessoires pour cheveux', panelColor: '#D7C4B5' },
+  ],
+};
+
+export const getHomeSubcategories = (categoryId: string): HomeSubcategory[] => (
+  homeSubcategoriesByCategory[categoryId] ?? []
+);
+
+/** Demo result catalog for a subcategory, derived from its owning Home category. */
+export const getHomeSubcategoryProducts = (categoryId: string, subcategoryId: string): HomeProduct[] => {
+  const subcategories = getHomeSubcategories(categoryId);
+  const subcategoryIndex = subcategories.findIndex(item => item.id === subcategoryId);
+  if (subcategoryIndex < 0 || subcategories.length === 0) return [];
+
+  const category = getHomeCategory(categoryId);
+  const products = [...category.flashProducts, ...category.trendingProducts, ...category.dealsProducts];
+  return products
+    .filter((_product, index) => index % subcategories.length === subcategoryIndex)
+    .map(product => ({ ...product, category: categoryId }));
 };

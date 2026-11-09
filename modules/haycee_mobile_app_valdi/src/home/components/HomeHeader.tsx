@@ -25,7 +25,12 @@ export class HomeHeader extends Component<HomeHeaderViewModel> {
       })}
     >
       <layout style={styles.row}>
-        <HomeIconButton glyph="☰" label="Menu" onTap={this.viewModel.onMenuTap} />
+        <HomeIconButton
+          icon={navigationIcons.menuCircle}
+          backgroundColor={colors.backgroundSecondary}
+          label="Menu"
+          onTap={this.viewModel.onMenuTap}
+        />
         <layout style={styles.searchSlot}>
           <HomeTickerSearch
             suggestions={this.viewModel.suggestions}

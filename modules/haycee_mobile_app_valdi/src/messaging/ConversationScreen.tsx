@@ -18,6 +18,7 @@ import { MessageBubble } from './components/MessageBubble';
 import { MessageComposer } from './components/MessageComposer';
 import { MediaLibrarySheet } from './MediaLibrarySheet';
 import { hideKeyboard } from './MediaBridgeNative';
+import { runNavigationAction } from '../design-system/utils/NavigationActionGate';
 import { MessagingApi } from './MessagingApi';
 import { getMessagingApiConfiguration } from './MessagingApiConfiguration';
 import { ConversationMessage, ConversationPreview } from './MessagingTypes';
@@ -205,10 +206,12 @@ export class ConversationScreen extends NavigationPageStatefulComponent<
   private handleOpenGallery = async (): Promise<void> => {
     await hideKeyboard();
     const sheetOptions = { transparentPageBackground: true };
-    this.navigationController.present(MediaLibrarySheet, {
-      onSelect: this.handleSendMedia,
-      ...sheetOptions,
-    }, {}, { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions(sheetOptions) });
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(MediaLibrarySheet, {
+        onSelect: this.handleSendMedia,
+        ...sheetOptions,
+      }, {}, { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions(sheetOptions) });
+    });
   };
 
   private handleSendMedia = (media: Array<{ mediaUri: string; thumbnailUri: string; kind: 'image' | 'video' }>): void => {

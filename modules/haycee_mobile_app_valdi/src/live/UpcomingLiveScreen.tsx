@@ -199,7 +199,7 @@ export class UpcomingLiveScreen extends NavigationPageStatefulComponent<
         <label value={item.hostName} style={styles.sellerName} numberOfLines={1} />
         <label value={this.countryLine()} style={styles.sellerCountry} numberOfLines={1} />
       </layout>
-      <view style={styles.followButton.extend({ backgroundColor: this.state.isFollowing ? colors.buttonFollowing : colors.backgroundSecondary })}
+      <view style={styles.followButton.extend({ backgroundColor: this.state.isFollowing ? colors.buttonNeutral : colors.backgroundSecondary })}
         onTap={this.handleToggleFollow}
         accessibilityCategory="button"
         accessibilityLabel={this.state.isFollowing ? 'Ne plus suivre la boutique' : 'Suivre la boutique'}

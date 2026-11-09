@@ -190,6 +190,8 @@ bazelisk build //:haycee_mobile_app_valdi_app_android \
   --android_cpu=arm64-v8a
 cp bazel-bin/haycee_mobile_app_valdi_app_android.apk __WINDOWS_APK_PATH__
 '@
+    # PowerShell preserves this here-string's Windows CRLFs; normalize it before bash -lc.
+    $buildBash = [regex]::Replace($buildBash, "`r`n?", "`n")
     $buildBash = $buildBash.Replace('__WINDOWS_APK_PATH__', $wslApkPath)
     & wsl --distribution $Distribution -- bash -lc $buildBash
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $apkPath)) {

@@ -1,4 +1,4 @@
-import { Component } from 'valdi_core/src/Component';
+import { StatefulComponent } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { $slot } from 'valdi_core/src/CompilerIntrinsics';
 import { Layout } from 'valdi_tsx/src/NativeTemplateElements';
@@ -10,12 +10,20 @@ import { SnackBarComponent, TransientFeedback } from './design-system/components
 import { layout } from './design-system/tokens/spacing';
 import navigationIcons from '../res/navigation-icons';
 import { ProductDetailScreen } from './products/ProductDetailScreen';
-import { HomeProduct } from './home/components/HomeProductRail';
+import type { HomeCollectionKind, HomeProduct } from './home/components/HomeProductRail';
 import { ConversationScreen } from './messaging/ConversationScreen';
 import { ConversationPreview } from './messaging/MessagingTypes';
 import { LiveViewerScreen } from './live/LiveViewerScreen';
 import { UpcomingLiveScreen } from './live/UpcomingLiveScreen';
 import type { LiveFeedItem } from './live/data/LiveFeedData';
+import { FlashSaleScreen } from './marketplace/FlashSaleScreen';
+import { TrendingScreen } from './marketplace/TrendingScreen';
+import { SearchScreen } from './search/SearchScreen';
+import { SellerProfileScreen } from './sellers/SellerProfileScreen';
+import { HomeCategoriesScreen } from './home/HomeCategoriesScreen';
+import { AddressPickerSheet } from './cart/AddressPickerSheet';
+import { colors } from './design-system/tokens/colors';
+import { runNavigationAction } from './design-system/utils/NavigationActionGate';
 
 /**
  * @ViewModel
@@ -29,28 +37,116 @@ export interface AppViewModel {}
  */
 export interface AppComponentContext {}
 
+interface AppState {
+  selectedHomeCategoryKey: string;
+  selectedPickupAddress?: string;
+}
+
 /** Application root: Home is the first page and bottom tabs stay visible. */
-export class App extends Component<AppViewModel, AppComponentContext> {
+export class App extends StatefulComponent<AppViewModel, AppState, AppComponentContext> {
   private navigationController?: NavigationController;
 
+  state: AppState = { selectedHomeCategoryKey: 'all' };
+
+  private handleOpenCategories = (selectedCategoryKey: string): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(
+        HomeCategoriesScreen,
+        {
+          selectedCategoryKey,
+          onSelectCategory: this.handleCategoryDirectorySelect,
+          onProductTap: this.handleProductTap,
+          onQuickAdd: this.handleQuickAdd,
+        },
+        {},
+      );
+    });
+  };
+
+  private handleCategoryDirectorySelect = (categoryKey: string): void => {
+    this.setState({ selectedHomeCategoryKey: categoryKey });
+  };
+
+  private handleOpenAddressPicker = (): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.present(
+        AddressPickerSheet,
+        {
+          selectedAddress: this.state.selectedPickupAddress,
+          onSave: this.handleSavePickupAddress,
+        },
+        {},
+        {
+          animated: true,
+          wrapInPlatformNavigationController: false,
+          pageBackgroundColor: colors.backgroundDark,
+        },
+      );
+    });
+  };
+
+  private handleSavePickupAddress = (address: string): void => {
+    this.setState({ selectedPickupAddress: address });
+  };
+
   private handleProductTap = (product: HomeProduct, recommendations?: HomeProduct[]): void => {
-    this.navigationController?.push(ProductDetailScreen, { product, recommendations }, {});
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(ProductDetailScreen, { product, recommendations }, {});
+    });
   };
 
   private handleConversationTap = (conversation: ConversationPreview): void => {
-    this.navigationController?.push(
-      ConversationScreen,
-      { conversation },
-      {},
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(ConversationScreen, { conversation }, {});
+    });
+  };
+
+  private handleSearchTap = (): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(
+        SearchScreen,
+        {
+          onProductTap: this.handleProductTap,
+          onQuickAdd: this.handleQuickAdd,
+          onSellerTap: this.handleSellerSearchTap,
+        },
+        {},
+      );
+    });
+  };
+
+  private handleSellerSearchTap = (product: HomeProduct): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(SellerProfileScreen, { product }, {});
+    });
+  };
+
+  private handleOpenCollection = (kind: HomeCollectionKind): void => {
+    const viewModel = {
+      onProductTap: this.handleProductTap,
+      onQuickAdd: this.handleQuickAdd,
+    };
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(kind === 'flash' ? FlashSaleScreen : TrendingScreen, viewModel, {});
+    });
+  };
+
+  private handleQuickAdd = (): void => {
+    TransientFeedback.show({
+      message: 'Votre article a été ajouté au panier',
+      icon: navigationIcons.shoppingCartAdd02,
+      duration: 2200,
+    });
   };
 
   private handleLiveTap = (item: LiveFeedItem): void => {
-    if (item.status === 'upcoming') {
-      this.navigationController?.push(UpcomingLiveScreen, { item, onOpenLive: this.handleLiveTap }, {});
-      return;
-    }
-    this.navigationController?.push(LiveViewerScreen, { item }, {});
+    runNavigationAction(this.navigationController, () => {
+      if (item.status === 'upcoming') {
+        this.navigationController?.push(UpcomingLiveScreen, { item, onOpenLive: this.handleLiveTap }, {});
+        return;
+      }
+      this.navigationController?.push(LiveViewerScreen, { item }, {});
+    });
   };
 
   onRender(): void {
@@ -59,18 +155,18 @@ export class App extends Component<AppViewModel, AppComponentContext> {
         {$slot(_navigationController => {
           this.navigationController = _navigationController;
           <BottomTabsNavigation
-            onMenuTap={() => TransientFeedback.show({ message: 'Menu Home' })}
-            onSearchTap={() => TransientFeedback.show({ message: 'Recherche Home' })}
+            onMenuTap={this.handleOpenCategories}
+            selectedHomeCategoryKey={this.state.selectedHomeCategoryKey}
+            onSearchTap={this.handleSearchTap}
             onWishlistTap={() => TransientFeedback.show({ message: 'Favoris Home' })}
             onNotificationsTap={() => TransientFeedback.show({ message: 'Notifications Home' })}
+            onOpenCollection={this.handleOpenCollection}
             onProductTap={this.handleProductTap}
             onConversationTap={this.handleConversationTap}
             onLiveTap={this.handleLiveTap}
-            onQuickAdd={() => TransientFeedback.show({
-              message: 'Votre article a été ajouté au panier',
-              icon: navigationIcons.shoppingCartAdd02,
-              duration: 2200,
-            })}
+            onQuickAdd={this.handleQuickAdd}
+            selectedPickupAddress={this.state.selectedPickupAddress}
+            onSelectAddress={this.handleOpenAddressPicker}
           />;
         })}
       </NavigationRoot>

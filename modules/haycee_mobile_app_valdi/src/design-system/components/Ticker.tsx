@@ -13,6 +13,7 @@ export type TickerOrientation = 'horizontal' | 'vertical';
 export type TickerRotateTransition = 'slide' | 'fade' | 'fade-slide';
 /** Forward moves left/up; reverse moves right/down. */
 export type TickerDirection = 'forward' | 'reverse';
+export type TickerVerticalAlignment = 'top' | 'center' | 'bottom';
 
 export interface TickerViewModel {
   /** Text entries, in the order they should be shown. */
@@ -55,8 +56,12 @@ export interface TickerViewModel {
   marqueeSpeed?: number;
   /** Duration in milliseconds for one full marquee cycle. Overrides `marqueeSpeed`. */
   marqueeDurationMs?: number;
+  /** Vertical alignment of the moving text within a horizontal marquee viewport. */
+  marqueeVerticalAlignment?: TickerVerticalAlignment;
   /** Space between repeated marquee copies. Defaults to 32 points. */
   marqueeGap?: number;
+  /** Keep an active marquee moving when only its text entries update. */
+  preserveMarqueePositionOnItemsChange?: boolean;
   /** Pause between complete marquee passes. Defaults to 0 for continuous motion. */
   loopDelayMs?: number;
   /** Optional single accessibility announcement for the ticker. */
@@ -107,6 +112,9 @@ export class Ticker extends StatefulComponent<TickerViewModel, TickerState> {
   private cachedPageStyleHeight = -1;
   private cachedMarqueeGapStyle?: Style<Layout>;
   private cachedMarqueeGapWidth = -1;
+  private cachedMarqueeTrackStyle?: Style<Layout>;
+  private cachedMarqueeTrackHeight = -1;
+  private cachedMarqueeTrackAlignment?: TickerVerticalAlignment;
 
   onCreate(): void {
     this.configurationKey = this.getConfigurationKey();
@@ -117,12 +125,20 @@ export class Ticker extends StatefulComponent<TickerViewModel, TickerState> {
   onViewModelUpdate(previous?: Readonly<TickerViewModel>): void {
     const nextConfigurationKey = this.getConfigurationKey();
     if (nextConfigurationKey !== this.configurationKey) {
+      const preserveMarqueeMotion = Boolean(
+        previous &&
+        this.viewModel.preserveMarqueePositionOnItemsChange &&
+        this.getMode() === 'marquee' &&
+        this.getMarqueeMotionConfigurationKey(previous) === this.getMarqueeMotionConfigurationKey(this.viewModel),
+      );
       this.configurationKey = nextConfigurationKey;
+      this.orderedItemsCacheKey = '';
+      if (preserveMarqueeMotion) return;
+
       this.motionToken += 1;
       this.clearTimer();
       this.cancelAnimation();
       this.currentPageIndex = this.getInitialPageIndex();
-      this.orderedItemsCacheKey = '';
       this.resetTrackPosition();
       this.scheduleNext(this.motionToken);
       return;
@@ -159,12 +175,20 @@ export class Ticker extends StatefulComponent<TickerViewModel, TickerState> {
     const itemWidth = Math.max(0, frame.width);
     if (Math.abs(itemWidth - this.state.itemWidth) < 1) return;
 
+    const wasOverflowing = this.state.itemWidth > this.state.viewportWidth + 1;
+    const willOverflow = itemWidth > this.state.viewportWidth + 1;
+    const preserveMotion = Boolean(
+      this.viewModel.preserveMarqueePositionOnItemsChange &&
+      this.getMode() === 'marquee' &&
+      this.state.itemWidth > 0 &&
+      wasOverflowing === willOverflow,
+    );
     this.setState({
       viewportWidth: this.state.viewportWidth,
       viewportHeight: this.state.viewportHeight,
       itemWidth,
     });
-    this.restartAfterMeasurement();
+    if (!preserveMotion) this.restartAfterMeasurement();
   };
 
   private restartAfterMeasurement(): void {
@@ -267,8 +291,33 @@ export class Ticker extends StatefulComponent<TickerViewModel, TickerState> {
       transitionDistance: this.viewModel.transitionDistance ?? 10,
       marqueeSpeed: this.viewModel.marqueeSpeed ?? 32,
       marqueeDurationMs: this.viewModel.marqueeDurationMs ?? 0,
+      marqueeVerticalAlignment: this.viewModel.marqueeVerticalAlignment ?? 'center',
       marqueeGap: this.viewModel.marqueeGap ?? 32,
       loopDelayMs: this.viewModel.loopDelayMs ?? 0,
+      preserveMarqueePositionOnItemsChange: this.viewModel.preserveMarqueePositionOnItemsChange ?? false,
+    });
+  }
+
+  private getMarqueeMotionConfigurationKey(viewModel: Readonly<TickerViewModel>): string {
+    return JSON.stringify({
+      mode: viewModel.mode ?? 'rotate',
+      orientation: viewModel.mode === 'marquee' ? 'horizontal' : viewModel.orientation ?? 'vertical',
+      direction: viewModel.direction ?? 'forward',
+      repeat: viewModel.repeat !== false,
+      startIndex: viewModel.startIndex ?? 0,
+      holdDurationMs: viewModel.holdDurationMs ?? 2200,
+      transitionDurationMs: viewModel.transitionDurationMs ?? 280,
+      transitionCurve: viewModel.transitionCurve ?? AnimationCurve.EaseInOut,
+      rotateTransition: viewModel.rotateTransition ?? 'slide',
+      exitDurationMs: viewModel.exitDurationMs ?? 0,
+      enterDurationMs: viewModel.enterDurationMs ?? 0,
+      transitionDistance: viewModel.transitionDistance ?? 10,
+      marqueeSpeed: viewModel.marqueeSpeed ?? 32,
+      marqueeDurationMs: viewModel.marqueeDurationMs ?? 0,
+      marqueeVerticalAlignment: viewModel.marqueeVerticalAlignment ?? 'center',
+      marqueeGap: viewModel.marqueeGap ?? 32,
+      loopDelayMs: viewModel.loopDelayMs ?? 0,
+      preserveMarqueePositionOnItemsChange: viewModel.preserveMarqueePositionOnItemsChange ?? false,
     });
   }
 
@@ -320,6 +369,22 @@ export class Ticker extends StatefulComponent<TickerViewModel, TickerState> {
       this.cachedMarqueeGapWidth = width;
     }
     return this.cachedMarqueeGapStyle;
+  }
+
+  private getMarqueeTrackStyle(): Style<Layout> {
+    const height = this.state.viewportHeight;
+    const alignment = this.viewModel.marqueeVerticalAlignment ?? 'center';
+    if (
+      !this.cachedMarqueeTrackStyle ||
+      height !== this.cachedMarqueeTrackHeight ||
+      alignment !== this.cachedMarqueeTrackAlignment
+    ) {
+      const alignItems = alignment === 'top' ? 'flex-start' : alignment === 'bottom' ? 'flex-end' : 'center';
+      this.cachedMarqueeTrackStyle = styles.marqueeTrack.extend({ height, alignItems });
+      this.cachedMarqueeTrackHeight = height;
+      this.cachedMarqueeTrackAlignment = alignment;
+    }
+    return this.cachedMarqueeTrackStyle;
   }
 
   private scheduleNext(token: number, delayMs = this.viewModel.holdDurationMs ?? 2200): void {
@@ -574,7 +639,7 @@ export class Ticker extends StatefulComponent<TickerViewModel, TickerState> {
       onLayout={this.handleViewportLayout}
     >
       {mode === 'marquee' ? (
-        <view ref={this.trackRef} style={styles.marqueeTrack}>
+        <view ref={this.trackRef} style={this.getMarqueeTrackStyle()}>
           {items.length > 0 ? (
             <label
               value={items[0]}

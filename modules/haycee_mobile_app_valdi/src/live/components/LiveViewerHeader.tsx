@@ -6,7 +6,7 @@ import { Asset } from 'valdi_tsx/src/Asset';
 import { ImageView, Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
 import { Ticker } from '../../design-system/components/Ticker';
-import { colors, palette } from '../../design-system/tokens/colors';
+import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { layout, spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
@@ -16,6 +16,7 @@ import type { LiveFeedItem } from '../data/LiveFeedData';
 export interface LiveViewerHeaderViewModel {
   item: LiveFeedItem;
   isFollowing: boolean;
+  likeCount: number;
   onBack: () => void;
   onShare: () => void;
   onOpenProfile: () => void;
@@ -50,10 +51,25 @@ export class LiveViewerHeader extends Component<LiveViewerHeaderViewModel> {
               <layout style={styles.sellerChips}>
                 {item.vendorRating ? (
                   <view style={styles.sellerChip}>
-                    <image src={navigationIcons.sellerRatingStarBold} tint={palette.brandPurple} width={9} height={9} objectFit="contain" />
-                    <label value={item.vendorRating} style={styles.chipLabel} numberOfLines={1} textOverflow="ellipsis" />
+                    <image src={navigationIcons.sellerRatingStarBold} tint={colors.textInverted} width={10} height={10} objectFit="contain" />
+                    <label value={item.vendorRating} style={styles.sellerStatLabel} numberOfLines={1} textOverflow="ellipsis" />
                   </view>
                 ) : null}
+                <view style={styles.heartStat} accessibilityLabel={`${formatLiveViewerCount(this.viewModel.likeCount)} cœurs envoyés`}>
+                  <image
+                    src={navigationIcons.favouriteBold}
+                    tint={colors.textInverted}
+                    width={10}
+                    height={10}
+                    objectFit="contain"
+                  />
+                  <label
+                    value={formatLiveViewerCount(this.viewModel.likeCount)}
+                    style={styles.sellerStatLabel}
+                    numberOfLines={1}
+                    textOverflow="ellipsis"
+                  />
+                </view>
               </layout>
             </view>
           </view>
@@ -254,10 +270,11 @@ const styles = {
   hostName: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.product) }),
   sellerChips: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', flexShrink: 1, marginTop: 2, minWidth: 0 }),
   sellerChip: new Style<View>({ alignItems: 'center', flexDirection: 'row', flexShrink: 1, minWidth: 0 }),
-  chipLabel: new Style<Label>({ color: colors.textInverted, flexShrink: 1, font: montserrat.semiBold(fontSize.nano), marginLeft: 2, minWidth: 0 }),
+  sellerStatLabel: new Style<Label>({ color: colors.textInverted, flexShrink: 1, font: montserrat.semiBold(fontSize.nano), marginLeft: 3, minWidth: 0 }),
+  heartStat: new Style<View>({ alignItems: 'center', flexDirection: 'row', flexShrink: 0, marginLeft: spacing.sm }),
   headerActions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginLeft: spacing.sm }),
   followButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.interactivePrimary, borderRadius: radius.full, flexDirection: 'row', flexShrink: 0, height: 26, justifyContent: 'center', marginLeft: 2, width: 72 }),
-  followButtonActive: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonFollowing, borderRadius: radius.full, flexDirection: 'row', flexShrink: 0, height: 26, justifyContent: 'center', marginLeft: 2, width: 72 }),
+  followButtonActive: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonNeutral, borderRadius: radius.full, flexDirection: 'row', flexShrink: 0, height: 26, justifyContent: 'center', marginLeft: 2, width: 72 }),
   followLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.label) }),
   followLabelActive: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.label) }),
   viewerBadgeGradient: new Style<View>({
@@ -269,7 +286,7 @@ const styles = {
   }),
   viewerBadge: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.liveViewerBadgeSurface,
+    backgroundColor: colors.liveActionSurface,
     borderRadius: radius.full,
     flexDirection: 'row',
     paddingLeft: 0,

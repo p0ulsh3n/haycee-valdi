@@ -41,7 +41,7 @@ export class HomeCategoryTabs extends Component<HomeCategoryTabsViewModel> {
     <view style={styles.root}>
       <SwipeTabs
         tabs={categoryTabs}
-        initialIndex={selectedIndex}
+        activeIndex={selectedIndex}
         showPages={true}
         tabHeight={layout.home.categoryTabs.height}
         tabItemWidth={96}

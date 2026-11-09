@@ -11,6 +11,7 @@ import { colors } from '../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { layout, spacing } from '../design-system/tokens/spacing';
 import { HomeProduct, HomeProductRail } from './components/HomeProductRail';
+import type { HomeCollectionKind } from './components/HomeProductRail';
 import { HomePromoBannerCarousel } from './components/HomePromoBannerCarousel';
 import { HomeSectionHeader } from './components/HomeSectionHeader';
 import { getHomeCategory, HomeCategoryDefinition } from './data/HomeCategoryData';
@@ -24,7 +25,7 @@ export interface HomeContentViewModel {
   isActive?: boolean;
   /** True for the active tab and its adjacent preloaded pages. */
   isPrepared?: boolean;
-  onViewAllTap?: () => void;
+  onOpenCollection?: (kind: HomeCollectionKind) => void;
   onProductTap?: (product: HomeProduct, recommendations?: HomeProduct[]) => void;
   onQuickAdd?: (product: HomeProduct) => void;
   /** Optional API-backed page loader. The cursor is opaque to the caller. */
@@ -61,6 +62,8 @@ export class HomeContent extends StatefulComponent<HomeContentViewModel, HomeCon
   };
   private hasStartedLoading = false;
   private contentHeight = 0;
+  private masonryRequestPending = false;
+  private masonryRequestToken = 0;
 
   onCreate(): void {
     this.startLoadingIfPrepared();
@@ -134,36 +137,50 @@ export class HomeContent extends StatefulComponent<HomeContentViewModel, HomeCon
     this.handlePageScroll(event);
   };
 
-  private loadMoreMasonry = (): void => {
+  private loadMoreMasonry = (): Promise<void> => {
     if (
       this.state.isLoading ||
       this.state.isMasonryLoadingMore ||
-      !this.state.hasMasonryMore
+      !this.state.hasMasonryMore ||
+      this.masonryRequestPending
     ) {
-      return;
+      return Promise.resolve();
     }
 
     this.setState({ isMasonryLoadingMore: true });
-    this.requestMasonryPage(this.state.masonryCursor, false);
+    return this.requestMasonryPage(this.state.masonryCursor, false);
   };
 
-  private retryMasonryLoad = (): void => {
+  private retryMasonryLoad = (): Promise<void> => {
+    if (this.masonryRequestPending) return Promise.resolve();
+
     if (this.state.masonryItems.length === 0) {
       this.setState({ isLoading: true, masonryError: undefined });
-      this.requestMasonryPage(null, true);
-      return;
+      return this.requestMasonryPage(null, true);
     }
 
-    this.loadMoreMasonry();
+    return this.loadMoreMasonry();
   };
 
-  private requestMasonryPage(cursor: string | null, replace: boolean): void {
+  private requestMasonryPage(cursor: string | null, replace: boolean): Promise<void> {
+    if (this.masonryRequestPending) return Promise.resolve();
+
+    this.masonryRequestPending = true;
+    const requestToken = ++this.masonryRequestToken;
     const loader = this.viewModel.loadMasonryPage;
     if (loader) {
-      loader(cursor)
-        .then(page => this.applyMasonryPage(page, replace))
-        .catch(() => this.handleMasonryError());
-      return;
+      return Promise.resolve().then(() => loader(cursor)).then(
+        page => {
+          if (this.isDestroyed() || requestToken !== this.masonryRequestToken) return;
+          this.masonryRequestPending = false;
+          this.applyMasonryPage(page, replace);
+        },
+        () => {
+          if (this.isDestroyed() || requestToken !== this.masonryRequestToken) return;
+          this.masonryRequestPending = false;
+          this.handleMasonryError();
+        },
+      );
     }
 
     // Local fixture fallback: it follows the same cursor contract as the API
@@ -178,9 +195,15 @@ export class HomeContent extends StatefulComponent<HomeContentViewModel, HomeCon
       nextCursor: nextIndex < source.length ? String(nextIndex) : null,
     };
 
-    this.setTimeoutDisposable(() => {
-      this.applyMasonryPage(page, replace);
-    }, replace ? 0 : MASONRY_LOAD_DELAY_MS);
+    return new Promise(resolve => {
+      this.setTimeoutDisposable(() => {
+        if (!this.isDestroyed() && requestToken === this.masonryRequestToken) {
+          this.masonryRequestPending = false;
+          this.applyMasonryPage(page, replace);
+        }
+        resolve();
+      }, replace ? 0 : MASONRY_LOAD_DELAY_MS);
+    });
   }
 
   private applyMasonryPage(page: HomeMasonryPage, replace: boolean): void {
@@ -257,6 +280,14 @@ export class HomeContent extends StatefulComponent<HomeContentViewModel, HomeCon
     this.viewModel.onProductTap?.(product, recommendations);
   };
 
+  private handleOpenFlash = (): void => {
+    this.viewModel.onOpenCollection?.('flash');
+  };
+
+  private handleOpenTrending = (): void => {
+    this.viewModel.onOpenCollection?.('trending');
+  };
+
   onRender(): void {
     // SwipeTabs keeps all page shells mounted for native paging, but only the
     // committed page should build the expensive skeleton/feed tree.
@@ -284,6 +315,8 @@ export class HomeContent extends StatefulComponent<HomeContentViewModel, HomeCon
         subtitle={`Les offres ${category.label.toLowerCase()} à ne pas manquer`}
         variant="flash"
         products={category.flashProducts}
+        actionLabel="Voir tout"
+        onViewAllTap={this.handleOpenFlash}
         onProductTap={this.viewModel.onProductTap}
       />
       <HomeProductRail
@@ -291,7 +324,7 @@ export class HomeContent extends StatefulComponent<HomeContentViewModel, HomeCon
         variant="trending"
         products={category.trendingProducts}
         actionLabel="Voir tout"
-        onViewAllTap={this.viewModel.onViewAllTap}
+        onViewAllTap={this.handleOpenTrending}
         onProductTap={this.viewModel.onProductTap}
       />
       <HomeProductRail

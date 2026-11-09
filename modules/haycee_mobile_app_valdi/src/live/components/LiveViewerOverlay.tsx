@@ -16,13 +16,11 @@ import { fontSize, montserrat } from '../../design-system/tokens/typography';
 
 export interface LiveViewerOverlayViewModel {
   messages: LiveViewerMessage[];
+  chatAvatarBorderColor?: string;
   commentDraft: string;
-  likeCount: number;
-  isLiked: boolean;
   products: LiveViewerProduct[];
   onDraftChange: (event: EditTextEvent) => void;
   onSendComment: () => void;
-  onLike: () => void;
   onWallet: () => void;
   onOpenCart: () => void;
   onOpenRequest: () => void;
@@ -123,7 +121,7 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
     <view style={styles.root}>
       <layout style={styles.liveInteractionArea}>
         <view style={styles.chatColumn}>
-          <LiveChatFeed messages={model.messages} />
+          <LiveChatFeed messages={model.messages} avatarBorderColor={model.chatAvatarBorderColor} />
           <view style={styles.composerSlot}>
             <LiveCommentComposer
               value={model.commentDraft}
@@ -140,15 +138,8 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
           opacity={this.overlayHidden ? 0 : 1}
           touchEnabled={this.overlayInteractive}
         >
-          {this.renderActionButton(
-            navigationIcons.favourite,
-            `J’aime, ${model.likeCount}`,
-            'J’aime',
-            model.onLike,
-            model.isLiked,
-          )}
           {this.renderActionButton(navigationIcons.money03, 'Portefeuille', 'Solde', model.onWallet)}
-          {this.renderActionButton(navigationIcons.cart, 'Panier du live', 'Panier', model.onOpenCart)}
+          {this.renderActionButton(navigationIcons.shoppingCart02, 'Panier du live', 'Panier', model.onOpenCart)}
           {model.products.length > 0
             ? this.renderActionButton(
                 navigationIcons.userHandUp01,

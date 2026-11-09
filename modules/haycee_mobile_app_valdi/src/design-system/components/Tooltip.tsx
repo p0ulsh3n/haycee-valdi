@@ -10,10 +10,15 @@ import { typography } from '../tokens/typography';
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 export interface TooltipViewModel {
-  message: string;
+  /** Simple text mode. Use `renderContent` for rich inline content. */
+  message?: string;
+  /** Rich content slot for combinations such as an avatar, icon and text. */
+  renderContent?: () => void;
   visible?: boolean;
   placement?: TooltipPlacement;
   maxWidth?: number;
+  surfaceColor?: string;
+  contentColor?: string;
   /** Enables a native Valdi long-press trigger on the wrapped content. */
   showOnLongPress?: boolean;
   children?: () => void;
@@ -25,6 +30,7 @@ interface TooltipState {
   isMounted: boolean;
   opacity: number;
   scale: number;
+  translationY: number;
 }
 
 /** Reusable animated tooltip. The visual popup is not a native Valdi widget. */
@@ -33,6 +39,7 @@ export class Tooltip extends StatefulComponent<TooltipViewModel, TooltipState> {
     isMounted: false,
     opacity: 0,
     scale: 0.94,
+    translationY: 8,
   };
   private transitionToken = 0;
 
@@ -58,8 +65,12 @@ export class Tooltip extends StatefulComponent<TooltipViewModel, TooltipState> {
   }
 
   private show = (): void => {
+    if (this.state.isMounted && this.state.opacity >= 1) {
+      return;
+    }
     const token = ++this.transitionToken;
-    this.setState({ isMounted: true, opacity: 0, scale: 0.94 });
+    const startTranslation = this.getEntryTranslation();
+    this.setState({ isMounted: true, opacity: 0, scale: 0.88, translationY: startTranslation });
     this.viewModel.onShow?.();
 
     this.setTimeoutDisposable(() => {
@@ -68,8 +79,8 @@ export class Tooltip extends StatefulComponent<TooltipViewModel, TooltipState> {
       }
 
       this.setStateAnimated(
-        { opacity: 1, scale: 1 },
-        { duration: 0.2, curve: AnimationCurve.EaseOut, beginFromCurrentState: true },
+        { opacity: 1, scale: 1, translationY: 0 },
+        { stiffness: 460, damping: 34, beginFromCurrentState: true },
       );
     }, 0);
   };
@@ -81,8 +92,8 @@ export class Tooltip extends StatefulComponent<TooltipViewModel, TooltipState> {
 
     const token = ++this.transitionToken;
     void this.setStateAnimatedPromise(
-      { opacity: 0, scale: 0.94 },
-      { duration: 0.16, curve: AnimationCurve.EaseIn, beginFromCurrentState: true },
+      { opacity: 0, scale: 0.9, translationY: this.getEntryTranslation() * 0.6 },
+      { duration: 0.18, curve: AnimationCurve.EaseIn, beginFromCurrentState: true },
     ).then(() => {
       if (!this.isDestroyed() && token === this.transitionToken) {
         this.setState({ isMounted: false });
@@ -115,6 +126,19 @@ export class Tooltip extends StatefulComponent<TooltipViewModel, TooltipState> {
     }
   }
 
+  private getEntryTranslation(): number {
+    switch (this.viewModel.placement ?? 'top') {
+      case 'bottom':
+        return -8;
+      case 'left':
+      case 'right':
+        return 0;
+      case 'top':
+      default:
+        return 8;
+    }
+  }
+
   private getArrowStyle(): Style<View> {
     switch (this.viewModel.placement ?? 'top') {
       case 'bottom':
@@ -137,15 +161,26 @@ export class Tooltip extends StatefulComponent<TooltipViewModel, TooltipState> {
       {this.viewModel.children?.()}
       {this.state.isMounted ? (
         <view
-          style={this.getTooltipStyle().extend({ maxWidth: this.viewModel.maxWidth ?? 220 })}
+          style={this.getTooltipStyle().extend({
+            backgroundColor: this.viewModel.surfaceColor ?? colors.backgroundPrimary,
+            maxWidth: this.viewModel.maxWidth ?? 320,
+          })}
           opacity={this.state.opacity}
           scaleX={this.state.scale}
           scaleY={this.state.scale}
+          translationY={this.state.translationY}
           onTap={this.handleTooltipTap}
           accessibilityCategory="button"
         >
-          <label style={styles.message} value={this.viewModel.message} numberOfLines={0} />
-          <view style={this.getArrowStyle()} />
+          {this.viewModel.renderContent?.()}
+          {!this.viewModel.renderContent && this.viewModel.message ? (
+            <label
+              style={styles.message.extend({ color: this.viewModel.contentColor ?? colors.textPrimary })}
+              value={this.viewModel.message}
+              numberOfLines={0}
+            />
+          ) : null}
+          <view style={this.getArrowStyle().extend({ backgroundColor: this.viewModel.surfaceColor ?? colors.backgroundPrimary })} />
         </view>
       ) : null}
     </view>;
@@ -154,9 +189,9 @@ export class Tooltip extends StatefulComponent<TooltipViewModel, TooltipState> {
 
 const tooltipBase = {
   alignItems: 'center' as const,
-  backgroundColor: colors.textPrimary,
+  backgroundColor: colors.backgroundPrimary,
   borderRadius: radius.sm,
-  boxShadow: '0 2 8 rgba(0, 0, 0, 0.22)',
+  boxShadow: '0 4 16 rgba(0, 0, 0, 0.22)',
   justifyContent: 'center' as const,
   paddingBottom: spacing.sm,
   paddingLeft: spacing.md,
@@ -167,7 +202,7 @@ const tooltipBase = {
 };
 
 const arrowBase = {
-  backgroundColor: colors.textPrimary,
+  backgroundColor: colors.backgroundPrimary,
   height: 8,
   position: 'absolute' as const,
   width: 8,
@@ -234,7 +269,7 @@ const styles = {
     translationY: -4,
   }),
   message: typography.caption.extend({
-    color: colors.textInverted,
+    color: colors.textPrimary,
     textAlign: 'center',
   }),
 };

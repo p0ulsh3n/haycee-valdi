@@ -2,11 +2,20 @@ import { AnimationCurve } from 'valdi_core/src/AnimationOptions';
 import { StatefulComponent } from 'valdi_core/src/Component';
 import { ElementRef } from 'valdi_core/src/ElementRef';
 import { Style } from 'valdi_core/src/Style';
+import { AttributedTextBuilder } from 'valdi_core/src/utils/AttributedTextBuilder';
 import { ElementFrame } from 'valdi_tsx/src/Geometry';
 import { ImageView, Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { AttributedTextInlineViewVerticalAlignment } from 'valdi_tsx/src/AttributedTextInlineViewAttachment';
 import navigationIcons from '../../../res/navigation-icons';
 import { getMasonryImageAspectRatio } from './MasonryFeed';
+import { ProductCardBadge } from './ProductCardBadge';
+import { ProductOfferPlacement } from './ProductOfferPlacement';
+import { ProductPopularityBadge } from './ProductPopularityBadge';
+import { ProductRatingSummary } from './ProductRatingSummary';
+import type { ProductOffer, ProductPopularityBadgeType } from './ProductCardTypes';
 import { colors } from '../tokens/colors';
+import { radius } from '../tokens/radius';
+import { spacing } from '../tokens/spacing';
 import { fontSize, montserrat, typography, transformText } from '../tokens/typography';
 import { formatPriceLabel } from '../utils/money';
 
@@ -23,12 +32,15 @@ export interface MasonryProduct {
   originalPrice?: string;
   discountLabel?: string;
   badgeText?: string;
+  popularityBadge?: ProductPopularityBadgeType;
+  offer?: ProductOffer;
   isLive?: boolean;
   isFlashSale?: boolean;
   isFavorited?: boolean;
   rating?: string;
-  soldCount?: string;
   masonryAspectRatio?: number;
+  /** Optional product-level sales summary shown on the product detail page. */
+  soldCount?: string;
   description?: string;
   category?: string;
   /** Seller display name shown above the @username on storefronts. */
@@ -60,12 +72,24 @@ export interface MasonryProduct {
   sizes?: string[];
   reviewCount?: string;
   stockCount?: number;
+  stockTotal?: number;
   shippingFree?: boolean;
   shippingPrice?: string;
   conditionLabel?: string;
   tags?: string[];
   isFeatured?: boolean;
 }
+
+/** Estimates the rendered card height for the shared two-column masonry balancer. */
+export const estimateMasonryProductCardHeight = (product: MasonryProduct, columnWidth: number): number => {
+  const imageHeight = Math.round(columnWidth * getMasonryImageAspectRatio(product));
+  const reviewCount = Number(product.reviewCount ?? 0);
+  const hasRatingSummary = product.rating !== undefined && Number.isFinite(reviewCount) && reviewCount >= 5;
+  const optionalRowsHeight = (product.offer ? 14 + spacing.xs : 0)
+    + (hasRatingSummary ? 14 + spacing.xs : 0);
+
+  return imageHeight + 18 + fontSize.price + spacing.xs + spacing.sm * 2 + optionalRowsHeight + 8;
+};
 
 export interface MasonryProductCardViewModel {
   product: MasonryProduct;
@@ -227,11 +251,17 @@ export class MasonryProductCard extends StatefulComponent<
     const width = this.viewModel.columnWidth;
     const imageHeight = Math.round(width * getMasonryImageAspectRatio(product));
     const title = transformText(product.title, 'capitalize');
-    const rating = product.rating ?? '4.8';
-    const soldCount = product.soldCount ?? '120 vendus';
+    const titleValue = product.popularityBadge
+      ? new AttributedTextBuilder()
+          .appendInlineView(0, AttributedTextInlineViewVerticalAlignment.Center)
+          .appendText(` ${title}`)
+          .build()
+      : title;
     const discount = product.originalPrice && product.originalPrice !== product.price
       ? product.discountLabel
       : undefined;
+    const reviewCount = Number(product.reviewCount ?? 0);
+    const hasRatingSummary = product.rating !== undefined && Number.isFinite(reviewCount) && reviewCount >= 5;
 
     <view
       style={styles.card}
@@ -258,14 +288,24 @@ export class MasonryProductCard extends StatefulComponent<
           />
         ) : null}
         {product.badgeText ? (
-          <view style={styles.badge}>
-            <label value={transformText(product.badgeText, 'upper')} style={styles.badgeText} />
+          <view style={styles.badge.extend({ top: product.isLive ? 34 : 8 })}>
+            <ProductCardBadge label={product.badgeText} backgroundColor={colors.liveCardBadgePromotion} />
+          </view>
+        ) : null}
+
+        {product.isLive ? (
+          <view style={styles.liveBadge}>
+            <ProductCardBadge label="EN DIRECT" backgroundColor={colors.offerDanger} />
           </view>
         ) : null}
 
         {product.isFlashSale ? (
           <view style={styles.flashBadge}>
-            <label value="⚡ FLASH" style={styles.flashText} />
+            <ProductCardBadge
+              label="VENTE FLASH"
+              backgroundColor={colors.offerDanger}
+              icon={navigationIcons.discountTag01}
+            />
           </view>
         ) : null}
 
@@ -287,7 +327,7 @@ export class MasonryProductCard extends StatefulComponent<
               src={
                 this.state.isQuickAddConfirmed
                   ? navigationIcons.shoppingCartCheck02
-                  : navigationIcons.add02
+                  : navigationIcons.shoppingCartAdd02
               }
               tint={colors.textInverted}
               width={18}
@@ -299,7 +339,14 @@ export class MasonryProductCard extends StatefulComponent<
       </view>
 
       <layout style={styles.infoContainer}>
-        <label value={title} style={styles.title} numberOfLines={2} />
+        <label value={titleValue} style={styles.title} numberOfLines={1} textOverflow="ellipsis">
+          {product.popularityBadge ? <ProductPopularityBadge type={product.popularityBadge} /> : null}
+        </label>
+        {product.offer ? (
+          <layout style={styles.infoRow}>
+            <ProductOfferPlacement offer={product.offer} />
+          </layout>
+        ) : null}
         <layout style={styles.priceRow}>
           <label value={formatPriceLabel(product.price)} style={styles.price} />
           {product.originalPrice ? <label value={formatPriceLabel(product.originalPrice)} style={styles.originalPrice} /> : null}
@@ -309,10 +356,11 @@ export class MasonryProductCard extends StatefulComponent<
             </view>
           ) : null}
         </layout>
-        <layout style={styles.statsRow}>
-          <label value={`★ ${rating}`} style={styles.rating} />
-          <label value={soldCount} style={styles.soldCount} />
-        </layout>
+        {hasRatingSummary ? (
+          <layout style={styles.infoRow}>
+            <ProductRatingSummary rating={product.rating} reviewCount={reviewCount} />
+          </layout>
+        ) : null}
       </layout>
     </view>;
   }
@@ -326,39 +374,13 @@ const styles = {
     slowClipping: true,
   }),
   imageFrame: new Style<View>({
+    borderRadius: radius.cardImage,
     position: 'relative',
     slowClipping: true,
   }),
-  badge: new Style<View>({
-    backgroundColor: colors.textDanger,
-    borderRadius: 4,
-    left: 8,
-    paddingBottom: 3,
-    paddingLeft: 6,
-    paddingRight: 6,
-    paddingTop: 3,
-    position: 'absolute',
-    top: 8,
-  }),
-  badgeText: new Style<Label>({
-    color: colors.textInverted,
-    font: montserrat.extraBold(fontSize.nano),
-  }),
-  flashBadge: new Style<View>({
-    backgroundColor: colors.backgroundOverlay,
-    borderRadius: 4,
-    bottom: 8,
-    left: 8,
-    paddingBottom: 3,
-    paddingLeft: 6,
-    paddingRight: 6,
-    paddingTop: 3,
-    position: 'absolute',
-  }),
-  flashText: new Style<Label>({
-    color: colors.backgroundBrand,
-    font: montserrat.extraBold(fontSize.nano),
-  }),
+  badge: new Style<View>({ left: 8, position: 'absolute', top: 8 }),
+  liveBadge: new Style<View>({ left: 8, position: 'absolute', top: 8 }),
+  flashBadge: new Style<View>({ bottom: 8, left: 8, position: 'absolute' }),
   favoriteButton: new Style<View>({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -382,19 +404,21 @@ const styles = {
     width: 32,
   }),
   infoContainer: new Style<Layout>({
-    paddingBottom: 10,
-    paddingLeft: 8,
-    paddingRight: 8,
-    paddingTop: 8,
+    flexDirection: 'column',
+    paddingBottom: spacing.sm,
+    paddingLeft: spacing.sm,
+    paddingRight: spacing.sm,
+    paddingTop: spacing.sm,
   }),
-  title: typography.productTitle.extend({
-    marginBottom: 4,
+  title: typography.productTitle,
+  infoRow: new Style<Layout>({
+    marginTop: spacing.xs,
   }),
   priceRow: new Style<Layout>({
     alignItems: 'center',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 4,
+    marginTop: spacing.xs,
   }),
   price: new Style<Label>({
     color: colors.textPrimary,
@@ -408,7 +432,7 @@ const styles = {
     textDecoration: 'strikethrough',
   }),
   discountBadge: new Style<View>({
-    backgroundColor: '#FFF0F3',
+    backgroundColor: colors.productDiscountSurface,
     borderRadius: 3,
     paddingBottom: 1,
     paddingLeft: 4,
@@ -418,18 +442,5 @@ const styles = {
   discountText: new Style<Label>({
     color: colors.textDanger,
     font: montserrat.extraBold(fontSize.nano),
-  }),
-  statsRow: new Style<Layout>({
-    alignItems: 'center',
-    flexDirection: 'row',
-  }),
-  rating: new Style<Label>({
-    color: colors.textSecondary,
-    font: montserrat.regular(fontSize.micro),
-    marginRight: 6,
-  }),
-  soldCount: new Style<Label>({
-    color: colors.textTertiary,
-    font: montserrat.regular(fontSize.micro),
   }),
 };

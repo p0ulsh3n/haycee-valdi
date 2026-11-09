@@ -4,18 +4,20 @@ import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
 import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { View } from 'valdi_tsx/src/NativeTemplateElements';
 import { colors } from '../design-system/tokens/colors';
-import { HomeProduct } from './components/HomeProductRail';
+import type { HomeCollectionKind, HomeProduct } from './components/HomeProductRail';
 import { HomeCategoryTabs } from './components/HomeCategoryTabs';
 import { HomeContent } from './HomeContent';
 import { HomeHeader } from './components/HomeHeader';
 
 export interface HomeScreenViewModel {
-  onMenuTap?: () => void;
+  onMenuTap?: (selectedCategoryKey: string) => void;
   onSearchTap?: () => void;
   onWishlistTap?: () => void;
   onNotificationsTap?: () => void;
   onProductTap?: (product: HomeProduct, recommendations?: HomeProduct[]) => void;
   onQuickAdd?: (product: HomeProduct) => void;
+  onOpenCollection?: (kind: HomeCollectionKind) => void;
+  selectedCategoryKey?: string;
 }
 
 interface HomeSurfaceState {
@@ -26,11 +28,22 @@ interface HomeSurfaceState {
 export class HomeSurface extends StatefulComponent<HomeScreenViewModel, HomeSurfaceState> {
   state: HomeSurfaceState = { selectedCategoryKey: 'all' };
 
+  onCreate(): void {
+    this.state = { selectedCategoryKey: this.viewModel.selectedCategoryKey ?? 'all' };
+  }
+
+  onViewModelUpdate(previous?: HomeScreenViewModel): void {
+    const selectedCategoryKey = this.viewModel.selectedCategoryKey;
+    if (selectedCategoryKey && selectedCategoryKey !== previous?.selectedCategoryKey && selectedCategoryKey !== this.state.selectedCategoryKey) {
+      this.setState({ selectedCategoryKey });
+    }
+  }
+
   onRender(): void {
     <view style={styles.root}>
       <HomeHeader
         suggestions={['Rechercher une robe', 'Sneakers tendance', 'Nouveautés beauté']}
-        onMenuTap={this.viewModel.onMenuTap}
+        onMenuTap={() => this.viewModel.onMenuTap?.(this.state.selectedCategoryKey)}
         onSearchTap={this.viewModel.onSearchTap}
         onWishlistTap={this.viewModel.onWishlistTap}
         onNotificationsTap={this.viewModel.onNotificationsTap}
@@ -56,6 +69,7 @@ export class HomeSurface extends StatefulComponent<HomeScreenViewModel, HomeSurf
       selectedCategoryKey={categoryKey}
       isActive={isActive}
       isPrepared={isPrepared}
+      onOpenCollection={this.viewModel.onOpenCollection}
       onProductTap={this.viewModel.onProductTap}
       onQuickAdd={this.viewModel.onQuickAdd}
     />;
@@ -73,6 +87,8 @@ export class HomeScreen extends NavigationPageStatefulComponent<HomeScreenViewMo
       onSearchTap={this.viewModel.onSearchTap}
       onWishlistTap={this.viewModel.onWishlistTap}
       onNotificationsTap={this.viewModel.onNotificationsTap}
+      selectedCategoryKey={this.viewModel.selectedCategoryKey}
+      onOpenCollection={this.viewModel.onOpenCollection}
       onProductTap={this.viewModel.onProductTap}
       onQuickAdd={this.viewModel.onQuickAdd}
     />;

@@ -14,6 +14,7 @@ import { MessagesInbox } from '../../messaging/MessagesInbox';
 import { ConversationPreview } from '../../messaging/MessagingTypes';
 import { LiveHomeScreen } from '../../live/LiveHomeScreen';
 import type { LiveFeedItem } from '../../live/data/LiveFeedData';
+import { CartScreen } from '../../cart/CartScreen';
 
 export interface BottomTabItem {
   id: string;
@@ -31,13 +32,17 @@ export interface BottomTabsNavigationViewModel {
   textCase?: TextCase;
   onIndexChange?: (index: number, tab: BottomTabItem) => void;
   onMenuTap?: HomeScreenViewModel['onMenuTap'];
+  selectedHomeCategoryKey?: string;
   onSearchTap?: HomeScreenViewModel['onSearchTap'];
   onWishlistTap?: HomeScreenViewModel['onWishlistTap'];
   onNotificationsTap?: HomeScreenViewModel['onNotificationsTap'];
+  onOpenCollection?: HomeScreenViewModel['onOpenCollection'];
   onProductTap?: HomeScreenViewModel['onProductTap'];
   onQuickAdd?: HomeScreenViewModel['onQuickAdd'];
   onConversationTap?: (conversation: ConversationPreview) => void;
   onLiveTap?: (item: LiveFeedItem) => void;
+  selectedPickupAddress?: string;
+  onSelectAddress?: () => void;
 }
 
 interface BottomTabsNavigationState {
@@ -58,7 +63,7 @@ export const defaultBottomTabs: BottomTabItem[] = [
     label: 'Messages',
     pageTitle: 'Messages',
     pageMessage: 'Retrouvez ici vos conversations.',
-    icon: navigationIcons.messages,
+    icon: navigationIcons.message02,
   },
   {
     id: 'live',
@@ -72,7 +77,7 @@ export const defaultBottomTabs: BottomTabItem[] = [
     label: 'Panier',
     pageTitle: 'Panier',
     pageMessage: 'Les articles ajoutés au panier apparaîtront ici.',
-    icon: navigationIcons.cart,
+    icon: navigationIcons.shoppingCart02,
   },
   {
     id: 'profile',
@@ -103,10 +108,12 @@ export class BottomTabsNavigation extends StatefulComponent<BottomTabsNavigation
     <view style={styles.screen}>
       {activeTab.id === 'home' ? (
         <HomeSurface
+          selectedCategoryKey={this.viewModel.selectedHomeCategoryKey}
           onMenuTap={this.viewModel.onMenuTap}
           onSearchTap={this.viewModel.onSearchTap}
           onWishlistTap={this.viewModel.onWishlistTap}
           onNotificationsTap={this.viewModel.onNotificationsTap}
+          onOpenCollection={this.viewModel.onOpenCollection}
           onProductTap={this.viewModel.onProductTap}
           onQuickAdd={this.viewModel.onQuickAdd}
         />
@@ -116,6 +123,13 @@ export class BottomTabsNavigation extends StatefulComponent<BottomTabsNavigation
         />
       ) : activeTab.id === 'live' ? (
         <LiveHomeScreen onOpenLive={this.viewModel.onLiveTap ?? this.handlePreviewLiveTap} />
+      ) : activeTab.id === 'cart' ? (
+        <CartScreen
+          onProductTap={this.viewModel.onProductTap}
+          onQuickAdd={this.viewModel.onQuickAdd}
+          selectedAddress={this.viewModel.selectedPickupAddress}
+          onSelectAddress={this.viewModel.onSelectAddress}
+        />
       ) : (
         <view style={styles.content} backgroundColor={activeTab.pageColor ?? colors.backgroundPrimary}>
           <label
@@ -149,7 +163,7 @@ export class BottomTabsNavigation extends StatefulComponent<BottomTabsNavigation
 
   private renderTab(tab: BottomTabItem, index: number): void {
     const isActive = index === this.state.activeIndex;
-    const tabColor = colors.textPrimary;
+    const tabColor = isActive ? colors.textPrimary : colors.textTertiary;
 
     <view
       style={styles.tab}

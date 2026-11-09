@@ -3,6 +3,7 @@ import { StatefulComponent } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { ElementFrame } from 'valdi_tsx/src/Geometry';
 import { Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { AsyncActionButton } from './AsyncActionButton';
 import { colors } from '../tokens/colors';
 import { spacing } from '../tokens/spacing';
 import { montserrat } from '../tokens/typography';
@@ -23,7 +24,7 @@ export interface MasonryFeedViewModel {
   hasMore?: boolean;
   error?: string;
   onLoadMore?: () => void;
-  onRetry?: () => void;
+  onRetry?: () => void | Promise<unknown>;
   /** Feature-owned renderer. The callback renders the item in the current column. */
   renderItem: (item: MasonryItem, columnWidth: number) => void;
   /** Optional feature-owned height estimator used to balance the two columns. */
@@ -153,9 +154,16 @@ export class MasonryFeed extends StatefulComponent<MasonryFeedViewModel, Masonry
       {this.viewModel.error ? (
         <layout style={styles.errorFooter}>
           <label value={this.viewModel.error} style={styles.errorLabel} />
-          <view style={styles.retryButton} onTap={this.viewModel.onRetry} accessibilityCategory="button">
-            <label value={retryLabel} style={styles.retryLabel} />
-          </view>
+          {this.viewModel.onRetry ? (
+            <AsyncActionButton
+              title={retryLabel}
+              onTap={this.viewModel.onRetry}
+              buttonStyle={styles.retryButton}
+              labelStyle={styles.retryLabel}
+              contentStyle={styles.retryContent}
+              spinnerColor={colors.textInverted}
+            />
+          ) : null}
         </layout>
       ) : null}
 
@@ -226,5 +234,10 @@ const styles = {
   retryLabel: new Style<Label>({
     color: colors.textInverted,
     font: montserrat.extraBold(12),
+  }),
+  retryContent: new Style<View>({
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   }),
 };

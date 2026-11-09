@@ -11,6 +11,7 @@ import { montserrat, typography, transformText } from '../../design-system/token
 import { HomeSectionHeader } from './HomeSectionHeader';
 
 export interface HomeProduct extends MasonryProduct {}
+export type HomeCollectionKind = 'flash' | 'trending';
 
 export interface HomeProductRailViewModel {
   title: string;

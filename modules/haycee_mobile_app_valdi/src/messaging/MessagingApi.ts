@@ -21,6 +21,7 @@ export class MessagingApi {
   private readonly client: HTTPClient;
   private disposed = false;
   private readonly activeRequests = new Set<CancelablePromise<HTTPResponse>>();
+  private readonly pendingMessageSends = new Map<string, Promise<void>>();
 
   constructor(private readonly configuration: MessagingApiConfiguration) {
     if (!configuration.baseUrl.trim()) throw new MessagingApiError('Messaging API base URL is not configured.');
@@ -39,6 +40,25 @@ export class MessagingApi {
 
   sendMessage = async (message: ConversationMessage): Promise<void> => {
     if (this.disposed) throw new MessagingApiError('Messaging API request cancelled.');
+
+    const pending = this.pendingMessageSends.get(message.id);
+    if (pending) {
+      await pending;
+      return;
+    }
+
+    const operation = this.performMessageSend(message);
+    this.pendingMessageSends.set(message.id, operation);
+    try {
+      await operation;
+    } finally {
+      if (this.pendingMessageSends.get(message.id) === operation) {
+        this.pendingMessageSends.delete(message.id);
+      }
+    }
+  };
+
+  private performMessageSend = async (message: ConversationMessage): Promise<void> => {
     const body = new TextEncoder().encode(JSON.stringify(message));
     const request = this.client.post(
       `/messaging/conversations/${encodeURIComponent(message.conversationId)}/messages`,

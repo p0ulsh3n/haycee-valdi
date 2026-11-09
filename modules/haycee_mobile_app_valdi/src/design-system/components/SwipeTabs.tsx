@@ -42,7 +42,7 @@ export interface SwipeTabItem {
   errorTitle?: string;
   errorMessage?: string;
   retryLabel?: string;
-  onRetry?: () => void;
+  onRetry?: () => void | Promise<unknown>;
 }
 
 export type SwipeTabStatus = 'ready' | 'loading' | 'empty' | 'error';
@@ -80,6 +80,8 @@ export interface SwipeTabsViewModel {
   tabHeight?: number;
   /** Uses the stronger Home typography for category labels. */
   strongLabels?: boolean;
+  /** Optional caller-defined typography for the tab labels. */
+  labelStyle?: Style<Label>;
   /** Active indicator color. */
   indicatorColor?: string;
   /** Adds the shared one-physical-pixel divider below the tab rail. */
@@ -90,6 +92,8 @@ export interface SwipeTabsViewModel {
   activeIndicatorWidthRatio?: number;
   /** Custom page renderer used when the tab content is supplied by the caller. */
   renderPage?: (tab: SwipeTabItem, isActive: boolean, isPrepared: boolean) => void;
+  /** Change this when a custom page renderer reads external state captured by its owner. */
+  renderPageKey?: string | number;
   /** Defaults to `upper` for all tab and page text. */
   textCase?: TextCase;
   initialIndex?: number;
@@ -356,7 +360,7 @@ export class SwipeTabs extends StatefulComponent<SwipeTabsViewModel, SwipeTabsSt
         {when(tab.onRetry, onRetry => {
           <DSButton
             title={tab.retryLabel ?? 'Réessayer'}
-            variant="secondary"
+            variant="black"
             onTap={onRetry}
           />;
         })}
@@ -405,7 +409,9 @@ export class SwipeTabs extends StatefulComponent<SwipeTabsViewModel, SwipeTabsSt
             })}
             {when(!iconOnly, () => {
               <label
-                style={isActive ? labelTypography : labelTypography.extend({ color: colors.textSecondary })}
+                style={labelTypography.extend({
+                  color: isActive ? colors.textPrimary : colors.textSecondary,
+                })}
                 value={transformText(tab.label, this.viewModel.textCase)}
                 numberOfLines={1}
               />;
@@ -424,7 +430,8 @@ export class SwipeTabs extends StatefulComponent<SwipeTabsViewModel, SwipeTabsSt
     const scrollableTabBar = this.viewModel.scrollableTabs
       ?? (this.viewModel.tabItemWidth !== undefined || !showPages);
     const tabHeight = this.viewModel.tabHeight ?? 64;
-    const labelTypography = this.viewModel.strongLabels ? typography.homeTabLabel : typography.tabLabel;
+    const labelTypography = this.viewModel.labelStyle
+      ?? (this.viewModel.strongLabels ? typography.homeTabLabel : typography.tabLabel);
 
     <view style={styles.root.extend({ flexGrow: showPages ? 1 : 0 })}>
       {scrollableTabBar ? (

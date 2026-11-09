@@ -3,12 +3,14 @@ import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { Label, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { colors } from '../../design-system/tokens/colors';
+import { radius } from '../../design-system/tokens/radius';
 import { layout } from '../../design-system/tokens/spacing';
 import { montserrat } from '../../design-system/tokens/typography';
 
 export interface HomeIconButtonViewModel {
   icon?: Asset;
   glyph?: string;
+  backgroundColor?: string;
   label: string;
   leadingMargin?: number;
   onTap?: () => void;
@@ -18,7 +20,15 @@ export interface HomeIconButtonViewModel {
 export class HomeIconButton extends Component<HomeIconButtonViewModel> {
   onRender(): void {
     <view
-      style={styles.button.extend({ marginLeft: this.viewModel.leadingMargin ?? 0 })}
+      style={
+        this.viewModel.backgroundColor
+          ? styles.button.extend({
+              backgroundColor: this.viewModel.backgroundColor,
+              borderRadius: radius.md,
+              marginLeft: this.viewModel.leadingMargin ?? 0,
+            })
+          : styles.button.extend({ marginLeft: this.viewModel.leadingMargin ?? 0 })
+      }
       onTap={this.viewModel.onTap}
       accessibilityCategory="button"
     >

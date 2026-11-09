@@ -9,11 +9,12 @@ import { ScrollEvent } from 'valdi_tsx/src/GestureEvents';
 import { ElementFrame } from 'valdi_tsx/src/Geometry';
 import { ImageFilters } from 'valdi_core/src/utils/ImageFilter';
 import navigationIcons from '../../res/navigation-icons';
-import { MasonryFeed, MasonryItem, getMasonryImageAspectRatio } from '../design-system/components/MasonryFeed';
-import { MasonryProductCard, MasonryProduct } from '../design-system/components/MasonryProductCard';
+import { MasonryFeed, MasonryItem } from '../design-system/components/MasonryFeed';
+import { estimateMasonryProductCardHeight, MasonryProductCard, MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { SkeletonView } from '../design-system/components/SkeletonView';
 import { SwipeTabItem, SwipeTabs, SwipeTabsProgressChannel } from '../design-system/components/SwipeTabs';
 import { TabChips } from '../design-system/components/TabChips';
+import { DSButton } from '../design-system/components/DSButton';
 import type { LiveFeedItem } from '../live/data/LiveFeedData';
 import { UpcomingLiveScreen } from '../live/UpcomingLiveScreen';
 import { SellerLiveFeed } from './components/SellerLiveFeed';
@@ -27,6 +28,7 @@ import {
 import type { SellerVideoPreview } from './data/SellerStorefrontData';
 import { TransientFeedback } from '../design-system/components/SnackBar';
 import { colors } from '../design-system/tokens/colors';
+import { runNavigationAction } from '../design-system/utils/NavigationActionGate';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { radius } from '../design-system/tokens/radius';
 import { layout, spacing } from '../design-system/tokens/spacing';
@@ -281,12 +283,9 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
     }
 
     if (item.status === 'upcoming') {
-      this.navigationController.push(
-        UpcomingLiveScreen,
-        { item },
-        {},
-        { animated: true },
-      );
+      runNavigationAction(this.navigationController, () => {
+        this.navigationController.push(UpcomingLiveScreen, { item }, {}, { animated: true });
+      });
       return;
     }
 
@@ -368,7 +367,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
   };
 
   private estimateSellerProductHeight = (item: MasonryItem, columnWidth: number): number => (
-    Math.round(columnWidth * getMasonryImageAspectRatio(item)) + 94
+    estimateMasonryProductCardHeight(item as MasonryProduct, columnWidth)
   );
 
   private renderSellerTabPage = (tab: SwipeTabItem, isActive: boolean, isPrepared: boolean): void => {
@@ -508,6 +507,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
         showPages={true}
         tabHeight={52}
         strongLabels={true}
+        labelStyle={styles.sellerTabLabel}
         showHairline={true}
         textCase="capitalize"
         indicatorColor={colors.textPrimary}
@@ -534,6 +534,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
         tabHeight={52}
         tabItemWidth={Device.getWindowWidth() / tabs.length}
         strongLabels={true}
+        labelStyle={styles.sellerTabLabel}
         showHairline={true}
         textCase="capitalize"
         indicatorColor={colors.textPrimary}
@@ -648,27 +649,15 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
                 >
                   <image src={navigationIcons.bubbleChat} tint={colors.textPrimary} width={19} height={19} objectFit="contain" />
                 </view>
-                <view
-                  style={this.state.isFollowing ? styles.followButtonActive : styles.followButton}
+                <DSButton
+                  title={this.state.isFollowing ? 'Suivi' : 'Suivre'}
+                  variant={this.state.isFollowing ? 'neutral' : 'cta'}
+                  size="compact"
+                  textCase="none"
+                  icon={this.state.isFollowing ? navigationIcons.userCheck01 : navigationIcons.userAdd01}
+                  iconSize={16}
                   onTap={this.handleFollow}
-                  accessibilityCategory="button"
-                >
-                  <view style={styles.followButtonContent}>
-                    <view style={styles.followIcon}>
-                      <image
-                        src={this.state.isFollowing ? navigationIcons.userCheck01 : navigationIcons.userAdd01}
-                        tint={this.state.isFollowing ? colors.textPrimary : colors.textInverted}
-                        width={16}
-                        height={16}
-                        objectFit="contain"
-                      />
-                    </view>
-                    <label
-                      value={this.state.isFollowing ? 'Suivi' : 'Suivre'}
-                      style={this.state.isFollowing ? styles.followLabelActive : styles.followLabel}
-                    />
-                  </view>
-                </view>
+                />
               </layout>
             ) : null}
           </view>
@@ -861,43 +850,6 @@ const styles = {
     font: sellerProfileBodyFont,
     marginLeft: spacing.xs,
   }),
-  followButton: new Style<View>({
-    alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
-    borderRadius: radius.full,
-    flexShrink: 0,
-    height: 36,
-    justifyContent: 'center',
-    width: 96,
-    paddingLeft: spacing.md,
-    paddingRight: spacing.md,
-  }),
-  followButtonActive: new Style<View>({
-    alignItems: 'center',
-    backgroundColor: colors.buttonFollowing,
-    borderRadius: radius.full,
-    flexShrink: 0,
-    height: 36,
-    justifyContent: 'center',
-    width: 96,
-    paddingLeft: spacing.md,
-    paddingRight: spacing.md,
-  }),
-  followLabel: new Style<Label>({
-    color: colors.textInverted,
-    font: montserrat.extraBold(fontSize.metadata),
-  }),
-  followLabelActive: new Style<Label>({
-    color: colors.textPrimary,
-    font: montserrat.extraBold(fontSize.metadata),
-  }),
-  followButtonContent: new Style<View>({
-    alignItems: 'center',
-    flexDirection: 'row',
-  }),
-  followIcon: new Style<View>({
-    marginRight: spacing.sm,
-  }),
   messageButton: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,
@@ -915,6 +867,10 @@ const styles = {
   }),
   sellerProductsContent: new Style<View>({
     paddingTop: spacing.lg,
+  }),
+  sellerTabLabel: new Style<Label>({
+    color: colors.textPrimary,
+    font: montserrat.extraBold(fontSize.body),
   }),
   sellerTabPreview: new Style<Layout>({
     alignItems: 'flex-start',

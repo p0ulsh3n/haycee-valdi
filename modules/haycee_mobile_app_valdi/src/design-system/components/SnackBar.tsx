@@ -1,8 +1,10 @@
 import { StatefulComponent } from 'valdi_core/src/Component';
 import { Device } from 'valdi_core/src/Device';
+import { AnimationCurve } from 'valdi_core/src/AnimationOptions';
+import { GeometricPathBuilder } from 'valdi_core/src/utils/GeometricPathBuilder';
 import { Style } from 'valdi_core/src/Style';
 import { Asset } from 'valdi_tsx/src/Asset';
-import { BlurView, Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { BlurView, Label, Layout, ShapeView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { when } from 'valdi_core/src/utils/When';
 import { colors } from '../tokens/colors';
 import { radius } from '../tokens/radius';
@@ -18,6 +20,8 @@ export interface SnackBarConfig {
   subtitle?: string;
   type?: SnackBarType;
   duration?: number;
+  /** Optional visible countdown for reversible actions. Defaults to the snackbar lifetime. */
+  countdownSeconds?: number;
   actionLabel?: string;
   /** Defaults to `upper` for notification text and actions. */
   textCase?: TextCase;
@@ -37,6 +41,7 @@ export interface SnackBarViewModel {
 interface SnackBarState {
   config: SnackBarConfig | null;
   isVisible: boolean;
+  countdownRemaining: number;
 }
 
 /** Root-mounted transient notification controller. */
@@ -77,23 +82,32 @@ export class TransientFeedback {
 }
 
 export class SnackBarComponent extends StatefulComponent<SnackBarViewModel, SnackBarState> {
-  state: SnackBarState = { config: null, isVisible: false };
+  state: SnackBarState = { config: null, isVisible: false, countdownRemaining: 0 };
 
   private dismissTimer?: ReturnType<typeof setTimeout>;
+  private countdownTimer?: ReturnType<typeof setInterval>;
+  private countdownTotalSeconds = 0;
+  private actionPending = false;
   private transitionToken = 0;
 
   onCreate(): void {
     SnackBarManager.register(this);
     this.registerDisposable(() => {
       this.clearDismissTimer();
+      this.clearCountdownTimer();
       SnackBarManager.unregister(this);
     });
   }
 
   show(config: SnackBarConfig): void {
     this.clearDismissTimer();
+    this.clearCountdownTimer();
     const token = ++this.transitionToken;
-    this.setState({ config, isVisible: false });
+    this.actionPending = false;
+    const defaultDuration = (config.countdownSeconds ?? (config.actionLabel ? 5 : 3)) * 1000;
+    const duration = Math.max(1, config.duration ?? defaultDuration);
+    this.countdownTotalSeconds = Math.max(1, Math.ceil(config.countdownSeconds ?? duration / 1000));
+    this.setState({ config, isVisible: false, countdownRemaining: this.countdownTotalSeconds });
 
     this.setTimeoutDisposable(() => {
       if (token === this.transitionToken && !this.isDestroyed()) {
@@ -101,11 +115,15 @@ export class SnackBarComponent extends StatefulComponent<SnackBarViewModel, Snac
       }
     }, 0);
 
-    this.dismissTimer = setTimeout(() => this.hide(), config.duration ?? 3000);
+    this.dismissTimer = setTimeout(() => this.hide(), duration);
+    if (config.actionLabel) {
+      this.countdownTimer = setInterval(() => this.tickCountdown(), 1000);
+    }
   }
 
   hide(): void {
     this.clearDismissTimer();
+    this.clearCountdownTimer();
     if (!this.state.config) {
       return;
     }
@@ -120,6 +138,7 @@ export class SnackBarComponent extends StatefulComponent<SnackBarViewModel, Snac
 
   onDestroy(): void {
     this.clearDismissTimer();
+    this.clearCountdownTimer();
     SnackBarManager.unregister(this);
   }
 
@@ -130,14 +149,39 @@ export class SnackBarComponent extends StatefulComponent<SnackBarViewModel, Snac
     }
   }
 
+  private clearCountdownTimer(): void {
+    if (this.countdownTimer !== undefined) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = undefined;
+    }
+  }
+
+  private tickCountdown = (): void => {
+    if (!this.state.config || !this.state.isVisible || this.state.countdownRemaining <= 0) {
+      this.clearCountdownTimer();
+      return;
+    }
+    this.setStateAnimated(
+      { countdownRemaining: this.state.countdownRemaining - 1 },
+      { duration: 1, curve: AnimationCurve.Linear, beginFromCurrentState: true },
+    );
+  };
+
   private handleTap = (): void => {
     this.state.config?.onTap?.();
     this.hide();
   };
 
   private handleAction = (): void => {
-    this.state.config?.onAction?.();
-    this.hide();
+    if (!this.state.config || this.actionPending) return;
+    this.actionPending = true;
+    try {
+      this.state.config.onAction?.();
+      this.hide();
+    } catch (error) {
+      this.actionPending = false;
+      throw error;
+    }
   };
 
   onRender(): void {
@@ -148,6 +192,10 @@ export class SnackBarComponent extends StatefulComponent<SnackBarViewModel, Snac
 
     const backgroundColor = getSnackBarColor(config.type);
     const actionLabel = config.actionLabel;
+    const showCountdown = Boolean(actionLabel);
+    const countdownProgress = this.countdownTotalSeconds > 0
+      ? Math.max(0, Math.min(1, this.state.countdownRemaining / this.countdownTotalSeconds))
+      : 0;
     const bottomInset = Math.max(0, Device.getDisplayBottomInset());
     const bottomOffset = (this.viewModel.bottomOffset ?? 0) + bottomInset + spacing.lg;
 
@@ -185,19 +233,32 @@ export class SnackBarComponent extends StatefulComponent<SnackBarViewModel, Snac
             })}
           </layout>
           {when(actionLabel, label => {
-            <view style={styles.action} onTap={this.handleAction} accessibilityCategory="button">
-              <label
-                style={styles.actionLabel}
-                value={transformText(label, config.textCase)}
-                numberOfLines={1}
-              />
-            </view>;
+            <layout style={styles.actionGroup}>
+              {showCountdown ? (
+                <layout style={styles.countdown} accessibilityLabel={`Action disponible ${this.state.countdownRemaining} secondes`}>
+                  <shape path={COUNTDOWN_RING_PATH} style={styles.countdownTrack} strokeEnd={1} />
+                  <shape path={COUNTDOWN_RING_PATH} style={styles.countdownArc} strokeEnd={countdownProgress} />
+                  <label value={`${this.state.countdownRemaining}`} style={styles.countdownNumber} numberOfLines={1} />
+                </layout>
+              ) : null}
+              <view style={styles.action} onTap={this.handleAction} accessibilityCategory="button">
+                <label
+                  style={styles.actionLabel}
+                  value={transformText(label, config.textCase)}
+                  numberOfLines={1}
+                />
+              </view>
+            </layout>;
           })}
         </layout>
       </view>
     </blur>;
   }
 }
+
+const COUNTDOWN_RING_PATH = new GeometricPathBuilder(24, 24)
+  .arcTo(12, 12, 9, -Math.PI / 2, Math.PI * 2)
+  .build();
 
 function getSnackBarColor(type: SnackBarType | undefined): string {
   switch (type) {
@@ -253,6 +314,41 @@ const styles = {
     paddingLeft: spacing.md,
     paddingRight: spacing.md,
     paddingTop: spacing.sm,
+  }),
+  actionGroup: new Style<Layout>({
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexShrink: 0,
+    marginLeft: spacing.md,
+  }),
+  countdown: new Style<Layout>({
+    alignItems: 'center',
+    height: 28,
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+    position: 'relative',
+    width: 28,
+  }),
+  countdownTrack: new Style<ShapeView>({
+    height: 24,
+    position: 'absolute',
+    width: 24,
+    strokeColor: 'rgba(255, 255, 255, 0.22)',
+    strokeWidth: 2,
+    strokeCap: 'round',
+  }),
+  countdownArc: new Style<ShapeView>({
+    height: 24,
+    position: 'absolute',
+    width: 24,
+    strokeColor: colors.interactivePrimary,
+    strokeWidth: 2.5,
+    strokeCap: 'round',
+  }),
+  countdownNumber: new Style<Label>({
+    color: colors.textInverted,
+    font: montserrat.semiBold(fontSize.nano),
+    textAlign: 'center',
   }),
   actionLabel: typography.buttonSmall.extend({ color: colors.interactivePrimary }),
 };

@@ -20,6 +20,10 @@ coherent with that file. This app uses the official bzlmod configuration introdu
   official source for the version in use; Windows is a host limitation here, not a target claim.
 - Preserve Bazel/module conventions. Run the applicable Valdi lint, test, agent-check and build
   commands whenever the local toolchain supports them, and record blocked commands honestly.
+- For every labeled action button, follow `.codex/skills/haycee-valdi-buttons/SKILL.md` and use
+  the global `DSButton` with one of exactly four variants: `cta`, `black`, `neutral`, or `outline`.
+  Do not create screen-specific button styles for these actions. Specialized icon-only controls,
+  tabs/chips, steppers, and gesture surfaces keep their dedicated components.
 - Do not modify the Valdi source checkout to implement application features.
 - Do not add product features, navigation, networking layers, design systems or marketplace/live
   functionality as part of workspace setup.
@@ -29,11 +33,16 @@ coherent with that file. This app uses the official bzlmod configuration introdu
 1. Read the relevant official skill under `.codex/skills/`.
    For workstation/editor setup, also read `haycee-vscode-wsl`; for builds and validation,
    also read `haycee-valdi-build`.
-2. Query `docs/valdi-reference/API_INDEX.json` and follow its `source` pointer.
-3. Confirm the import and signature in the pinned/reference source before coding.
-4. Make the smallest module-scoped change.
-5. Run `pwsh -File scripts/valdi-validate.ps1` or the narrower Valdi command available.
-6. Update documentation only when the verified source/version evidence changes.
+2. For every labeled action button, read `.codex/skills/haycee-valdi-buttons/SKILL.md`, apply its
+   variant decision rules, and use the shared `DSButton` component.
+3. For any interactive screen or component with taps, navigation, buttons, dialogs/sheets,
+   submissions, or pagination, read `.codex/skills/haycee-valdi-idempotency/SKILL.md` and apply
+   its action-specific guard patterns.
+4. Query `docs/valdi-reference/API_INDEX.json` and follow its `source` pointer.
+5. Confirm the import and signature in the pinned/reference source before coding.
+6. Make the smallest module-scoped change.
+7. Run `pwsh -File scripts/valdi-validate.ps1` or the narrower Valdi command available.
+8. Update documentation only when the verified source/version evidence changes.
 
 `docs/valdi-reference/SOURCE_MANIFEST.json` is the version ledger. The reference checkout is
 outside this application tree and must remain read-only during application development.

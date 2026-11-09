@@ -4,13 +4,14 @@ import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
 import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { ElementFrame } from 'valdi_tsx/src/Geometry';
 import { ScrollEndEvent } from 'valdi_tsx/src/GestureEvents';
-import { ImageView, Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { ImageView, Label, Layout, ScrollView, SpinnerView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { colors } from '../design-system/tokens/colors';
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../design-system/tokens/typography';
 import { BottomSheetFooter, bottomSheetSurfaceStyle, BottomSheetViewModel } from '../design-system/components/BottomSheet';
+import { AsyncActionButton } from '../design-system/components/AsyncActionButton';
 import { copyMediaToCache, loadGallery, loadGalleryPage, loadMediaThumbnail } from './MediaBridgeNative';
 
 interface Album { id: string; name: string; count: number }
@@ -40,12 +41,19 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
   private photoContentHeight = 0;
   private photoViewportHeight = 0;
   private galleryGeneration = 0;
+  private initialGalleryPending = false;
+  private albumRequestPending = false;
+  private paginationPending = false;
+  private sendingPending = false;
 
   onCreate(): void {
     void this.loadInitialGallery();
   }
 
   private loadInitialGallery = async (): Promise<void> => {
+    if (this.initialGalleryPending) return;
+    this.initialGalleryPending = true;
+    this.setState({ loading: true });
     try {
       const payload = JSON.parse(await loadGallery()) as GalleryPayload;
       if (!this.isDestroyed()) {
@@ -56,11 +64,14 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
       if (this.isDestroyed()) return;
       this.setState({ loading: false, loadingMore: false, error: true });
       console.warn('Unable to load Android photo library.', error);
+    } finally {
+      this.initialGalleryPending = false;
     }
   };
 
   private selectAlbum = async (album: Album): Promise<void> => {
-    if (album.id === this.state.selectedAlbumId) return;
+    if (album.id === this.state.selectedAlbumId || this.albumRequestPending || this.state.loading) return;
+    this.albumRequestPending = true;
     const generation = ++this.galleryGeneration;
     this.setState({ selectedAlbumId: album.id, loading: true, loadingMore: false, hasMore: false, error: false });
     try {
@@ -73,6 +84,8 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
     } catch (error) {
       if (!this.isDestroyed() && generation === this.galleryGeneration) this.setState({ loading: false, loadingMore: false, error: true });
       console.warn('Unable to load selected photo album.', error);
+    } finally {
+      this.albumRequestPending = false;
     }
   };
 
@@ -91,7 +104,8 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
   };
 
   private loadNextPhotoPage = async (): Promise<void> => {
-    if (!this.state.hasMore || this.state.loading || this.state.loadingMore) return;
+    if (!this.state.hasMore || this.state.loading || this.state.loadingMore || this.paginationPending) return;
+    this.paginationPending = true;
     const generation = this.galleryGeneration;
     const albumId = this.state.selectedAlbumId;
     const offset = this.state.photos.length;
@@ -105,6 +119,8 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
     } catch (error) {
       if (!this.isDestroyed() && generation === this.galleryGeneration) this.setState({ loadingMore: false });
       console.warn('Unable to load more photos.', error);
+    } finally {
+      this.paginationPending = false;
     }
   };
 
@@ -138,7 +154,8 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
   };
 
   private sendSelectedMedia = async (): Promise<void> => {
-    if (this.state.selectedMedia.length === 0 || this.state.isSending) return;
+    if (this.state.selectedMedia.length === 0 || this.state.isSending || this.sendingPending) return;
+    this.sendingPending = true;
     this.setState({ isSending: true });
     try {
       const items: Array<{ mediaUri: string; thumbnailUri: string; kind: 'image' | 'video' }> = [];
@@ -152,6 +169,8 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
     } catch (error) {
       if (!this.isDestroyed()) this.setState({ isSending: false });
       console.warn('Unable to prepare selected media for the message.', error);
+    } finally {
+      this.sendingPending = false;
     }
   };
 
@@ -184,12 +203,20 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
         {this.state.error ? (
           <view style={styles.messageState}>
             <label value="Autorise l’accès aux photos et vidéos pour les afficher." style={styles.helperText} numberOfLines={2} />
-            <view style={styles.retryButton} onTap={this.loadInitialGallery} accessibilityCategory="button">
-              <label value="Réessayer" style={styles.retryText} numberOfLines={1} />
-            </view>
+            <AsyncActionButton
+              title="Réessayer"
+              onTap={this.loadInitialGallery}
+              buttonStyle={styles.retryButton}
+              labelStyle={styles.retryText}
+              contentStyle={styles.retryContent}
+              spinnerColor={colors.textInverted}
+              loading={this.state.loading}
+            />
           </view>
         ) : this.state.photos.length === 0 && !this.state.loading ? (
           <view style={styles.messageState}><label value="Aucune photo ni vidéo dans cet album." style={styles.helperText} numberOfLines={1} /></view>
+        ) : this.state.loading && this.state.photos.length === 0 ? (
+          <view style={styles.messageState}><spinner color={colors.interactivePrimary} style={styles.gallerySpinner} /></view>
         ) : this.state.photos.length > 0 ? (
           <scroll
             style={styles.photoScroll}
@@ -219,7 +246,8 @@ export class MediaLibrarySheet extends NavigationPageStatefulComponent<MediaLibr
         <BottomSheetFooter
           label={`Envoyer(${this.state.selectedMedia.length})`}
           onTap={this.sendSelectedMedia}
-          disabled={this.state.selectedMedia.length === 0 || this.state.isSending}
+          disabled={this.state.selectedMedia.length === 0}
+          loading={this.state.isSending}
           background={this.viewModel.footerBackground ?? 'transparent'}
         />
       </view>
@@ -261,4 +289,6 @@ const styles = {
   helperText: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.metadata), textAlign: 'center' }),
   retryButton: new Style<View>({ backgroundColor: colors.interactivePrimary, borderRadius: radius.md, marginTop: spacing.md, paddingBottom: spacing.sm, paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.sm }),
   retryText: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.metadata) }),
+  retryContent: new Style<View>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }),
+  gallerySpinner: new Style<SpinnerView>({ height: 36, width: 36 }),
 };

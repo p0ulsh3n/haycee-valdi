@@ -7,6 +7,7 @@ import { View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../res/navigation-icons';
 import { ImageCarousel } from '../design-system/components/ImageCarousel';
 import { TransientFeedback } from '../design-system/components/SnackBar';
+import { runNavigationAction } from '../design-system/utils/NavigationActionGate';
 import { colors } from '../design-system/tokens/colors';
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
@@ -102,11 +103,13 @@ export class ProductImageViewerScreen extends NavigationPageStatefulComponent<
   };
 
   private handleShop = (): void => {
-    this.navigationController.push(
-      SellerProfileScreen,
-      { product: this.viewModel.product, sellerProducts: this.viewModel.sellerProducts },
-      {},
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.push(
+        SellerProfileScreen,
+        { product: this.viewModel.product, sellerProducts: this.viewModel.sellerProducts },
+        {},
+      );
+    });
   };
 
   private renderHeader(topInset: number): void {

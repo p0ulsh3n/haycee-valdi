@@ -10,6 +10,7 @@ import { TransientFeedback } from '../../design-system/components/SnackBar';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
+import { runNavigationAction } from '../../design-system/utils/NavigationActionGate';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import type { LiveViewerCartItem, LiveViewerProduct } from '../data/LiveViewerData';
@@ -62,16 +63,18 @@ export class LiveProductsSheet extends NavigationPageStatefulComponent<LiveProdu
 
   private openCart = (): void => {
     const sheetOptions = { transparentPageBackground: true };
-    this.navigationController.present(
-      LiveCartSheet,
-      {
-        cartItems: this.state.cartItems,
-        onCartChange: this.updateCart,
-        onCheckout: this.viewModel.onCheckout,
-      },
-      {},
-      { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions(sheetOptions) },
-    );
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveCartSheet,
+        {
+          cartItems: this.state.cartItems,
+          onCartChange: this.updateCart,
+          onCheckout: this.viewModel.onCheckout,
+        },
+        {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions(sheetOptions) },
+      );
+    });
   };
 
   onRender(): void {
