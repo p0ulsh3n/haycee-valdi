@@ -24,6 +24,8 @@ export {
 } from './tokens/typography';
 export { DSButton } from './components/DSButton';
 export type { DSButtonSize, DSButtonVariant, DSButtonViewModel } from './components/DSButton';
+export { DSInlineLink } from './components/DSInlineLink';
+export type { DSInlineLinkViewModel } from './components/DSInlineLink';
 export { AsyncActionButton } from './components/AsyncActionButton';
 export type { AsyncActionButtonViewModel } from './components/AsyncActionButton';
 export {
@@ -108,6 +110,10 @@ export { ProductStockIndicator } from './components/ProductStockIndicator';
 export type { ProductStockIndicatorViewModel } from './components/ProductStockIndicator';
 export { ProductStockCountPill } from './components/ProductStockCountPill';
 export type { ProductStockCountPillViewModel } from './components/ProductStockCountPill';
+export { LiveChatRoleBadge } from './components/LiveChatRoleBadge';
+export type { LiveChatRole, LiveChatRoleBadgeViewModel } from './components/LiveChatRoleBadge';
+export { NewMessagesPill } from './components/NewMessagesPill';
+export type { NewMessagesPillViewModel } from './components/NewMessagesPill';
 export { ProductVariantStockPreview } from './components/ProductVariantStockPreview';
 export type {
   ProductVariantStockItem,

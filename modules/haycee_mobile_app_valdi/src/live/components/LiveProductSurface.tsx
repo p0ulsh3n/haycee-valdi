@@ -8,6 +8,7 @@ import type { LiveViewerProduct } from '../data/LiveViewerData';
 
 export interface LiveProductSurfaceViewModel {
   products: LiveViewerProduct[];
+  onBuy: (product: LiveViewerProduct) => void;
   onMore: () => void;
 }
 
@@ -23,6 +24,7 @@ export class LiveProductSurface extends Component<LiveProductSurfaceViewModel> {
       <LiveProductCard
         product={product}
         width={cardWidth}
+        onBuy={this.viewModel.onBuy}
         onMore={this.viewModel.onMore}
       />
     </view>;

@@ -8,7 +8,7 @@ Source: `modules/haycee_mobile_app_valdi/src/design-system/tokens/`.
 
 | Token module | Shared responsibility | Rule |
 | --- | --- | --- |
-| `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, border, icon, product, stock-progress, messaging and Live colors | Prefer a semantic token. Add a named token before using a new app-wide color. |
+| `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, border, icon, product, stock-progress, messaging and Live colors, including chat-role badge surfaces and the shared near-black unread-count surface | Prefer a semantic token. Add a named token before using a new app-wide color. |
 | `typography.ts` | Montserrat Regular, SemiBold, ExtraBold, Black; font sizes, line heights, named typography styles, `TextCase`, `transformText` | Do not load another font face or invent per-screen typography for a repeated role. Default text case is uppercase; set casing deliberately. |
 | `spacing.ts` | 4-point spacing scale and nested screen/layout measurements | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
 | `radius.ts` | Shared corner-radius scale | Reuse a semantic radius. Add a token for a repeated design role. |
@@ -30,7 +30,8 @@ All of these live under `modules/haycee_mobile_app_valdi/src/design-system/compo
 
 | Component | Use |
 | --- | --- |
-| `DSButton` | All labeled actions, with exactly `cta`, `black`, `neutral`, `outline`; selection rules live in `.codex/skills/haycee-valdi-buttons/SKILL.md` and `docs/design-system/buttons.md`. |
+| `DSButton` | All labeled actions, with exactly `cta`, `black`, `neutral`, `outline`; supports contextual semantic surface/label tints, interaction blocking without a disabled appearance, optional icons, fixed leading-icon alignment for changing labels, and a small label baseline adjustment for optical alignment. Selection rules live in `.codex/skills/haycee-valdi-buttons/SKILL.md` and `docs/design-system/buttons.md`. |
+| `DSInlineLink` | Compact underlined text navigation inside content rows, with semantic color and accessibility label options. |
 | `AsyncActionButton` | Shared single-flight button primitive used by higher-level controls. Prefer `DSButton` for product-facing labeled actions. |
 | `ActionSheet` | Short action/choice list. |
 | `AlertDialog` | Confirmation or blocking alert with explicit actions. |
@@ -49,6 +50,7 @@ All of these live under `modules/haycee_mobile_app_valdi/src/design-system/compo
 | `LegalUpdateSheet` | Versioned legal/policy update, links, change summary, effective date, optional explicit confirmation and required-acceptance flow. It does not store acceptance or supply legal copy; the caller owns those contracts. |
 
 Detailed media-sheet API and presentation guidance: `docs/design-system/media-action-sheets.md`.
+Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/design-system/live-chat.md`.
 
 ### Navigation, tabs and selection
 
@@ -57,7 +59,7 @@ Detailed media-sheet API and presentation guidance: `docs/design-system/media-ac
 | `BottomTabsNavigation` | App-level bottom navigation. |
 | `SwipeTabs` | Synchronized horizontal swipe/pager tabs with the shared active indicator and optional hairline/loading states. |
 | `TabChips` | Compact selectable category/filter chips; distinct from page-swiping tabs. Pass color options when a context has a documented variant. |
-| `RadioSelection` | Single-choice rows, such as sorting options. |
+| `RadioSelection` | Single-choice rows, such as sorting options. Supports disabled choices for unavailable product variants; see [selection guidance](selection.md). |
 | `Hairline` | Shared fine divider; use the component options instead of duplicating a line. |
 
 ### Content, products and loading
@@ -66,7 +68,11 @@ Detailed media-sheet API and presentation guidance: `docs/design-system/media-ac
 | --- | --- |
 | `MasonryFeed` | Shared masonry feed layout and column/aspect-ratio helpers. |
 | `MasonryProductCard` | Reusable product card for masonry contexts. |
-| `LiveProductCard` | Live glass strip with a larger 1:1 or 3:4 thumbnail, padded content, two-line truncated title with a total-stock pill, price beneath the title, shipping fee and a link to the full product sheet; variant availability is summarized in a compact ticker. |
+| `LiveProductCard` | Live glass strip with a larger 1:1 or 3:4 thumbnail, padded content, two-line truncated title with a total-stock pill, price beneath the title, variant availability in a compact ticker, and a bottom row with the shipping fee aligned under the thumbnail, a `DSInlineLink` to view more, and a shared CTA `Acheter` button at the right. |
+| `LiveProductPurchaseSheet` | Live purchase configuration for an in-stock product: summary, explicit variant selection when present, sold-out variant disabling, stock-bounded quantity, shipping estimate, total, and an intent-aware footer (`Ajouter au panier` or `Acheter`). The featured Live card opens it for its selected product; auction rows in the product list keep their separate auction affordance. |
+| `LiveChatRoleBadge` | Compact organizer/moderator marker beside a Live chat username; role and semantic surface are supplied by the message data. |
+| `NewMessagesPill` | Compact opaque near-black pill over a chat feed, with a fixed leading white icon and white unread count. It enters/exits with a short native slide/fade and returns to the newest message only when tapped. The Live feed follows incoming messages only while already near the bottom; otherwise it leaves the current scroll offset unchanged and accumulates unread messages until the reader returns to the bottom threshold. |
+| `LiveViewerScreen` | Full-screen Live composition. Its local demo chat can add incoming fixture messages at varied intervals while visible; each new row enters with a short, subtle native fade/translation, the feed pauses under Live sheets/background navigation, and recent history is bounded. |
 | `ImageCarousel` | Shared image gallery/carousel and gesture paging. |
 | `ProductCardBadge` | Shared product status/promotion badge. |
 | `ProductPopularityBadge` | Shared popularity badge. |

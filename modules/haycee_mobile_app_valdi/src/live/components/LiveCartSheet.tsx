@@ -13,6 +13,8 @@ import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import { formatFcfa } from '../../design-system/utils/money';
 import type { LiveViewerCartItem } from '../data/LiveViewerData';
+import { getLiveViewerCartItemKey, updateLiveViewerCartQuantity } from '../data/LiveViewerData';
+import { registerLiveSheet } from '../LiveSheetVisibility';
 
 export interface LiveCartSheetViewModel {
   cartItems: LiveViewerCartItem[];
@@ -28,45 +30,47 @@ interface LiveCartSheetState {
 @NavigationPage(module)
 export class LiveCartSheet extends NavigationPageStatefulComponent<LiveCartSheetViewModel, LiveCartSheetState> {
   state: LiveCartSheetState = { cartItems: [] };
+  private releaseSheetRegistration?: () => void;
 
   onCreate(): void {
+    this.releaseSheetRegistration = registerLiveSheet();
     this.state = { cartItems: this.viewModel.cartItems };
+  }
+
+  onDestroy(): void {
+    this.releaseSheetRegistration?.();
+    this.releaseSheetRegistration = undefined;
   }
 
   private close = (): void => this.navigationController.dismiss(true);
 
-  private updateQuantity = (productId: string, delta: number): void => {
-    const nextItems = this.state.cartItems.flatMap(item => {
-      if (item.product.id !== productId) return [item];
-      const quantity = item.quantity + delta;
-      if (quantity <= 0) return [];
-      const stock = item.product.stockLeft;
-      return [{ ...item, quantity: stock === undefined ? quantity : Math.min(stock, quantity) }];
-    });
+  private updateQuantity = (productId: string, variantId: string | undefined, delta: number): void => {
+    const nextItems = updateLiveViewerCartQuantity(this.state.cartItems, productId, variantId, delta);
     this.setState({ cartItems: nextItems });
     this.viewModel.onCartChange(nextItems);
   };
 
   private renderRow(item: LiveViewerCartItem): void {
     const product = item.product;
-    <layout key={product.id} style={styles.cartRow}>
+    <layout key={getLiveViewerCartItemKey(item)} style={styles.cartRow}>
       <view style={styles.thumb.extend({ backgroundColor: product.color })}>
         {product.imageUrl ? <image src={product.imageUrl} style={styles.thumbImage} objectFit="cover" /> : null}
       </view>
       <layout style={styles.itemInfo}>
         <label value={product.title} style={styles.itemTitle} numberOfLines={1} />
+        {item.variantLabel ? <label value={item.variantLabel} style={styles.itemVariant} numberOfLines={1} /> : null}
         <label value={formatFcfa(product.price)} style={styles.itemPrice} numberOfLines={1} />
       </layout>
       <layout style={styles.quantityControl}>
-        <view style={styles.quantityButton} onTap={() => this.updateQuantity(product.id, -1)} accessibilityCategory="button" accessibilityLabel="Diminuer la quantité">
+        <view style={styles.quantityButton} onTap={() => this.updateQuantity(product.id, item.variantId, -1)} accessibilityCategory="button" accessibilityLabel="Diminuer la quantité">
           <image src={navigationIcons.remove02} width={16} height={16} objectFit="contain" />
         </view>
         <label value={`${item.quantity}`} style={styles.quantity} numberOfLines={1} />
         <view
           style={styles.quantityButton}
-          opacity={product.stockLeft !== undefined && item.quantity >= product.stockLeft ? 0.4 : 1}
-          onTapDisabled={product.stockLeft !== undefined && item.quantity >= product.stockLeft}
-          onTap={() => this.updateQuantity(product.id, 1)}
+          opacity={item.quantity >= (item.stockLimit ?? product.stockLeft) ? 0.4 : 1}
+          onTapDisabled={item.quantity >= (item.stockLimit ?? product.stockLeft)}
+          onTap={() => this.updateQuantity(product.id, item.variantId, 1)}
           accessibilityCategory="button"
           accessibilityLabel="Augmenter la quantité"
         >
@@ -151,6 +155,7 @@ const styles = {
   thumbImage: new Style<View>({ height: 56, width: 56 }),
   itemInfo: new Style<Layout>({ flexDirection: 'column', flexGrow: 1, flexShrink: 1, marginLeft: spacing.md, minWidth: 0 }),
   itemTitle: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata) }),
+  itemVariant: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.nano), marginTop: 2 }),
   itemPrice: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.metadata), marginTop: spacing.xs }),
   quantityControl: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginLeft: spacing.sm }),
   quantityButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundPrimary, borderRadius: radius.xs, height: 30, justifyContent: 'center', width: 30 }),

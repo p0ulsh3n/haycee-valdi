@@ -13,6 +13,7 @@ import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import type { LiveViewerProduct } from '../data/LiveViewerData';
 import { LiveRequestProductCard } from './LiveRequestProductCard';
+import { registerLiveSheet } from '../LiveSheetVisibility';
 
 export interface LiveRequestSheetViewModel {
   products: LiveViewerProduct[];
@@ -33,8 +34,10 @@ interface LiveRequestGridItem extends MasonryItem {
 export class LiveRequestSheet extends NavigationPageStatefulComponent<LiveRequestSheetViewModel, LiveRequestSheetState> {
   state: LiveRequestSheetState = { requestedProductIds: [] };
   private gridItems: LiveRequestGridItem[] = [];
+  private releaseSheetRegistration?: () => void;
 
   onCreate(): void {
+    this.releaseSheetRegistration = registerLiveSheet();
     this.state = {
       requestedProductIds: this.viewModel.requestedProductIds,
     };
@@ -45,6 +48,11 @@ export class LiveRequestSheet extends NavigationPageStatefulComponent<LiveReques
         : undefined,
       product,
     }));
+  }
+
+  onDestroy(): void {
+    this.releaseSheetRegistration?.();
+    this.releaseSheetRegistration = undefined;
   }
 
   private close = (): void => {

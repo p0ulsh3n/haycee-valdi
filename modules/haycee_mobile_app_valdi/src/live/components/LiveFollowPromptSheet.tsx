@@ -12,6 +12,7 @@ import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { DSButton } from '../../design-system/components/DSButton';
+import { registerLiveSheet } from '../LiveSheetVisibility';
 
 export interface LiveFollowPromptSheetViewModel {
   sellerName: string;
@@ -37,6 +38,16 @@ export class LiveFollowPromptSheet extends NavigationPageStatefulComponent<
   state: LiveFollowPromptSheetState = { isActionPending: false };
   private readonly sheetRef = new ElementRef<View>();
   private isDismissing = false;
+  private releaseSheetRegistration?: () => void;
+
+  onCreate(): void {
+    this.releaseSheetRegistration = registerLiveSheet();
+  }
+
+  onDestroy(): void {
+    this.releaseSheetRegistration?.();
+    this.releaseSheetRegistration = undefined;
+  }
 
   private handleDrag = (event: DragEvent): void => {
     const sheet = this.sheetRef.single();

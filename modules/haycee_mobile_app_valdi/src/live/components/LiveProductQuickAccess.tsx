@@ -136,7 +136,7 @@ const styles = {
   }),
   countBadge: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.backgroundBrand,
+    backgroundColor: colors.liveUnreadCountSurface,
     borderRadius: radius.full,
     height: layout.live.viewer.productCountBadgeSize,
     justifyContent: 'center',
@@ -146,7 +146,7 @@ const styles = {
     width: layout.live.viewer.productCountBadgeSize,
   }),
   countLabel: new Style<Label>({
-    color: colors.textBrand,
+    color: colors.textInverted,
     font: montserrat.extraBold(fontSize.tiny),
   }),
 };

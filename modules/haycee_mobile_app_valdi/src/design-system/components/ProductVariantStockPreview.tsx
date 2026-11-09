@@ -175,7 +175,7 @@ const styles = {
   heading: new Style<Label>({
     flexGrow: 1,
     flexShrink: 1,
-    font: montserrat.semiBold(fontSize.nano),
+    font: montserrat.semiBold(fontSize.tiny),
     minWidth: 0,
   }),
   ticker: new Style<ScrollView>({

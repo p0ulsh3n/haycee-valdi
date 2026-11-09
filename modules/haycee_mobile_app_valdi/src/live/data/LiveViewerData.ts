@@ -1,6 +1,7 @@
 import type { LiveFeedItem, LivePresentationType } from './LiveFeedData';
 import { colors } from '../../design-system/tokens/colors';
 import { normalizeUsername } from '../../design-system/utils/identity';
+import type { LiveChatRole } from '../../design-system/components/LiveChatRoleBadge';
 
 export interface LiveViewerMessage {
   id: string;
@@ -8,6 +9,7 @@ export interface LiveViewerMessage {
   text: string;
   avatarUrl?: string;
   isHost?: boolean;
+  role?: LiveChatRole;
 }
 
 interface LiveViewerDemoComment {
@@ -15,6 +17,7 @@ interface LiveViewerDemoComment {
   text: string;
   avatarIndex: number;
   isHost?: boolean;
+  role?: LiveChatRole;
 }
 
 const LIVE_DEMO_AVATARS = [
@@ -67,8 +70,19 @@ const LIVE_DEMO_COMMENTS: LiveViewerDemoComment[] = [
   { username: 'Lina', text: 'Bravo pour cette collection.', avatarIndex: 1 },
   { username: 'Mariam', text: 'La prochaine présentation sera quand ?', avatarIndex: 2 },
   { username: 'Fatou', text: 'Merci, c’est beaucoup plus clair.', avatarIndex: 3 },
-  { username: 'Nadia', text: 'Vous pouvez montrer le dos du sac ?', avatarIndex: 4 },
+  { username: 'Nadia', text: 'Vous pouvez montrer le dos du sac ?', avatarIndex: 4, role: 'moderator' },
   { username: 'Boutique', text: 'Oui, je vous montre les détails juste après.', avatarIndex: 10, isHost: true },
+];
+
+const LIVE_DEMO_INCOMING_COMMENTS: LiveViewerDemoComment[] = [
+  { username: 'Awa', text: 'Vous avez aussi ce modèle en noir ?', avatarIndex: 5 },
+  { username: 'Sarah', text: 'La livraison est possible à Yamoussoukro ?', avatarIndex: 8, role: 'moderator' },
+  { username: 'Mariam', text: 'Le détail doré est vraiment joli ✨', avatarIndex: 2 },
+  { username: 'Boutique', text: 'Oui, je vous montre la deuxième couleur.', avatarIndex: 10, isHost: true },
+  { username: 'Lina', text: 'Vous pouvez montrer l’intérieur du sac ?', avatarIndex: 1 },
+  { username: 'Yasmine', text: 'Je viens de rejoindre, bonsoir !', avatarIndex: 9 },
+  { username: 'Nadia', text: 'Il reste quelles tailles disponibles ?', avatarIndex: 4 },
+  { username: 'Fatou', text: 'Merci pour la réponse, je regarde ça.', avatarIndex: 3 },
 ];
 
 export interface LiveViewerProduct {
@@ -107,10 +121,58 @@ export interface LiveProductVariantStock {
 export interface LiveViewerCartItem {
   product: LiveViewerProduct;
   quantity: number;
+  variantId?: string;
+  variantLabel?: string;
+  stockLimit?: number;
+}
+
+export function getLiveViewerCartItemKey(item: Pick<LiveViewerCartItem, 'product' | 'variantId'>): string {
+  return `${item.product.id}:${item.variantId ?? 'default'}`;
+}
+
+export function addLiveViewerCartSelection(
+  cartItems: LiveViewerCartItem[],
+  product: LiveViewerProduct,
+  quantity: number,
+  variantId?: string,
+): LiveViewerCartItem[] {
+  const variant = variantId ? product.variantStocks?.find(item => item.id === variantId) : undefined;
+  if (variantId && !variant) return cartItems;
+  if (!variantId && (product.variantStocks?.length ?? 0) > 0) return cartItems;
+
+  const selectedItem = { product, variantId, variantLabel: variant?.label, stockLimit: variant?.remaining ?? product.stockLeft };
+  const itemKey = getLiveViewerCartItemKey(selectedItem);
+  const existing = cartItems.find(item => getLiveViewerCartItemKey(item) === itemKey);
+  const stockLimit = Math.max(0, selectedItem.stockLimit ?? 0);
+  const currentQuantity = existing?.quantity ?? 0;
+  const nextQuantity = Math.min(stockLimit, currentQuantity + Math.max(0, Math.floor(quantity)));
+  if (nextQuantity <= currentQuantity) return cartItems;
+
+  return existing
+    ? cartItems.map(item => getLiveViewerCartItemKey(item) === itemKey ? { ...item, quantity: nextQuantity } : item)
+    : [...cartItems, { ...selectedItem, quantity: nextQuantity }];
+}
+
+export function updateLiveViewerCartQuantity(
+  cartItems: LiveViewerCartItem[],
+  productId: string,
+  variantId: string | undefined,
+  delta: number,
+): LiveViewerCartItem[] {
+  const itemKey = `${productId}:${variantId ?? 'default'}`;
+  return cartItems.flatMap(item => {
+    if (getLiveViewerCartItemKey(item) !== itemKey) return [item];
+    const quantity = item.quantity + delta;
+    if (quantity <= 0) return [];
+    const stockLimit = item.stockLimit ?? item.product.stockLeft;
+    if (stockLimit !== undefined && quantity > stockLimit) return [item];
+    return [{ ...item, quantity: stockLimit === undefined ? quantity : Math.min(stockLimit, quantity) }];
+  });
 }
 
 export interface LiveViewerDemoContent {
   title: string;
+  simulateIncomingMessages: boolean;
   products: LiveViewerProduct[];
   messages: LiveViewerMessage[];
   presentationType: LivePresentationType;
@@ -119,6 +181,7 @@ export interface LiveViewerDemoContent {
 /** Local fixture seam for the Live viewer; replace this factory with API mapping later. */
 export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoContent => ({
   title: item.title,
+  simulateIncomingMessages: true,
   presentationType: item.presentationType,
   products: [
     {
@@ -187,5 +250,21 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
       : LIVE_DEMO_AVATARS[comment.avatarIndex],
     text: comment.text,
     isHost: comment.isHost,
+    role: comment.role ?? (comment.isHost ? 'organizer' : undefined),
   })),
 });
+
+/** Creates the next deterministic incoming chat message for the Live demo stream. */
+export const createLiveViewerDemoIncomingMessage = (item: LiveFeedItem, sequence: number): LiveViewerMessage => {
+  const comment = LIVE_DEMO_INCOMING_COMMENTS[sequence % LIVE_DEMO_INCOMING_COMMENTS.length];
+  return {
+    id: `${item.id}-incoming-${sequence + 1}`,
+    username: normalizeUsername(comment.isHost ? item.hostName : comment.username),
+    avatarUrl: comment.isHost
+      ? item.vendorAvatarUrl ?? LIVE_DEMO_AVATARS[comment.avatarIndex]
+      : LIVE_DEMO_AVATARS[comment.avatarIndex],
+    text: comment.text,
+    isHost: comment.isHost,
+    role: comment.role ?? (comment.isHost ? 'organizer' : undefined),
+  };
+};

@@ -12,6 +12,7 @@ import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import { limitSellerBio } from '../../design-system/utils/sellerBio';
 import type { LiveFeedItem } from '../data/LiveFeedData';
+import { registerLiveSheet } from '../LiveSheetVisibility';
 
 export interface LiveSellerProfileSheetViewModel {
   item: LiveFeedItem;
@@ -28,9 +29,16 @@ interface LiveSellerProfileSheetState {
 @NavigationPage(module)
 export class LiveSellerProfileSheet extends NavigationPageStatefulComponent<LiveSellerProfileSheetViewModel, LiveSellerProfileSheetState> {
   state: LiveSellerProfileSheetState = { isFollowing: false };
+  private releaseSheetRegistration?: () => void;
 
   onCreate(): void {
+    this.releaseSheetRegistration = registerLiveSheet();
     this.state = { isFollowing: this.viewModel.isFollowing };
+  }
+
+  onDestroy(): void {
+    this.releaseSheetRegistration?.();
+    this.releaseSheetRegistration = undefined;
   }
 
   private close = (): void => this.navigationController.dismiss(true);

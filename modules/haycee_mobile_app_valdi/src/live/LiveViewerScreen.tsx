@@ -1,6 +1,7 @@
 import { Device } from 'valdi_core/src/Device';
 import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
 import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
+import { INavigatorPageVisibility } from 'valdi_navigation/src/INavigator';
 import { Style } from 'valdi_core/src/Style';
 import { EditTextEvent, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { TransientFeedback } from '../design-system/components/SnackBar';
@@ -19,14 +20,16 @@ import { UpcomingLiveScreen } from './UpcomingLiveScreen';
 import { LiveStreamAlerts } from './components/LiveStreamAlerts';
 import type { LiveStreamAlertEntry, LiveStreamAlertType } from './components/LiveStreamAlerts';
 import { LiveProductsSheet } from './components/LiveProductsSheet';
+import { LiveProductPurchaseSheet } from './components/LiveProductPurchaseSheet';
 import { LiveCartSheet } from './components/LiveCartSheet';
 import { LiveRequestSheet } from './components/LiveRequestSheet';
 import { LiveSellerProfileSheet } from './components/LiveSellerProfileSheet';
 import { LiveFollowPromptSheet } from './components/LiveFollowPromptSheet';
 import { LiveWalletSheet } from './components/LiveWalletSheet';
 import { LiveViewerHeader } from './components/LiveViewerHeader';
+import { hasOpenLiveSheet, observeLiveSheetVisibility } from './LiveSheetVisibility';
 import type { LiveFeedItem } from './data/LiveFeedData';
-import { createLiveViewerDemoContent } from './data/LiveViewerData';
+import { addLiveViewerCartSelection, createLiveViewerDemoContent, createLiveViewerDemoIncomingMessage } from './data/LiveViewerData';
 import type { LiveViewerCartItem, LiveViewerDemoContent, LiveViewerMessage, LiveViewerProduct } from './data/LiveViewerData';
 
 const seenFollowPromptLiveIds = new Set<string>();
@@ -69,9 +72,22 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   private heartCountFlushScheduled = false;
   private streamAlertSequence = 0;
   private streamAlertDemoCycle = 0;
+  private incomingDemoMessageSequence = 0;
+  private incomingDemoMessageTimerScheduled = false;
   private hasShownFollowPrompt = false;
+  private isPageVisible = true;
+  private followPromptPending = false;
+  private followPromptResumeScheduled = false;
+  private unsubscribeLiveSheetVisibility?: () => void;
 
   onCreate(): void {
+    this.navigationController.addPageVisibilityObserver(this.handlePageVisibilityChange);
+    this.unsubscribeLiveSheetVisibility = observeLiveSheetVisibility(hasOpenSheet => {
+      if (!hasOpenSheet) {
+        this.scheduleFollowPromptResume();
+        this.scheduleIncomingDemoMessage();
+      }
+    });
     const item = this.viewModel.item;
     this.demoContent = createLiveViewerDemoContent(item);
     this.state = {
@@ -85,11 +101,73 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     };
     if (item.status === 'live') {
       this.scheduleStreamAlertDemoCycle();
+      this.scheduleIncomingDemoMessage();
       if (!this.state.isFollowing) {
         this.setTimeoutDisposable(this.showFollowPrompt, FOLLOW_PROMPT_DELAY_MS);
       }
     }
   }
+
+  onDestroy(): void {
+    this.navigationController.removePageVisibilityObserver(this.handlePageVisibilityChange);
+    this.unsubscribeLiveSheetVisibility?.();
+    this.unsubscribeLiveSheetVisibility = undefined;
+  }
+
+  private handlePageVisibilityChange = (visibility: INavigatorPageVisibility): void => {
+    this.isPageVisible = visibility === INavigatorPageVisibility.VISIBLE;
+    if (this.isPageVisible) {
+      this.scheduleFollowPromptResume();
+      this.scheduleIncomingDemoMessage();
+    }
+  };
+
+  private scheduleIncomingDemoMessage = (): void => {
+    if (
+      this.isDestroyed()
+      || this.viewModel.item.status !== 'live'
+      || !this.demoContent?.simulateIncomingMessages
+      || !this.isPageVisible
+      || hasOpenLiveSheet()
+      || this.incomingDemoMessageTimerScheduled
+    ) return;
+
+    this.incomingDemoMessageTimerScheduled = true;
+    const delayMs = DEMO_CHAT_MESSAGE_INTERVALS_MS[
+      this.incomingDemoMessageSequence % DEMO_CHAT_MESSAGE_INTERVALS_MS.length
+    ];
+    this.setTimeoutDisposable(() => {
+      this.incomingDemoMessageTimerScheduled = false;
+      if (this.isDestroyed() || !this.isPageVisible || hasOpenLiveSheet()) return;
+
+      const message = createLiveViewerDemoIncomingMessage(
+        this.viewModel.item,
+        this.incomingDemoMessageSequence++,
+      );
+      this.setState({
+        messages: [...this.state.messages.slice(-(MAX_LIVE_CHAT_MESSAGES - 1)), message],
+      });
+      this.scheduleIncomingDemoMessage();
+    }, delayMs);
+  };
+
+  private scheduleFollowPromptResume = (): void => {
+    if (
+      this.isDestroyed()
+      || !this.isPageVisible
+      || !this.followPromptPending
+      || hasOpenLiveSheet()
+      || this.followPromptResumeScheduled
+    ) return;
+    this.followPromptResumeScheduled = true;
+    this.setTimeoutDisposable(() => {
+      this.followPromptResumeScheduled = false;
+      if (this.isDestroyed() || !this.followPromptPending) return;
+      if (!this.isPageVisible || hasOpenLiveSheet()) return;
+      this.followPromptPending = false;
+      this.showFollowPrompt();
+    }, FOLLOW_PROMPT_RESUME_DELAY_MS);
+  };
 
   private handleBack = (): void => {
     this.navigationController.pop();
@@ -146,6 +224,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   };
 
   private handleToggleFollow = (): void => {
+    this.followPromptPending = false;
     this.setState({ isFollowing: !this.state.isFollowing });
   };
 
@@ -158,6 +237,11 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
       || seenFollowPromptLiveIds.has(liveId)
       || this.viewModel.item.status !== 'live'
     ) {
+      return;
+    }
+
+    if (!this.isPageVisible || hasOpenLiveSheet()) {
+      this.followPromptPending = true;
       return;
     }
 
@@ -191,6 +275,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   };
 
   private followFromPrompt = (): void => {
+    this.followPromptPending = false;
     if (!this.state.isFollowing) this.setState({ isFollowing: true });
   };
 
@@ -309,12 +394,36 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     };
     this.setState({
       commentDraft: '',
-      messages: [...this.state.messages.slice(-29), message],
+      messages: [...this.state.messages.slice(-(MAX_LIVE_CHAT_MESSAGES - 1)), message],
     });
   };
 
   private handleProductAction = (product: LiveViewerProduct): void => {
-    TransientFeedback.show({ message: `Offre de démonstration : ${product.title}` });
+    if (product.stockLeft <= 0) return;
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveProductPurchaseSheet,
+        {
+          product,
+          cartItems: this.state.cartItems,
+          intent: 'buy-now',
+          onAddToCart: (selectedProduct, quantity, variantId) => {
+            const next = addLiveViewerCartSelection(this.state.cartItems, selectedProduct, quantity, variantId);
+            if (next !== this.state.cartItems) {
+              this.handleCartChange(next);
+              TransientFeedback.show({ message: `${selectedProduct.title} ajouté au panier du live.` });
+            }
+          },
+          onBuyNow: (selectedProduct, quantity, variantId) => {
+            const next = addLiveViewerCartSelection(this.state.cartItems, selectedProduct, quantity, variantId);
+            if (next !== this.state.cartItems) this.handleCartChange(next);
+            this.handleCheckout();
+          },
+        },
+        {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions({ transparentPageBackground: true }) },
+      );
+    });
   };
 
   private handleWallet = (): void => {
@@ -343,7 +452,6 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
           products,
           cartItems: this.state.cartItems,
           onCartChange: this.handleCartChange,
-          onBuy: this.handleProductAction,
           onCheckout: this.handleCheckout,
         },
         {},
@@ -438,6 +546,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
             messages={this.state.messages}
             commentDraft={this.state.commentDraft}
             products={content.products}
+            onBuy={this.handleProductAction}
             onDraftChange={this.handleDraftChange}
             onSendComment={this.handleSendComment}
             onWallet={this.handleWallet}
@@ -458,6 +567,9 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
 }
 
 const FOLLOW_PROMPT_DELAY_MS = 30_000;
+const FOLLOW_PROMPT_RESUME_DELAY_MS = 350;
+const DEMO_CHAT_MESSAGE_INTERVALS_MS = [1800, 2800, 2100, 3600, 2400, 3200];
+const MAX_LIVE_CHAT_MESSAGES = 60;
 
 const styles = {
   screen: new Style<View>({

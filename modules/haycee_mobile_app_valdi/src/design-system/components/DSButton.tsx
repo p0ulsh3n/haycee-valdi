@@ -16,6 +16,12 @@ export interface DSButtonViewModel {
   title: string;
   onTap: () => void | Promise<unknown>;
   variant?: DSButtonVariant;
+  /** Contextual surface tint for shared controls such as translucent live overlays. */
+  surfaceColor?: string;
+  /** Optional label tint for contrast against a contextual surface tint. */
+  labelColor?: string;
+  /** Blocks interaction without applying the disabled visual treatment. */
+  interactionDisabled?: boolean;
   /** Compact matches seller actions; fullWidth is intended for paired sheet actions. */
   size?: DSButtonSize;
   /** Optional horizontal spacing when a button sits in a row. */
@@ -23,6 +29,8 @@ export interface DSButtonViewModel {
   marginRight?: number;
   /** Optional height override for a shared variant in a denser surface. */
   height?: number;
+  /** Optional width override for compact shared actions such as inline feed controls. */
+  width?: number;
   disabled?: boolean;
   /** Shows a native spinner while keeping the original label's layout width. */
   loading?: boolean;
@@ -30,6 +38,10 @@ export interface DSButtonViewModel {
   icon?: string | Asset;
   iconSize?: number;
   iconTint?: string;
+  /** Keeps a leading icon pinned while the label uses the remaining button width. */
+  iconAlignment?: 'centered' | 'fixedLeading';
+  /** Small optical baseline adjustment for labels paired with a leading icon. */
+  labelTranslationY?: number;
   accessibilityLabel?: string;
   /** Defaults to `upper`; use `lower` or `none` when needed. */
   textCase?: TextCase;
@@ -118,6 +130,8 @@ const buttonContentStyle = new Style<View>({
 });
 
 const buttonIconStyle = new Style<View>({
+  alignItems: 'center',
+  justifyContent: 'center',
   marginRight: spacing.sm,
 });
 
@@ -129,16 +143,28 @@ export class DSButton extends Component<DSButtonViewModel> {
     const disabled = this.viewModel.disabled ?? false;
     const semanticSize = size as keyof typeof semanticButtonStyles.cta;
     const baseStyle = semanticButtonStyles[variant][semanticSize];
-    const style = disabled
-      ? baseStyle.extend(disabledSemanticStyles[size]) as Style<View>
+    const surfaceStyle = !disabled && this.viewModel.surfaceColor !== undefined
+      ? baseStyle.extend({ backgroundColor: this.viewModel.surfaceColor }) as Style<View>
       : baseStyle;
-    const labelStyle = disabled ? disabledButtonLabelStyle : semanticLabelStyles[variant];
+    const style = disabled
+      ? surfaceStyle.extend(disabledSemanticStyles[size]) as Style<View>
+      : surfaceStyle;
+    const semanticLabelStyle = !disabled && this.viewModel.labelColor !== undefined
+      ? semanticLabelStyles[variant].extend({ color: this.viewModel.labelColor }) as Style<Label>
+      : semanticLabelStyles[variant];
+    const baseLabelStyle = disabled ? disabledButtonLabelStyle : semanticLabelStyle;
+    const labelStyle = this.viewModel.labelTranslationY !== undefined
+      ? baseLabelStyle.extend({ translationY: this.viewModel.labelTranslationY }) as Style<Label>
+      : baseLabelStyle;
     const spacingStyle = this.viewModel.marginLeft !== undefined || this.viewModel.marginRight !== undefined
       ? style.extend({ marginLeft: this.viewModel.marginLeft, marginRight: this.viewModel.marginRight }) as Style<View>
       : style;
     const sizedStyle = this.viewModel.height !== undefined
       ? spacingStyle.extend({ height: this.viewModel.height }) as Style<View>
       : spacingStyle;
+    const dimensionStyle = this.viewModel.width !== undefined
+      ? sizedStyle.extend({ width: this.viewModel.width }) as Style<View>
+      : sizedStyle;
     const iconTint = this.viewModel.iconTint
       ?? (disabled
         ? colors.textTertiary
@@ -148,16 +174,18 @@ export class DSButton extends Component<DSButtonViewModel> {
     <AsyncActionButton
       title={transformText(this.viewModel.title, this.viewModel.textCase)}
       onTap={this.viewModel.onTap}
-      buttonStyle={sizedStyle}
+      buttonStyle={dimensionStyle}
       labelStyle={labelStyle}
       contentStyle={buttonContentStyle}
       iconStyle={buttonIconStyle}
       icon={this.viewModel.icon}
       iconSize={this.viewModel.iconSize ?? 18}
       iconTint={iconTint}
+      iconAlignment={this.viewModel.iconAlignment}
       accessibilityLabel={this.viewModel.accessibilityLabel}
       spinnerColor={iconTint}
       disabled={disabled}
+      interactionDisabled={this.viewModel.interactionDisabled}
       loading={this.viewModel.loading}
     />;
   }

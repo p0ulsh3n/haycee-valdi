@@ -2,6 +2,7 @@ import { StatefulComponent } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { Asset } from 'valdi_tsx/src/Asset';
 import { Label, SpinnerView, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { spacing } from '../tokens/spacing';
 
 export interface AsyncActionButtonViewModel {
   title: string;
@@ -13,10 +14,12 @@ export interface AsyncActionButtonViewModel {
   icon?: string | Asset;
   iconSize?: number;
   iconTint?: string;
+  iconAlignment?: 'centered' | 'fixedLeading';
   spinnerColor: string;
   accessibilityLabel?: string;
   loading?: boolean;
   disabled?: boolean;
+  interactionDisabled?: boolean;
   textCase?: 'upper' | 'lower' | 'capitalize' | 'none';
 }
 
@@ -35,7 +38,7 @@ export class AsyncActionButton extends StatefulComponent<AsyncActionButtonViewMo
   private invocationPending = false;
 
   private handleTap = (): void => {
-    if (this.isBusy()) return;
+    if (this.isInteractionBlocked()) return;
 
     this.invocationPending = true;
     try {
@@ -58,31 +61,44 @@ export class AsyncActionButton extends StatefulComponent<AsyncActionButtonViewMo
     if (!this.isDestroyed()) this.setState({ isLoading: false });
   };
 
-  private isBusy = (): boolean => Boolean(
-    this.invocationPending || this.state.isLoading || this.viewModel.loading || this.viewModel.disabled,
+  private isLoading = (): boolean => Boolean(this.state.isLoading || this.viewModel.loading);
+
+  private isInteractionBlocked = (): boolean => Boolean(
+    this.invocationPending || this.isLoading() || this.viewModel.disabled || this.viewModel.interactionDisabled,
   );
 
   onRender(): void {
-    const busy = this.isBusy();
+    const loading = this.isLoading();
+    const interactionBlocked = this.isInteractionBlocked();
     const { title, icon, iconSize = 18, iconTint, spinnerColor, accessibilityLabel } = this.viewModel;
+    const fixedLeadingIcon = this.viewModel.iconAlignment === 'fixedLeading';
+    const contentStyle = fixedLeadingIcon
+      ? styles.fixedLeadingContent
+      : this.viewModel.contentStyle;
+    const iconStyle = fixedLeadingIcon
+      ? styles.fixedLeadingIcon.extend({ width: iconSize + spacing.sm })
+      : this.viewModel.iconStyle;
+    const labelStyle = fixedLeadingIcon
+      ? this.viewModel.labelStyle.extend({ flexGrow: 1, flexShrink: 1, textAlign: 'center' })
+      : this.viewModel.labelStyle;
 
     <view
       style={this.viewModel.buttonStyle}
       onTap={this.handleTap}
-      onTapDisabled={busy}
+      onTapDisabled={interactionBlocked}
       accessibilityCategory="button"
       accessibilityLabel={accessibilityLabel ?? title}
-      accessibilityStateDisabled={busy}
+      accessibilityStateDisabled={interactionBlocked}
     >
-      <view style={this.viewModel.contentStyle} opacity={busy ? 0 : 1}>
+      <view style={contentStyle} opacity={loading ? 0 : 1}>
         {icon ? (
-          <view style={this.viewModel.iconStyle}>
+          <view style={iconStyle}>
             <image src={icon} tint={iconTint} width={iconSize} height={iconSize} objectFit="contain" />
           </view>
         ) : null}
-        <label value={this.viewModel.title} style={this.viewModel.labelStyle} numberOfLines={1} />
+        <label value={this.viewModel.title} style={labelStyle} numberOfLines={1} />
       </view>
-      {busy ? (
+      {loading ? (
         <view style={styles.spinnerOverlay}>
           <spinner color={spinnerColor} style={spinnerStyle} />
         </view>
@@ -92,5 +108,7 @@ export class AsyncActionButton extends StatefulComponent<AsyncActionButtonViewMo
 }
 
 const styles = {
+  fixedLeadingContent: new Style<View>({ alignItems: 'center', flexDirection: 'row', width: '100%' }),
+  fixedLeadingIcon: new Style<View>({ alignItems: 'center', flexShrink: 0, justifyContent: 'center' }),
   spinnerOverlay: new Style<View>({ alignItems: 'center', bottom: 0, justifyContent: 'center', left: 0, position: 'absolute', right: 0, top: 0 }),
 };

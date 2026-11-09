@@ -21,6 +21,7 @@ import {
   type LiveWalletOrder,
   type LiveWalletTransaction,
 } from '../data/LiveWalletData';
+import { registerLiveSheet } from '../LiveSheetVisibility';
 
 type LiveWalletTab = 'wallet' | 'history';
 
@@ -46,6 +47,16 @@ const PAYMENT_METHODS = [
 export class LiveWalletSheet extends NavigationPageStatefulComponent<{}, LiveWalletSheetState> {
   state: LiveWalletSheetState = { selectedTab: 'wallet', activePage: 0, topUpAmount: `${TOP_UP_AMOUNTS[1]}`, selectedPaymentMethod: '' };
   private pendingTopUpError?: string;
+  private releaseSheetRegistration?: () => void;
+
+  onCreate(): void {
+    this.releaseSheetRegistration = registerLiveSheet();
+  }
+
+  onDestroy(): void {
+    this.releaseSheetRegistration?.();
+    this.releaseSheetRegistration = undefined;
+  }
 
   private close = (): void => this.navigationController.dismiss(true);
 

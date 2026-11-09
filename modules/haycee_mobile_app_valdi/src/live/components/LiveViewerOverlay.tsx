@@ -19,6 +19,7 @@ export interface LiveViewerOverlayViewModel {
   chatAvatarBorderColor?: string;
   commentDraft: string;
   products: LiveViewerProduct[];
+  onBuy: (product: LiveViewerProduct) => void;
   onDraftChange: (event: EditTextEvent) => void;
   onSendComment: () => void;
   onWallet: () => void;
@@ -159,7 +160,7 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
         height={this.productSurfaceCollapsed ? 0 : layout.live.viewer.productCardHeight}
         touchEnabled={this.overlayInteractive}
       >
-        <LiveProductSurface products={model.products} onMore={model.onOpenProducts} />
+        <LiveProductSurface products={model.products} onBuy={model.onBuy} onMore={model.onOpenProducts} />
       </view>
     </view>;
   }

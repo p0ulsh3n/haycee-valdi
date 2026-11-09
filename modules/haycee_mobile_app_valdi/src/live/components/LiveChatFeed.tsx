@@ -1,9 +1,13 @@
 import { ElementRef } from 'valdi_core/src/ElementRef';
-import { Component } from 'valdi_core/src/Component';
+import { AnimationCurve } from 'valdi_core/src/AnimationOptions';
+import { Component, StatefulComponent } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { ElementFrame } from 'valdi_tsx/src/Geometry';
 import { ScrollEvent } from 'valdi_tsx/src/GestureEvents';
 import { ImageView, Label, Layout, ScrollView, ScrollViewInteractive, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { LiveChatRoleBadge } from '../../design-system/components/LiveChatRoleBadge';
+import { NewMessagesPill } from '../../design-system/components/NewMessagesPill';
+import navigationIcons from '../../../res/navigation-icons';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import { normalizeUsername } from '../../design-system/utils/identity';
 import { OpacityMask } from '../../design-system/components/OpacityMask';
@@ -18,6 +22,10 @@ export interface LiveChatFeedViewModel {
   avatarBorderColor?: string;
 }
 
+interface LiveChatFeedState {
+  unreadMessageCount: number;
+}
+
 const LIVE_CHAT_MASK_IMAGE =
   'linear-gradient(#00000000 0%, #000000 14%, #000000 86%, #00000000 100%)';
 const LIVE_CHAT_MASK_IMAGE_AT_TOP =
@@ -27,11 +35,38 @@ const LIVE_CHAT_MASK_IMAGE_AT_BOTTOM =
 const LIVE_CHAT_MASK_IMAGE_NO_SCROLL = 'linear-gradient(#000000 0%, #000000 100%)';
 const SCROLL_EDGE_THRESHOLD = 1;
 
-class LiveChatMessageRow extends Component<{ message: LiveViewerMessage; avatarBorderColor?: string }> {
+class LiveChatMessageRow extends Component<{
+  message: LiveViewerMessage;
+  avatarBorderColor?: string;
+  animateEntry?: boolean;
+}> {
+  private readonly rowRef = new ElementRef<View>();
+  private hasAnimatedEntry = false;
+
+  private handleLayout = (_frame: ElementFrame): void => {
+    if (!this.viewModel.animateEntry || this.hasAnimatedEntry) return;
+    const row = this.rowRef.single();
+    if (!row) return;
+    this.hasAnimatedEntry = true;
+    this.animate(
+      { duration: CHAT_MESSAGE_ENTRY_DURATION_SECONDS, curve: AnimationCurve.EaseOut, beginFromCurrentState: true },
+      () => {
+        row.setAttribute('opacity', 1);
+        row.setAttribute('translationY', 0);
+      },
+    );
+  };
+
   onRender(): void {
-    const { message, avatarBorderColor } = this.viewModel;
+    const { message, avatarBorderColor, animateEntry } = this.viewModel;
     const username = normalizeUsername(message.username);
-    <view style={styles.messageRow}>
+    <view
+      ref={this.rowRef}
+      style={styles.messageRow}
+      opacity={animateEntry ? 0 : 1}
+      translationY={animateEntry ? CHAT_MESSAGE_ENTRY_OFFSET : 0}
+      onLayout={this.handleLayout}
+    >
       <view style={styles.avatarSlot}>
         <view
           style={styles.avatarFallback.extend({
@@ -53,11 +88,10 @@ class LiveChatMessageRow extends Component<{ message: LiveViewerMessage; avatarB
         ) : null}
       </view>
       <view style={styles.messageCopy}>
-        <label
-          value={username}
-          style={styles.username}
-          numberOfLines={1}
-        />
+        <layout style={styles.usernameRow}>
+          <label value={username} style={styles.username} numberOfLines={1} textOverflow="ellipsis" />
+          {message.role ? <LiveChatRoleBadge role={message.role} /> : null}
+        </layout>
         <label value={message.text} style={styles.messageText} numberOfLines={2} />
       </view>
     </view>;
@@ -65,7 +99,8 @@ class LiveChatMessageRow extends Component<{ message: LiveViewerMessage; avatarB
 }
 
 /** Bounded, independently rendered comment viewport above the live composer. */
-export class LiveChatFeed extends Component<LiveChatFeedViewModel> {
+export class LiveChatFeed extends StatefulComponent<LiveChatFeedViewModel, LiveChatFeedState> {
+  state: LiveChatFeedState = { unreadMessageCount: 0 };
   private readonly scrollRef = new ElementRef<ScrollViewInteractive>();
   private readonly maskRef = new ElementRef<View>();
   private scrollOffsetY = 0;
@@ -73,11 +108,50 @@ export class LiveChatFeed extends Component<LiveChatFeedViewModel> {
   private scrollViewportHeight = 0;
   private appliedMaskImage = LIVE_CHAT_MASK_IMAGE_NO_SCROLL;
   private lastMessageId?: string;
+  private enteringMessageId?: string;
   private shouldScrollToBottom = true;
   private animateNextScroll = false;
+  private followingLatest = true;
+  private jumpToBottomPending = false;
+
+  onCreate(): void {
+    const messages = this.viewModel.messages;
+    this.lastMessageId = messages[messages.length - 1]?.id;
+  }
+
+  onViewModelUpdate(_previous?: Readonly<LiveChatFeedViewModel>): void {
+    const allMessages = this.viewModel.messages;
+    const latestMessageId = allMessages[allMessages.length - 1]?.id;
+    if (!latestMessageId || latestMessageId === this.lastMessageId) return;
+
+    const isInitialMessage = this.lastMessageId === undefined;
+    const previousIndex = this.lastMessageId === undefined
+      ? -1
+      : allMessages.findIndex(message => message.id === this.lastMessageId);
+    const addedCount = previousIndex >= 0 ? allMessages.length - previousIndex - 1 : 1;
+    const shouldFollow = isInitialMessage || this.followingLatest || this.isNearBottom();
+
+    this.animateNextScroll = !isInitialMessage && shouldFollow;
+    this.enteringMessageId = !isInitialMessage ? latestMessageId : undefined;
+    this.lastMessageId = latestMessageId;
+    this.followingLatest = shouldFollow;
+    if (shouldFollow) {
+      this.shouldScrollToBottom = true;
+      if (this.state.unreadMessageCount > 0) this.setState({ unreadMessageCount: 0 });
+    } else {
+      // Appending rows below the viewport leaves the reader's native scroll offset untouched.
+      this.shouldScrollToBottom = false;
+      this.animateNextScroll = false;
+      if (addedCount > 0) {
+        this.setState({ unreadMessageCount: this.state.unreadMessageCount + addedCount });
+      }
+    }
+  }
 
   private handleContentSizeChange = (size: { width: number; height: number }): void => {
     this.messageContentHeight = size.height;
+    const maxOffset = Math.max(0, this.messageContentHeight - this.scrollViewportHeight);
+    this.scrollOffsetY = Math.min(maxOffset, this.scrollOffsetY);
     this.scrollToBottom();
     this.updateMaskImage();
   };
@@ -98,14 +172,36 @@ export class LiveChatFeed extends Component<LiveChatFeedViewModel> {
     scroll.setAttribute('contentOffsetAnimated', this.animateNextScroll);
     scroll.setAttribute('contentOffsetY', bottomOffset);
     this.scrollOffsetY = bottomOffset;
+    this.followingLatest = true;
     this.shouldScrollToBottom = false;
     this.animateNextScroll = false;
   };
 
+  private isNearBottom(): boolean {
+    if (this.messageContentHeight <= 0 || this.scrollViewportHeight <= 0) return true;
+    const maxOffset = Math.max(0, this.messageContentHeight - this.scrollViewportHeight);
+    return maxOffset - this.scrollOffsetY <= layout.live.viewer.newMessagesBottomThreshold;
+  }
+
   private handleScroll = (event: ScrollEvent): void => {
     const maxOffset = Math.max(0, this.messageContentHeight - this.scrollViewportHeight);
     this.scrollOffsetY = Math.min(maxOffset, Math.max(0, event.y));
+    this.followingLatest = this.isNearBottom();
+    if (this.followingLatest && this.state.unreadMessageCount > 0) {
+      this.setState({ unreadMessageCount: 0 });
+    }
     this.updateMaskImage();
+  };
+
+  private handleNewMessagesTap = (): void => {
+    if (this.jumpToBottomPending || this.state.unreadMessageCount <= 0) return;
+    this.jumpToBottomPending = true;
+    this.followingLatest = true;
+    this.shouldScrollToBottom = true;
+    this.animateNextScroll = true;
+    this.setState({ unreadMessageCount: 0 });
+    this.scrollToBottom();
+    this.jumpToBottomPending = false;
   };
 
   private getMaskImage(): string {
@@ -127,7 +223,7 @@ export class LiveChatFeed extends Component<LiveChatFeedViewModel> {
     this.maskRef.setAttribute('maskImage', maskImage);
   }
 
-  private renderMessagesScroll(messages: LiveViewerMessage[]): void {
+  private renderMessagesScroll(messages: LiveViewerMessage[], enteringMessageId?: string): void {
     <scroll
       ref={this.scrollRef}
       {...noBounceScrollAttributes}
@@ -148,6 +244,7 @@ export class LiveChatFeed extends Component<LiveChatFeedViewModel> {
             key={message.id}
             message={message}
             avatarBorderColor={this.viewModel.avatarBorderColor}
+            animateEntry={message.id === enteringMessageId}
           />
         ))}
       </layout>
@@ -155,24 +252,34 @@ export class LiveChatFeed extends Component<LiveChatFeedViewModel> {
   }
 
   onRender(): void {
-    const visibleMessages = this.viewModel.messages.slice(-30);
-    const latestMessageId = visibleMessages[visibleMessages.length - 1]?.id;
-    if (latestMessageId !== this.lastMessageId) {
-      this.animateNextScroll = this.lastMessageId !== undefined;
-      this.lastMessageId = latestMessageId;
-      this.shouldScrollToBottom = true;
-    }
+    const allMessages = this.viewModel.messages;
 
-    <OpacityMask
-      style={styles.maskViewport}
-      maskRef={this.maskRef}
-      maskImage={this.getMaskImage()}
-      renderContent={() => this.renderMessagesScroll(visibleMessages)}
-    />;
+    <view style={styles.root}>
+      <OpacityMask
+        style={styles.maskViewport}
+        maskRef={this.maskRef}
+        maskImage={this.getMaskImage()}
+        renderContent={() => this.renderMessagesScroll(allMessages, this.enteringMessageId)}
+      />
+      <NewMessagesPill
+        count={this.state.unreadMessageCount}
+        visible={this.state.unreadMessageCount > 0}
+        onTap={this.handleNewMessagesTap}
+        icon={navigationIcons.arrowDown01Round}
+      />
+    </view>;
   }
 }
 
+const CHAT_MESSAGE_ENTRY_DURATION_SECONDS = 0.22;
+const CHAT_MESSAGE_ENTRY_OFFSET = 4;
+
 const styles = {
+  root: new Style<View>({
+    height: layout.live.viewer.chatHeight,
+    position: 'relative',
+    width: '100%',
+  }),
   maskViewport: new Style<View>({
     flexGrow: 0,
     flexShrink: 1,
@@ -231,6 +338,7 @@ const styles = {
     flexGrow: 1,
     flexShrink: 1,
   }),
-  username: new Style<Label>({ color: colors.liveChatUsername, font: montserrat.semiBold(fontSize.body) }),
+  usernameRow: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', flexGrow: 1, flexShrink: 1, minWidth: 0 }),
+  username: new Style<Label>({ color: colors.liveChatUsername, flexShrink: 1, font: montserrat.semiBold(fontSize.body) }),
   messageText: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.body), marginTop: 1 }),
 };

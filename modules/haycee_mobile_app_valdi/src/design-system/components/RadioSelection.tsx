@@ -9,6 +9,8 @@ import { fontSize, montserrat } from '../tokens/typography';
 export interface RadioSelectionViewModel {
   label: string;
   selected: boolean;
+  /** Disables the row and exposes the state to accessibility services. */
+  disabled?: boolean;
   onTap: () => void;
   accessibilityLabel?: string;
 }
@@ -16,12 +18,15 @@ export interface RadioSelectionViewModel {
 /** Single-choice row with a left label and a right-aligned radio indicator. */
 export class RadioSelection extends Component<RadioSelectionViewModel> {
   onRender(): void {
-    const { label, selected, onTap, accessibilityLabel } = this.viewModel;
+    const { label, selected, disabled = false, onTap, accessibilityLabel } = this.viewModel;
     <view
-      style={styles.row}
+      style={disabled ? styles.row.extend({ opacity: 0.45 }) : styles.row}
+      onTapDisabled={disabled}
       onTap={onTap}
       accessibilityCategory="radio"
       accessibilityLabel={accessibilityLabel ?? `${label}${selected ? ', sélectionné' : ''}`}
+      accessibilityStateDisabled={disabled}
+      accessibilityStateSelected={selected}
     >
       <label value={label} style={styles.label} numberOfLines={1} textOverflow="ellipsis" />
       <view style={selected ? styles.radioSelected : styles.radio}>

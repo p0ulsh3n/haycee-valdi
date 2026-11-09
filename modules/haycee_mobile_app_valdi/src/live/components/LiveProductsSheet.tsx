@@ -14,14 +14,17 @@ import { runNavigationAction } from '../../design-system/utils/NavigationActionG
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import type { LiveViewerCartItem, LiveViewerProduct } from '../data/LiveViewerData';
+import { addLiveViewerCartSelection } from '../data/LiveViewerData';
 import { LiveCartSheet } from './LiveCartSheet';
+import { LiveProductPurchaseSheet } from './LiveProductPurchaseSheet';
+import type { LiveProductPurchaseIntent } from './LiveProductPurchaseSheet';
 import { LiveProductSheetRow } from './LiveProductSheetRow';
+import { registerLiveSheet } from '../LiveSheetVisibility';
 
 export interface LiveProductsSheetViewModel {
   products: LiveViewerProduct[];
   cartItems: LiveViewerCartItem[];
   onCartChange: (items: LiveViewerCartItem[]) => void;
-  onBuy: (product: LiveViewerProduct) => void;
   onCheckout: () => void;
 }
 
@@ -33,9 +36,16 @@ interface LiveProductsSheetState {
 @NavigationPage(module)
 export class LiveProductsSheet extends NavigationPageStatefulComponent<LiveProductsSheetViewModel, LiveProductsSheetState> {
   state: LiveProductsSheetState = { cartItems: [] };
+  private releaseSheetRegistration?: () => void;
 
   onCreate(): void {
+    this.releaseSheetRegistration = registerLiveSheet();
     this.state = { cartItems: this.viewModel.cartItems };
+  }
+
+  onDestroy(): void {
+    this.releaseSheetRegistration?.();
+    this.releaseSheetRegistration = undefined;
   }
 
   private close = (): void => {
@@ -52,13 +62,42 @@ export class LiveProductsSheet extends NavigationPageStatefulComponent<LiveProdu
 
   private addToCart = (product: LiveViewerProduct): void => {
     if (product.kind === 'auction' || product.stockLeft === 0) return;
-    const current = this.state.cartItems.find(item => item.product.id === product.id);
-    if (current && product.stockLeft !== undefined && current.quantity >= product.stockLeft) return;
-    const next = current
-      ? this.state.cartItems.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
-      : [...this.state.cartItems, { product, quantity: 1 }];
+    if ((product.variantStocks?.length ?? 0) > 0) {
+      this.openPurchase(product, 'add-to-cart');
+      return;
+    }
+    const next = addLiveViewerCartSelection(this.state.cartItems, product, 1);
+    if (next === this.state.cartItems) return;
     this.updateCart(next);
     TransientFeedback.show({ message: `${product.title} ajouté au panier du live.` });
+  };
+
+  private openPurchase = (product: LiveViewerProduct, intent: LiveProductPurchaseIntent = 'buy-now'): void => {
+    if (product.kind === 'auction' || product.stockLeft <= 0) return;
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveProductPurchaseSheet,
+        {
+          product,
+          cartItems: this.state.cartItems,
+          intent,
+          onAddToCart: (selectedProduct, quantity, variantId) => {
+            const next = addLiveViewerCartSelection(this.state.cartItems, selectedProduct, quantity, variantId);
+            if (next !== this.state.cartItems) {
+              this.updateCart(next);
+              TransientFeedback.show({ message: `${selectedProduct.title} ajouté au panier du live.` });
+            }
+          },
+          onBuyNow: (selectedProduct, quantity, variantId) => {
+            const next = addLiveViewerCartSelection(this.state.cartItems, selectedProduct, quantity, variantId);
+            if (next !== this.state.cartItems) this.updateCart(next);
+            this.viewModel.onCheckout();
+          },
+        },
+        {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions({ transparentPageBackground: true }) },
+      );
+    });
   };
 
   private openCart = (): void => {
@@ -123,7 +162,7 @@ export class LiveProductsSheet extends NavigationPageStatefulComponent<LiveProdu
                   product={product}
                   index={index}
                   onAdd={this.addToCart}
-                  onBuy={this.viewModel.onBuy}
+                  onBuy={product => this.openPurchase(product, 'buy-now')}
                 />
               ))}
             </layout>

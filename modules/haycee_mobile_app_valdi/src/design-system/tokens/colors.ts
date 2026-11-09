@@ -56,9 +56,15 @@ export const colors = {
   /** Transparent interior and light outline for controls over Live video. */
   liveGlassSurface: 'rgba(0, 0, 0, 0)',
   liveGlassBorder: 'rgba(255, 255, 255, 0.34)',
+  /** Shared near-black elevated surface for unread counts in Live. */
+  liveUnreadCountSurface: palette.gray900,
   /** Translucent dark material used over Live content, including its action buttons. */
   liveActionSurface: 'rgba(8, 14, 18, 0.42)',
   liveChatUsername: '#B6B6B8',
+  /** Warm gold surface distinguishes the Live organizer badge from moderator. */
+  liveChatRoleOrganizer: '#F2C45F',
+  /** Dark translucent moderator badge surface keeps its white label legible over video. */
+  liveChatRoleModerator: 'rgba(0, 0, 0, 0.46)',
   liveViewerBadgeGradient: `linear-gradient(135deg, rgba(137, 35, 160, 0.7) 0%, #F1A322 22.58%, ${palette.brandPurple} 100%)`,
   liveControlSurface: 'rgba(255, 255, 255, 0.88)',
   liveChatSurface: 'rgba(255, 255, 255, 0.76)',
