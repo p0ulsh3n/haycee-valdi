@@ -86,13 +86,11 @@ export class LiveViewerHeader extends Component<LiveViewerHeaderViewModel> {
           </view>
         </view>
         <layout style={styles.headerActions}>
-          <view style={styles.viewerBadgeGradient} accessibilityLabel={`${formatLiveViewerCount(item.viewers)} spectateurs`}>
-            <view style={styles.viewerBadge}>
-              <view style={styles.viewerBadgeIconDisc}>
-                <image src={navigationIcons.userGroup} tint={colors.textPrimary} width={13} height={13} objectFit="contain" />
-              </view>
-              <label value={formatLiveViewerCount(item.viewers)} style={styles.viewerCount} numberOfLines={1} />
+          <view style={styles.viewerBadge} accessibilityLabel={`${formatLiveViewerCount(item.viewers)} spectateurs`}>
+            <view style={styles.viewerBadgeIconDisc}>
+              <image src={navigationIcons.userGroup} tint={colors.textPrimary} width={13} height={13} objectFit="contain" />
             </view>
+            <label value={formatLiveViewerCount(item.viewers)} style={styles.viewerCount} numberOfLines={1} />
           </view>
           <view style={styles.closeButton} onTap={this.viewModel.onBack} accessibilityCategory="button" accessibilityLabel="Fermer le Live">
             <image src={navigationIcons.cancel01} tint={colors.textInverted} width={19} height={19} objectFit="contain" />
@@ -271,13 +269,6 @@ const styles = {
   heartStat: new Style<View>({ alignItems: 'center', flexDirection: 'row', flexShrink: 0, marginLeft: spacing.sm }),
   headerActions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginLeft: spacing.sm }),
   followButtonSlot: new Style<View>({ alignItems: 'center', flexShrink: 0, height: '100%', justifyContent: 'center', marginLeft: 2, width: 72 }),
-  viewerBadgeGradient: new Style<View>({
-    alignItems: 'center',
-    borderRadius: radius.full,
-    background: colors.liveViewerBadgeGradient,
-    flexDirection: 'row',
-    padding: layout.live.viewer.viewerBadgeGradientWidth,
-  }),
   viewerBadge: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.liveOverlaySurface,

@@ -69,6 +69,23 @@ export const homeCategoryDefinitions: HomeCategoryDefinition[] = [
         offer: { type: 'OFFER_FLASH_SALE_COUNTDOWN', params: { pct: '-24%' }, endsAt: new Date(Date.now() + 45 * 60 * 1000).toISOString() },
         rating: '4.8',
         reviewCount: '32',
+        sizes: ['S', 'M', 'L'],
+        colors: [
+          { id: 'rose', name: 'Rose poudré', hex: '#C88191' },
+          { id: 'mauve', name: 'Mauve', hex: '#9A82A8' },
+          { id: 'bleu', name: 'Bleu ciel', hex: '#8EB4D0' },
+        ],
+        variantCombinations: [
+          { id: 'rose-s', selections: [{ groupId: 'color', optionId: 'rose' }, { groupId: 'size', optionId: 'S' }], remaining: 0, total: 2 },
+          { id: 'rose-m', selections: [{ groupId: 'color', optionId: 'rose' }, { groupId: 'size', optionId: 'M' }], remaining: 2, total: 3 },
+          { id: 'rose-l', selections: [{ groupId: 'color', optionId: 'rose' }, { groupId: 'size', optionId: 'L' }], remaining: 1, total: 2 },
+          { id: 'mauve-s', selections: [{ groupId: 'color', optionId: 'mauve' }, { groupId: 'size', optionId: 'S' }], remaining: 1, total: 2 },
+          { id: 'mauve-m', selections: [{ groupId: 'color', optionId: 'mauve' }, { groupId: 'size', optionId: 'M' }], remaining: 0, total: 2 },
+          { id: 'mauve-l', selections: [{ groupId: 'color', optionId: 'mauve' }, { groupId: 'size', optionId: 'L' }], remaining: 0, total: 1 },
+          { id: 'bleu-s', selections: [{ groupId: 'color', optionId: 'bleu' }, { groupId: 'size', optionId: 'S' }], remaining: 0, total: 1 },
+          { id: 'bleu-m', selections: [{ groupId: 'color', optionId: 'bleu' }, { groupId: 'size', optionId: 'M' }], remaining: 0, total: 1 },
+          { id: 'bleu-l', selections: [{ groupId: 'color', optionId: 'bleu' }, { groupId: 'size', optionId: 'L' }], remaining: 0, total: 1 },
+        ],
       }),
       product('all-p2', 'Sneakers everyday', '59,00 €', '#D7E2E9', undefined, {
         isLive: true,

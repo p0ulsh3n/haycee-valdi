@@ -12,7 +12,12 @@ import { ProductCardBadge } from './ProductCardBadge';
 import { ProductOfferPlacement } from './ProductOfferPlacement';
 import { ProductPopularityBadge } from './ProductPopularityBadge';
 import { ProductRatingSummary } from './ProductRatingSummary';
-import type { ProductOffer, ProductPopularityBadgeType } from './ProductCardTypes';
+import type {
+  ProductOffer,
+  ProductPopularityBadgeType,
+  ProductVariantCombination,
+  ProductVariantGroup,
+} from './ProductCardTypes';
 import { colors } from '../tokens/colors';
 import { radius } from '../tokens/radius';
 import { spacing } from '../tokens/spacing';
@@ -70,6 +75,10 @@ export interface MasonryProduct {
   vendorSales?: string;
   colors?: Array<{ id: string; name: string; hex: string }>;
   sizes?: string[];
+  /** Dynamic, API-mapped variant axes. If omitted, legacy colors/sizes are adapted by the selector. */
+  variantGroups?: ProductVariantGroup[];
+  /** Optional per-combination stock; absent combinations are unavailable when this list is supplied. */
+  variantCombinations?: ProductVariantCombination[];
   reviewCount?: string;
   stockCount?: number;
   stockTotal?: number;
@@ -369,7 +378,7 @@ export class MasonryProductCard extends StatefulComponent<
 const styles = {
   card: new Style<View>({
     backgroundColor: colors.backgroundPrimary,
-    borderRadius: 12,
+    borderRadius: radius.xs,
     marginBottom: 8,
     slowClipping: true,
   }),

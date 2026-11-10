@@ -191,8 +191,8 @@ export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoC
       title: item.presentationType === 'auction'
         ? 'Montre chronographe automatique édition limitée en acier inoxydable avec cadran noir, bracelet premium et verre saphir'
         : 'Sac bandoulière en cuir grainé avec chaîne dorée',
-      price: item.presentationType === 'auction' ? 1_000_000 : 24900,
-      originalPrice: item.presentationType === 'auction' ? undefined : 29900,
+      price: item.presentationType === 'auction' ? 560_000 : 24900,
+      originalPrice: item.presentationType === 'auction' ? 1_000_000 : 29900,
       stockLeft: item.presentationType === 'auction' ? 3 : 4,
       stockTotal: 12,
       variantStocks: [

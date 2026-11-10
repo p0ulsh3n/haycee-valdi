@@ -12,6 +12,8 @@ export interface TabChipItem {
   id: string;
   label: string;
   disabled?: boolean;
+  /** Optional color swatch for data-driven variant chips. */
+  swatchColor?: string;
 }
 
 export interface TabChipsViewModel {
@@ -63,15 +65,19 @@ export class TabChips extends Component<TabChipsViewModel> {
           accessibilityStateDisabled={disabled}
           accessibilityStateSelected={selected}
         >
-          <label
-            value={transformText(tab.label, this.viewModel.textCase)}
-            style={labelStyle.extend({
-              color: selected
-                ? this.viewModel.selectedTextColor ?? colors.textInverted
-                : this.viewModel.unselectedTextColor ?? colors.textSecondary,
-            })}
-            numberOfLines={1}
-          />
+          <layout style={styles.chipContent}>
+            {tab.swatchColor ? <view style={styles.swatch.extend({ backgroundColor: tab.swatchColor })} /> : null}
+            <label
+              value={transformText(tab.label, this.viewModel.textCase)}
+              style={labelStyle.extend({
+                color: selected
+                  ? this.viewModel.selectedTextColor ?? colors.textInverted
+                  : this.viewModel.unselectedTextColor ?? colors.textSecondary,
+                marginLeft: tab.swatchColor ? spacing.xs : 0,
+              })}
+              numberOfLines={1}
+            />
+          </layout>
         </view>
       );
     })}
@@ -131,6 +137,8 @@ const styles = {
     paddingLeft: spacing.md,
     paddingRight: spacing.md,
   }),
+  chipContent: new Style<Layout>({ alignItems: 'center', flexDirection: 'row' }),
+  swatch: new Style<View>({ borderColor: colors.borderDefault, borderRadius: radius.full, borderWidth: 1, height: 12, width: 12 }),
   label: new Style<Label>({
     color: colors.textSecondary,
     font: montserrat.semiBold(fontSize.metadata),

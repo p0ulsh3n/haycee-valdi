@@ -20,8 +20,21 @@ export interface ImageCarouselViewModel {
   height: number;
   paginationBottomOffset?: number;
   showCounter?: boolean;
+  /** `pager` shows one full-width page; `strip` lays every image out in a horizontal rail. */
+  presentation?: 'pager' | 'strip';
+  /** Tile width and spacing for the horizontal strip presentation. */
+  itemWidth?: number;
+  itemSpacing?: number;
+  /** Optional surface for media previews outside the default dark image viewer. */
+  backgroundColor?: string;
+  /** Optional corner radius for embedded galleries. */
+  cornerRadius?: number;
+  /** Preserve the source ratio with contain, or fill the frame with cover. Defaults to contain. */
+  imageFit?: 'contain' | 'cover';
   onTap?: () => void;
   onIndexChange?: (index: number) => void;
+  /** Raw decoded source dimensions, used by compact galleries that adapt their frame ratio. */
+  onImageDecoded?: (index: number, width: number, height: number) => void;
 }
 
 interface ImageCarouselState {
@@ -31,7 +44,7 @@ interface ImageCarouselState {
 
 const paginationSlotWidth = 16;
 
-/** Reusable full-width carousel with native paging and gesture-following state. */
+/** Reusable native image pager or horizontal image strip with gesture-following state. */
 export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, ImageCarouselState> {
   state: ImageCarouselState = {
     index: 0,
@@ -67,6 +80,14 @@ export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, Ima
 
   private width = (): number => Math.max(this.state.viewportWidth || this.viewModel.width || Device.getWindowWidth(), 1);
 
+  private isStrip = (): boolean => this.viewModel.presentation === 'strip';
+
+  private itemWidth = (): number => Math.max(1, this.viewModel.itemWidth ?? this.width());
+
+  private itemSpacing = (): number => Math.max(0, this.viewModel.itemSpacing ?? 0);
+
+  private offsetPerItem = (): number => this.isStrip() ? this.itemWidth() + this.itemSpacing() : this.width();
+
   private handleLayout = (frame: ElementFrame): void => {
     const width = Math.max(0, Math.round(frame.width));
     if (width === this.state.viewportWidth) return;
@@ -76,7 +97,7 @@ export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, Ima
   };
 
   private updateIndex = (offsetX: number): void => {
-    const width = this.width();
+    const width = this.offsetPerItem();
     const count = this.slideCount();
     if (width <= 0 || count <= 0) return;
 
@@ -88,6 +109,7 @@ export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, Ima
   };
 
   private updatePaginationIndicator = (offsetX: number): void => {
+    if (this.isStrip()) return;
     const width = this.width();
     const count = this.slideCount();
     const indicator = this.paginationIndicatorRef.single();
@@ -105,6 +127,7 @@ export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, Ima
   };
 
   private handleDragEnding = (event: ScrollDragEndingEvent): ScrollOffset => {
+    if (this.isStrip()) return { x: event.x, y: event.y };
     const width = this.width();
     const count = this.slideCount();
     if (width <= 0 || count <= 0) return { x: event.x, y: event.y };
@@ -124,6 +147,7 @@ export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, Ima
   };
 
   private handleScrollEnd = (event: ScrollEndEvent): void => {
+    if (this.isStrip()) return;
     const width = this.width();
     const count = this.slideCount();
     if (width <= 0 || count <= 0) return;
@@ -146,16 +170,19 @@ export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, Ima
     if (!scroll) return;
 
     const width = this.width();
-    scroll.setAttribute('staticContentWidth', width * Math.max(1, this.slideCount()));
+    const contentWidth = this.isStrip()
+      ? this.itemWidth() * this.slideCount() + this.itemSpacing() * Math.max(0, this.slideCount() - 1)
+      : width * Math.max(1, this.slideCount());
+    scroll.setAttribute('staticContentWidth', Math.max(width, contentWidth));
     scroll.setAttribute('contentOffsetAnimated', false);
-    scroll.setAttribute('contentOffsetX', this.state.index * width);
-    this.updatePaginationIndicator(this.state.index * width);
+    scroll.setAttribute('contentOffsetX', this.state.index * this.offsetPerItem());
+    this.updatePaginationIndicator(this.state.index * this.offsetPerItem());
     this.positioned = true;
   };
 
   private renderPagination(): void {
     const count = this.slideCount();
-    if (count <= 1) return;
+    if (count <= 1 || this.isStrip()) return;
 
     {this.viewModel.showCounter !== false ? (
       <view style={styles.pagination.extend({ top: (this.viewModel.topInset ?? 0) + spacing.sm })}>
@@ -184,27 +211,45 @@ export class ImageCarousel extends StatefulComponent<ImageCarouselViewModel, Ima
     const fallbackColors = this.colors();
     const width = this.width();
     const height = Math.max(1, this.viewModel.height);
+    const backgroundColor = this.viewModel.backgroundColor ?? colors.backgroundDark;
+    const isStrip = this.isStrip();
+    const itemWidth = isStrip ? this.itemWidth() : width;
+    const itemSpacing = isStrip ? this.itemSpacing() : 0;
+    const pageStyle = (index: number): Style<View> => styles.page.extend({
+      marginRight: isStrip && index < this.slideCount() - 1 ? itemSpacing : 0,
+    });
 
-    <view style={styles.root} width={this.viewModel.width} height={height} onLayout={this.handleLayout}>
+    <view style={styles.root.extend({
+      backgroundColor,
+      borderRadius: this.viewModel.cornerRadius,
+    })} width={this.viewModel.width} height={height} onLayout={this.handleLayout}>
       <scroll
         {...noBounceScrollAttributes}
         ref={this.scrollRef}
         width={width}
         height={height}
         horizontal={true}
+        pagingEnabled={!isStrip}
         showsHorizontalScrollIndicator={false}
         onLayout={this.handleScrollLayout}
         onScroll={this.handleScroll}
-        onDragEnding={this.handleDragEnding}
-        onScrollEnd={this.handleScrollEnd}
+        onDragEnding={isStrip ? undefined : this.handleDragEnding}
+        onScrollEnd={isStrip ? undefined : this.handleScrollEnd}
       >
         {images.length > 0 ? images.map((imageUrl, index) => (
-          <view key={'carousel-image-' + index} style={styles.page} width={width} height={height} onTap={this.viewModel.onTap} accessibilityCategory="button">
-            <image src={imageUrl} width={width} height={height} objectFit="contain" style={styles.image} />
+          <view key={'carousel-image-' + index} style={pageStyle(index)} width={itemWidth} height={height} onTap={this.viewModel.onTap} accessibilityCategory="button">
+            <image
+              src={imageUrl}
+              width={itemWidth}
+              height={height}
+              objectFit={this.viewModel.imageFit ?? 'contain'}
+              style={styles.image.extend({ backgroundColor, borderRadius: this.viewModel.cornerRadius })}
+              onImageDecoded={(imageWidth, imageHeight) => this.viewModel.onImageDecoded?.(index, imageWidth, imageHeight)}
+            />
           </view>
         )) : fallbackColors.map((color, index) => (
-          <view key={'carousel-color-' + index} style={styles.page} width={width} height={height} onTap={this.viewModel.onTap} accessibilityCategory="button">
-            <view width={width} height={height} backgroundColor={color} style={styles.fallback}>
+          <view key={'carousel-color-' + index} style={pageStyle(index)} width={itemWidth} height={height} onTap={this.viewModel.onTap} accessibilityCategory="button">
+            <view width={itemWidth} height={height} backgroundColor={color} style={styles.fallback.extend({ borderRadius: this.viewModel.cornerRadius })}>
               <label value="APERÇU PRODUIT" style={styles.fallbackLabel} />
             </view>
           </view>

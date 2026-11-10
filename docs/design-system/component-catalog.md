@@ -10,7 +10,7 @@ Source: `modules/haycee_mobile_app_valdi/src/design-system/tokens/`.
 | --- | --- | --- |
 | `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, border, icon, product, stock-progress, messaging and Live colors, including the shared 16%-alpha dark Live overlay surface, chat-role badge surfaces, the near-black unread-count surface and the Live shipping-line text gradient with explicit native-compatible stops | Prefer a semantic token. Add a named token before using a new app-wide color. |
 | `typography.ts` | Montserrat Regular, SemiBold, ExtraBold, Black; font sizes, line heights, named typography styles, `TextCase`, `transformText` | Do not load another font face or invent per-screen typography for a repeated role. Default text case is uppercase; set casing deliberately. |
-| `spacing.ts` | 4-point spacing scale and nested screen/layout measurements | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
+| `spacing.ts` | 4-point spacing scale and nested screen/layout measurements, including the compact product-variant sheet height/gallery width/footer button height and Live order-sheet tab width | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
 | `radius.ts` | Shared corner-radius scale | Reuse a semantic radius. Add a token for a repeated design role. |
 | `scrollBehavior.ts` | `noBounceScrollAttributes` app scroll contract | Spread it on shared/native scroll containers unless the interaction explicitly requires another verified behavior. |
 
@@ -58,7 +58,7 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | --- | --- |
 | `BottomTabsNavigation` | App-level bottom navigation. |
 | `SwipeTabs` | Synchronized horizontal swipe/pager tabs with the shared active indicator and optional hairline/loading states. |
-| `TabChips` | Compact selectable category/filter chips; distinct from page-swiping tabs. Pass color options when a context has a documented variant. |
+| `TabChips` | Compact selectable category/filter or product-variant chips; distinct from page-swiping tabs. Supports contextual colors, disabled options and optional color swatches. |
 | `RadioSelection` | Single-choice rows, such as sorting options. Supports disabled choices for unavailable product variants; see [selection guidance](selection.md). |
 | `Hairline` | Shared fine divider; use the component options instead of duplicating a line. |
 
@@ -67,14 +67,16 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | Component | Use |
 | --- | --- |
 | `MasonryFeed` | Shared masonry feed layout and column/aspect-ratio helpers. |
-| `MasonryProductCard` | Reusable product card for masonry contexts. |
+| `MasonryProductCard` | Reusable product card for masonry contexts; the full card uses `radius.xs` and its product image uses `radius.cardImage`. |
 | `LiveProductCard` | Live product strip with an optional blurred/translucent surface (enabled by default), a larger 1:1 or 3:4 thumbnail, two-line truncated title with a total-stock pill, price beneath the title, variant availability in a compact ticker, and a bottom row with a delivery truck or expedition plane, gradient shipping fees including the FCFA amount, and the shared CTA `Acheter` button aligned to one control height. |
 | `LiveProductPurchaseSheet` | Live purchase configuration for an in-stock product: summary, explicit variant selection when present, sold-out variant disabling, stock-bounded quantity, shipping estimate, total, and an intent-aware footer (`Ajouter au panier` or `Acheter`). The featured Live card opens it for its selected product; auction rows in the product list keep their separate auction affordance. |
+| `ProductVariantSelectionSheet` | Compact white Marketplace sheet opened by Add/Buy when a product has dynamic options; keeps its header at the top, shows all product photos in a horizontal strip with 1:1 or 3:4 frames, places title and price below the gallery, and supports dynamic options, per-combination availability and stock limits. |
 | `LiveChatRoleBadge` | Compact organizer/moderator marker beside a Live chat username; role and semantic surface are supplied by the message data. |
+| `LiveStreamAlerts` | Groups live join/share events into animated pills. Its `regular` density preserves the larger default presentation; `compact` reduces pill/avatar/text dimensions for alerts placed above the Live chat feed. |
 | `PinnedLiveComment` | Live-domain callout above the scrolling chat for a host-pinned comment. It has no outline, uses the shared Live surface and tokens, and animates in/out independently while the regular chat remains scrollable below. |
 | `NewMessagesPill` | Compact opaque near-black pill over a chat feed, with a fixed leading white icon and white unread count. It enters/exits with a short native slide/fade and returns to the newest message only when tapped. The Live feed follows incoming messages only while already near the bottom; otherwise it leaves the current scroll offset unchanged and accumulates unread messages until the reader returns to the bottom threshold. |
 | `LiveViewerScreen` | Full-screen Live composition. Its local demo chat can add incoming fixture messages at varied intervals while visible; each new row enters with a short, subtle native fade/translation, the feed pauses under Live sheets/background navigation, and recent history is bounded. |
-| `ImageCarousel` | Shared image gallery/carousel and gesture paging. |
+| `ImageCarousel` | Shared image gallery/carousel. `pager` presents one swipe-paged image; `strip` exposes all images in a horizontal rail. Supports caller-provided surface, contain/cover fit, rounded previews, decoded-dimension callbacks and native no-bounce scrolling. |
 | `ProductCardBadge` | Shared product status/promotion badge. |
 | `ProductPopularityBadge` | Shared popularity badge. |
 | `ProductOfferPlacement` | Shared product-offer placement/content layout. |
@@ -82,7 +84,7 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | `ProductStockIndicator` | Shared pill-shaped stock progress and availability label; uses the starting stock total, supports a low-stock threshold, and takes its height/minimum width from product layout tokens. |
 | `ProductStockCountPill` | Reusable compact total-stock pill (`STOCK : X`) with configurable surface and text colors. |
 | `ProductVariantStockPreview` | Fixed-height vertical ticker for variant-combination inventory. Cycles through all combinations one at a time, showing each combination's own available, low-stock or sold-out status. |
-| `ProductCardTypes` | Shared product-card data contracts, not a rendered component. |
+| `ProductCardTypes` | Shared product-card data contracts, including dynamic variant groups/options and per-combination inventory; see [product variants](product-variants.md). |
 | `SkeletonView` | Reusable skeleton shape/animation. |
 | `SkeletonLoadingContainer` | Screen/content loading boundary that coordinates skeleton display and interaction state. |
 | `OpacityMask` | Reusable edge fade for supported content compositions. |

@@ -7,6 +7,8 @@ import { EditTextEvent, Label, Layout, View } from 'valdi_tsx/src/NativeTemplate
 import navigationIcons from '../../../res/navigation-icons';
 import { LiveChatFeed } from './LiveChatFeed';
 import { LiveCommentComposer } from './LiveCommentComposer';
+import { LiveStreamAlerts } from './LiveStreamAlerts';
+import type { LiveStreamAlertEntry } from './LiveStreamAlerts';
 import { LiveProductQuickAccess } from './LiveProductQuickAccess';
 import { LiveProductSurface } from './LiveProductSurface';
 import type { LiveViewerMessage, LiveViewerProduct } from '../data/LiveViewerData';
@@ -16,6 +18,7 @@ import { fontSize, montserrat } from '../../design-system/tokens/typography';
 
 export interface LiveViewerOverlayViewModel {
   messages: LiveViewerMessage[];
+  streamAlertEntries: LiveStreamAlertEntry[];
   pinnedMessage?: LiveViewerMessage;
   chatAvatarBorderColor?: string;
   commentDraft: string;
@@ -24,6 +27,7 @@ export interface LiveViewerOverlayViewModel {
   onDraftChange: (event: EditTextEvent) => void;
   onSendComment: () => void;
   onWallet: () => void;
+  onOrders: () => void;
   onOpenCart: () => void;
   onOpenRequest: () => void;
   onOpenProducts: () => void;
@@ -122,6 +126,7 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
     <view style={styles.root}>
       <layout style={styles.liveInteractionArea}>
         <view style={styles.chatColumn}>
+          <LiveStreamAlerts entries={model.streamAlertEntries} density="compact" />
           <LiveChatFeed
             messages={model.messages}
             pinnedMessage={model.pinnedMessage}
@@ -145,6 +150,7 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
         >
           {this.renderActionButton(navigationIcons.money03, 'Portefeuille', 'Solde', model.onWallet)}
           {this.renderActionButton(navigationIcons.shoppingCart02, 'Panier du live', 'Panier', model.onOpenCart)}
+          {this.renderActionButton(navigationIcons.invoice04, 'Historique des commandes', 'Commandes', model.onOrders)}
           {model.products.length > 0
             ? this.renderActionButton(
                 navigationIcons.userHandUp01,
@@ -154,10 +160,20 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
               )
             : null}
           {model.products.length > 0 ? (
-            <LiveProductQuickAccess products={model.products} onTap={model.onOpenProducts} />
+            <view style={styles.quickAccessSpacer} />
+          ) : null}
+          {model.products.length > 0 ? (
+            <view style={styles.quickAccessGroup}>
+              <LiveProductQuickAccess products={model.products} onTap={model.onOpenProducts} />
+            </view>
           ) : null}
         </view>
       </layout>
+      {model.products.length > 0 ? (
+        <view style={styles.quickAccessLabelHost}>
+          <label value="Produits" style={styles.actionLabel} numberOfLines={1} />
+        </view>
+      ) : null}
       <view
         ref={this.productSurfaceRef}
         style={styles.productSurface}
@@ -174,9 +190,9 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
 const actionRailHeight = layout.live.viewer.chatHeight + layout.live.viewer.composerHeight + spacing.sm;
 
 const styles = {
-  root: new Style<View>({ flexGrow: 0, flexShrink: 1, width: '100%' }),
+  root: new Style<View>({ flexGrow: 0, flexShrink: 1, position: 'relative', width: '100%' }),
   liveInteractionArea: new Style<Layout>({
-    alignItems: 'center',
+    alignItems: 'flex-end',
     flexDirection: 'row',
     flexGrow: 0,
     flexShrink: 1,
@@ -194,6 +210,8 @@ const styles = {
     height: actionRailHeight,
     justifyContent: 'flex-end',
     marginLeft: spacing.md,
+    position: 'relative',
+    translationY: -spacing.md,
     width: layout.live.viewer.actionRailWidth,
   }),
   productSurface: new Style<View>({ flexShrink: 0, width: '100%' }),
@@ -217,5 +235,21 @@ const styles = {
     color: colors.textInverted,
     font: montserrat.semiBold(fontSize.tiny),
     marginTop: 2,
+  }),
+  quickAccessGroup: new Style<View>({
+    alignItems: 'center',
+    bottom: 0,
+    height: layout.live.viewer.productQuickAccessSize + spacing.xs,
+    position: 'absolute',
+    width: layout.live.viewer.actionRailWidth,
+  }),
+  quickAccessSpacer: new Style<View>({ height: layout.live.viewer.productQuickAccessSize + spacing.xs, width: '100%' }),
+  quickAccessLabelHost: new Style<View>({
+    alignItems: 'center',
+    bottom: layout.live.viewer.productCardHeight + spacing.sm - spacing.lg + spacing.md,
+    height: spacing.lg,
+    position: 'absolute',
+    right: layout.live.viewer.horizontalPadding,
+    width: layout.live.viewer.actionRailWidth,
   }),
 };

@@ -99,10 +99,17 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
             <label value={formatFcfa(product.price)} style={styles.price} numberOfLines={1} />
             {discountPercent > 0 && product.originalPrice !== undefined ? (
               <label
-                value={`${formatFcfa(product.originalPrice)} (-${discountPercent}%)`}
-                style={styles.discountSummary}
+                value={formatFcfa(product.originalPrice)}
+                style={styles.originalPrice}
                 numberOfLines={1}
-                textOverflow="ellipsis"
+              />
+            ) : null}
+            {discountPercent > 0 ? (
+              <label
+                value={`(-${discountPercent}%)`}
+                style={styles.discountPercent}
+                textGradient={colors.liveShippingPriceGradient}
+                numberOfLines={1}
               />
             ) : null}
           </layout>
@@ -215,7 +222,7 @@ const styles = {
   priceRow: new Style<Layout>({
     alignItems: 'center',
     flexDirection: 'row',
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
     minWidth: 0,
   }),
   price: new Style<Label>({
@@ -223,12 +230,19 @@ const styles = {
     flexShrink: 0,
     font: montserrat.extraBold(fontSize.body),
   }),
-  discountSummary: new Style<Label>({
-    color: colors.interactivePrimary,
+  originalPrice: new Style<Label>({
+    color: colors.textOnDarkSecondary,
     flexShrink: 1,
     font: montserrat.semiBold(fontSize.tiny),
     marginLeft: spacing.xs,
     minWidth: 0,
+    textDecoration: 'strikethrough',
+  }),
+  discountPercent: new Style<Label>({
+    color: colors.interactivePrimary,
+    flexShrink: 0,
+    font: montserrat.semiBold(fontSize.tiny),
+    marginLeft: spacing.xs,
   }),
   footerRow: new Style<Layout>({
     alignItems: 'center',

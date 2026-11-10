@@ -106,6 +106,7 @@ export {
 export type { MasonryFeedViewModel, MasonryItem } from './components/MasonryFeed';
 export { MasonryProductCard } from './components/MasonryProductCard';
 export type { MasonryProduct, MasonryProductCardViewModel } from './components/MasonryProductCard';
+export type { ProductVariantCombination, ProductVariantGroup, ProductVariantOption } from './components/ProductCardTypes';
 export { ProductStockIndicator } from './components/ProductStockIndicator';
 export type { ProductStockIndicatorViewModel } from './components/ProductStockIndicator';
 export { ProductStockCountPill } from './components/ProductStockCountPill';
@@ -119,5 +120,7 @@ export type {
   ProductVariantStockItem,
   ProductVariantStockPreviewViewModel,
 } from './components/ProductVariantStockPreview';
+export { ImageCarousel } from './components/ImageCarousel';
+export type { ImageCarouselViewModel } from './components/ImageCarousel';
 export { Tooltip } from './components/Tooltip';
 export type { TooltipPlacement, TooltipViewModel } from './components/Tooltip';

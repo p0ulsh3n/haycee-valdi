@@ -6,17 +6,14 @@ import { ElementFrame } from 'valdi_tsx/src/Geometry';
 import { ImageView, Label, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
-import { spacing } from '../../design-system/tokens/spacing';
+import { layout, spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
 
 const MAX_VISIBLE_AVATARS = 3;
 const MAX_SEEN_ENTRIES = 64;
 const ALERT_DURATION_MS = 4000;
-const AVATAR_SIZE = 28;
-const AVATAR_OVERLAP = 10;
-const PILL_HEIGHT = 36;
-
 export type LiveStreamAlertType = 'join' | 'share';
+export type LiveStreamAlertDensity = 'regular' | 'compact';
 
 export interface LiveStreamAlertEntry {
   id: string;
@@ -36,6 +33,8 @@ interface LiveStreamAlertGroup {
 export interface LiveStreamAlertsViewModel {
   /** Incremental stream events; each ID is consumed once. */
   entries: LiveStreamAlertEntry[];
+  /** Compact layout is intended for alerts in the chat column. */
+  density?: LiveStreamAlertDensity;
 }
 
 interface LiveStreamAlertsState {
@@ -44,6 +43,7 @@ interface LiveStreamAlertsState {
 
 interface LiveStreamAlertPillViewModel {
   group: LiveStreamAlertGroup;
+  density: LiveStreamAlertDensity;
   onDone: (groupKey: string) => void;
 }
 
@@ -54,6 +54,8 @@ interface LiveStreamAlertPillState {
 interface LiveStreamAlertAvatarViewModel {
   entry: LiveStreamAlertEntry;
   index: number;
+  size: number;
+  overlap: number;
 }
 
 class LiveStreamAlertAvatar extends StatefulComponent<LiveStreamAlertAvatarViewModel, { entered: boolean }> {
@@ -76,20 +78,25 @@ class LiveStreamAlertAvatar extends StatefulComponent<LiveStreamAlertAvatarViewM
   };
 
   onRender(): void {
-    const { entry, index } = this.viewModel;
+    const { entry, index, size, overlap } = this.viewModel;
     const initial = entry.username.trim().charAt(0).toUpperCase();
     <view
       ref={this.avatarRef}
       style={styles.avatarSlot.extend({
-        marginLeft: index > 0 ? -AVATAR_OVERLAP : 0,
+        borderRadius: radius.full,
+        height: size,
+        marginLeft: index > 0 ? -overlap : 0,
         zIndex: MAX_VISIBLE_AVATARS - index,
+        width: size,
       })}
       onLayout={this.handleLayout}
     >
-      <view style={styles.avatarFallback}>
+      <view style={styles.avatarFallback.extend({ height: size, width: size })}>
         <label value={initial} style={styles.avatarInitial} numberOfLines={1} />
       </view>
-      {entry.avatarUrl ? <image src={entry.avatarUrl} style={styles.avatarImage} objectFit="cover" /> : null}
+      {entry.avatarUrl ? (
+        <image src={entry.avatarUrl} style={styles.avatarImage.extend({ height: size, width: size })} objectFit="cover" />
+      ) : null}
     </view>;
   }
 }
@@ -165,6 +172,16 @@ class LiveStreamAlertPill extends StatefulComponent<LiveStreamAlertPillViewModel
 
   onRender(): void {
     const { group } = this.state;
+    const compact = this.viewModel.density === 'compact';
+    const avatarSize = compact
+      ? layout.live.viewer.streamAlerts.compactAvatarSize
+      : layout.live.viewer.streamAlerts.regularAvatarSize;
+    const avatarOverlap = compact
+      ? layout.live.viewer.streamAlerts.compactAvatarOverlap
+      : layout.live.viewer.streamAlerts.regularAvatarOverlap;
+    const pillHeight = compact
+      ? layout.live.viewer.streamAlerts.compactPillHeight
+      : layout.live.viewer.streamAlerts.regularPillHeight;
     const entries = group.entries.slice(0, MAX_VISIBLE_AVATARS);
     const firstEntry = group.entries[0];
     const singularAction = firstEntry.actionTextSingular ?? (group.type === 'share' ? 'a partagé le live' : 'a rejoint');
@@ -175,13 +192,30 @@ class LiveStreamAlertPill extends StatefulComponent<LiveStreamAlertPillViewModel
         ? `${firstEntry.username} + 1 autre ${singularAction}`
         : `${firstEntry.username} + ${group.entries.length - 1} autres ${pluralAction}`;
 
-    <view ref={this.pillRef} style={styles.pill} onLayout={this.handleLayout} touchEnabled={false}>
+    <view
+      ref={this.pillRef}
+      style={styles.pill.extend({
+        borderRadius: pillHeight / 2,
+        height: pillHeight,
+        marginLeft: compact ? 0 : spacing.md,
+        paddingLeft: compact ? spacing.xs : 4,
+        paddingRight: compact ? spacing.sm : spacing.md,
+      })}
+      onLayout={this.handleLayout}
+      touchEnabled={false}
+    >
       <view style={styles.avatarsRow}>
         {entries.forEach((entry, index) => {
-          <LiveStreamAlertAvatar key={entry.id} entry={entry} index={index} />;
+          <LiveStreamAlertAvatar
+            key={entry.id}
+            entry={entry}
+            index={index}
+            size={avatarSize}
+            overlap={avatarOverlap}
+          />;
         })}
       </view>
-      <label value={label} style={styles.label} numberOfLines={1} textOverflow="ellipsis" />
+      <label value={label} style={compact ? styles.compactLabel : styles.label} numberOfLines={1} textOverflow="ellipsis" />
     </view>;
   }
 }
@@ -238,8 +272,13 @@ export class LiveStreamAlerts extends StatefulComponent<LiveStreamAlertsViewMode
 
   onRender(): void {
     <view style={styles.layer} touchEnabled={false}>
-      {this.state.groups.forEach(group => {
-        <LiveStreamAlertPill key={group.key} group={group} onDone={this.handleGroupDone} />;
+      {this.state.groups.slice().reverse().forEach(group => {
+        <LiveStreamAlertPill
+          key={group.key}
+          group={group}
+          density={this.viewModel.density ?? 'regular'}
+          onDone={this.handleGroupDone}
+        />;
       })}
     </view>;
   }
@@ -251,9 +290,9 @@ const styles = {
     alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: colors.liveOverlaySurface,
-    borderRadius: PILL_HEIGHT / 2,
+    borderRadius: layout.live.viewer.streamAlerts.regularPillHeight / 2,
     flexDirection: 'row',
-    height: PILL_HEIGHT,
+    height: layout.live.viewer.streamAlerts.regularPillHeight,
     marginBottom: spacing.xs,
     marginLeft: spacing.md,
     maxWidth: '90%',
@@ -267,22 +306,19 @@ const styles = {
     borderColor: colors.liveActionSurface,
     borderRadius: radius.full,
     borderWidth: 1.5,
-    height: AVATAR_SIZE,
     opacity: 0,
     position: 'relative',
     scaleX: 0.3,
     scaleY: 0.3,
-    width: AVATAR_SIZE,
   }),
   avatarFallback: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.liveOverlaySurface,
     borderRadius: radius.full,
-    height: AVATAR_SIZE,
     justifyContent: 'center',
-    width: AVATAR_SIZE,
   }),
   avatarInitial: new Style<Label>({ color: colors.textInverted, font: montserrat.black(fontSize.tiny) }),
-  avatarImage: new Style<ImageView>({ borderRadius: radius.full, height: AVATAR_SIZE, left: 0, position: 'absolute', top: 0, width: AVATAR_SIZE }),
+  avatarImage: new Style<ImageView>({ borderRadius: radius.full, left: 0, position: 'absolute', top: 0 }),
   label: new Style<Label>({ color: colors.textInverted, flexShrink: 1, font: montserrat.semiBold(fontSize.metadata), marginLeft: spacing.sm, minWidth: 0 }),
+  compactLabel: new Style<Label>({ color: colors.textInverted, flexShrink: 1, font: montserrat.semiBold(fontSize.tiny), marginLeft: spacing.xs, minWidth: 0 }),
 };

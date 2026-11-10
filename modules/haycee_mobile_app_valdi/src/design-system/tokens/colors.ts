@@ -68,7 +68,6 @@ export const colors = {
   liveChatRoleOrganizer: '#F2C45F',
   /** Dark translucent moderator badge surface keeps its white label legible over video. */
   liveChatRoleModerator: 'rgba(0, 0, 0, 0.46)',
-  liveViewerBadgeGradient: `linear-gradient(135deg, rgba(137, 35, 160, 0.7) 0%, #F1A322 22.58%, ${palette.brandPurple} 100%)`,
   liveControlSurface: 'rgba(255, 255, 255, 0.88)',
   liveChatSurface: 'rgba(255, 255, 255, 0.76)',
   liveIndicatorGradient: `linear-gradient(${palette.red}, ${palette.brandPurple})`,

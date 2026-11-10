@@ -17,7 +17,6 @@ import { createDemoSellerLiveItems, createDemoSellerStoreProducts } from '../sel
 import { LiveViewerOverlay } from './components/LiveViewerOverlay';
 import { LiveReactionTrail } from './components/LiveReactionTrail';
 import { UpcomingLiveScreen } from './UpcomingLiveScreen';
-import { LiveStreamAlerts } from './components/LiveStreamAlerts';
 import type { LiveStreamAlertEntry, LiveStreamAlertType } from './components/LiveStreamAlerts';
 import { LiveProductsSheet } from './components/LiveProductsSheet';
 import { LiveProductPurchaseSheet } from './components/LiveProductPurchaseSheet';
@@ -26,6 +25,7 @@ import { LiveRequestSheet } from './components/LiveRequestSheet';
 import { LiveSellerProfileSheet } from './components/LiveSellerProfileSheet';
 import { LiveFollowPromptSheet } from './components/LiveFollowPromptSheet';
 import { LiveWalletSheet } from './components/LiveWalletSheet';
+import { LiveOrdersSheet } from './components/LiveOrdersSheet';
 import { LiveViewerHeader } from './components/LiveViewerHeader';
 import { hasOpenLiveSheet, observeLiveSheetVisibility } from './LiveSheetVisibility';
 import type { LiveFeedItem } from './data/LiveFeedData';
@@ -467,7 +467,18 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     runNavigationAction(this.navigationController, () => {
       this.navigationController.present(
         LiveWalletSheet,
+        { liveId: this.viewModel.item.id },
         {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions({ transparentPageBackground: true }) },
+      );
+    });
+  };
+
+  private handleOrders = (): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveOrdersSheet,
+        { liveId: this.viewModel.item.id },
         {},
         {
           animated: true,
@@ -581,6 +592,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
         {isLive ? (
           <LiveViewerOverlay
             messages={this.state.messages}
+            streamAlertEntries={this.state.streamAlertEntries}
             pinnedMessage={this.state.pinnedMessage}
             commentDraft={this.state.commentDraft}
             products={content.products}
@@ -588,6 +600,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
             onDraftChange={this.handleDraftChange}
             onSendComment={this.handleSendComment}
             onWallet={this.handleWallet}
+            onOrders={this.handleOrders}
             onOpenCart={this.handleOpenCart}
             onOpenRequest={this.handleOpenRequestSheet}
             onOpenProducts={this.handleProducts}
@@ -595,11 +608,6 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
         ) : null}
       </view>
 
-      {isLive ? (
-        <view style={styles.joinAlertPosition.extend({ top: topInset + 88 })}>
-          <LiveStreamAlerts entries={this.state.streamAlertEntries} />
-        </view>
-      ) : null}
     </view>;
   }
 }
@@ -627,11 +635,5 @@ const styles = {
     alignItems: 'stretch',
     flexGrow: 1,
     flexShrink: 1,
-  }),
-  joinAlertPosition: new Style<View>({
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    zIndex: 4,
   }),
 };

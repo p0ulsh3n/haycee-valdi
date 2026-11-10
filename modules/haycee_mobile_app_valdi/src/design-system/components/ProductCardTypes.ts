@@ -48,3 +48,28 @@ export interface ProductOffer {
   };
   endsAt?: string;
 }
+
+/** A selectable value for a product variant axis such as size, color or shade. */
+export interface ProductVariantOption {
+  id: string;
+  label: string;
+  /** Optional native color swatch for color-based options. */
+  swatchColor?: string;
+  /** Optional option-level inventory when the API does not send combinations. */
+  remaining?: number;
+}
+
+/** Dynamic variant axis; labels and options come from product data/API mapping. */
+export interface ProductVariantGroup {
+  id: string;
+  label: string;
+  options: ProductVariantOption[];
+}
+
+/** Inventory for one concrete combination across the product's variant groups. */
+export interface ProductVariantCombination {
+  id: string;
+  selections: Array<{ groupId: string; optionId: string }>;
+  remaining: number;
+  total?: number;
+}

@@ -1,9 +1,8 @@
 import { Device } from 'valdi_core/src/Device';
-import { ElementRef } from 'valdi_core/src/ElementRef';
 import { createReusableCallback } from 'valdi_core/src/utils/Callback';
 import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
-import { Label, Layout, ScrollView, ScrollViewInteractive, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../res/navigation-icons';
 import { MasonryFeed, getMasonryImageAspectRatio } from '../design-system/components/MasonryFeed';
 import type { MasonryItem } from '../design-system/components/MasonryFeed';
@@ -29,13 +28,6 @@ const CART_RECOMMENDATIONS: HomeProduct[] = homeCategoryDefinitions
 
 /** Empty cart landing page followed by the shared two-column recommendation feed. */
 export class CartScreen extends Component<CartScreenViewModel> {
-  private readonly scrollRef = new ElementRef<ScrollViewInteractive>();
-
-  onCreate(): void {
-    // ScrollViewInteractive exposes nativeStickyEnabled as a programmatic-only attribute.
-    this.scrollRef.setAttribute('nativeStickyEnabled', true);
-  }
-
   private estimateItemHeight = (item: MasonryItem, columnWidth: number): number => (
     Math.round(columnWidth * getMasonryImageAspectRatio(item)) + 100
   );
@@ -58,7 +50,6 @@ export class CartScreen extends Component<CartScreenViewModel> {
   private renderAddressSelector(topInset: number): void {
     <view
       style={styles.addressSelector.extend({ paddingTop: topInset + spacing.sm })}
-      stickyPosition="top"
       onTap={this.viewModel.onSelectAddress}
       accessibilityCategory="button"
       accessibilityLabel={this.viewModel.selectedAddress ?? 'Sélectionner une adresse'}
@@ -87,13 +78,12 @@ export class CartScreen extends Component<CartScreenViewModel> {
     const bottomInset = Math.max(0, Device.getDisplayBottomInset());
 
     <view style={styles.root}>
+      {this.renderAddressSelector(topInset)}
       <scroll
         {...noBounceScrollAttributes}
-        ref={this.scrollRef}
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {this.renderAddressSelector(topInset)}
         {this.renderEmptyState()}
         <label value="Vous pourriez aimer" style={styles.recommendationTitle} numberOfLines={1} />
         <MasonryFeed
@@ -110,10 +100,10 @@ export class CartScreen extends Component<CartScreenViewModel> {
 }
 
 const styles = {
-  root: new Style<View>({ backgroundColor: colors.backgroundPrimary, flexGrow: 1, flexShrink: 1 }),
+  root: new Style<View>({ backgroundColor: colors.backgroundPrimary, flexDirection: 'column', flexGrow: 1, flexShrink: 1 }),
   scroll: new Style<ScrollView>({ backgroundColor: colors.backgroundPrimary, flexGrow: 1, flexShrink: 1 }),
   addressSelector: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundPrimary, flexDirection: 'row', height: 64, paddingBottom: spacing.md, paddingLeft: spacing.lg, paddingRight: spacing.lg }),
-  addressLabel: new Style<Label>({ color: colors.textPrimary, flexShrink: 1, font: montserrat.regular(fontSize.large) }),
+  addressLabel: new Style<Label>({ color: colors.textPrimary, flexShrink: 1, font: montserrat.semiBold(fontSize.product) }),
   addressChevron: new Style<View>({ flexShrink: 0, marginLeft: spacing.xs }),
   emptyCard: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.xl, flexDirection: 'row', justifyContent: 'space-between', marginLeft: spacing.lg, marginRight: spacing.lg, marginTop: spacing.xs, padding: spacing.lg }),
   emptyCopy: new Style<View>({ flexDirection: 'column', flexGrow: 1, flexShrink: 1, marginRight: spacing.md }),

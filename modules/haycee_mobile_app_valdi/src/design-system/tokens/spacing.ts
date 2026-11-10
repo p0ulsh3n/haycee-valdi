@@ -48,6 +48,15 @@ export const layout = {
       tickerHeight: 19,
       transitionDurationMilliseconds: 850,
     },
+    variantSelectionSheet: {
+      /** Compact modal height; long option lists scroll inside this fixed sheet. */
+      height: '62%',
+      /** Comfortable footer action target for variant selection. */
+      footerButtonHeight: 54,
+      galleryItemWidth: 136,
+      /** Ratio midpoint for choosing the supported square or portrait preview frame. */
+      squareRatioThreshold: 0.875,
+    },
   },
   home: {
     header: {
@@ -162,7 +171,6 @@ export const layout = {
       sellerAvatarSize: 32,
       /** Shared outline thickness for controls layered over Live video. */
       glassBorderWidth: 1,
-      viewerBadgeGradientWidth: 2,
       chatHeight: 208,
       composerHeight: 40,
       productQuickAccessSize: 44,
@@ -186,9 +194,18 @@ export const layout = {
       newMessagesPillWidth: 204,
       /** Reserved strip above the Live chat viewport while a seller comment is pinned. */
       pinnedCommentHeight: 68,
+      streamAlerts: {
+        regularAvatarSize: 28,
+        regularAvatarOverlap: 10,
+        regularPillHeight: 36,
+        compactAvatarSize: 22,
+        compactAvatarOverlap: 8,
+        compactPillHeight: 30,
+      },
       wallet: {
         tabHeight: 44,
       },
+      ordersTabWidth: 112,
     },
   },
 } as const;

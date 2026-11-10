@@ -10,7 +10,10 @@ import { SnackBarComponent, TransientFeedback } from './design-system/components
 import { layout } from './design-system/tokens/spacing';
 import navigationIcons from '../res/navigation-icons';
 import { ProductDetailScreen } from './products/ProductDetailScreen';
+import { ProductVariantSelectionSheet, getProductVariantGroups } from './products/ProductVariantSelectionSheet';
+import type { ProductVariantSelectionIntent } from './products/ProductVariantSelectionSheet';
 import type { HomeCollectionKind, HomeProduct } from './home/components/HomeProductRail';
+import type { MasonryProduct } from './design-system/components/MasonryProductCard';
 import { ConversationScreen } from './messaging/ConversationScreen';
 import { ConversationPreview } from './messaging/MessagingTypes';
 import { LiveViewerScreen } from './live/LiveViewerScreen';
@@ -22,6 +25,7 @@ import { SearchScreen } from './search/SearchScreen';
 import { SellerProfileScreen } from './sellers/SellerProfileScreen';
 import { HomeCategoriesScreen } from './home/HomeCategoriesScreen';
 import { AddressPickerSheet } from './cart/AddressPickerSheet';
+import { getBottomSheetNavigationOptions } from './design-system/components/BottomSheet';
 import { colors } from './design-system/tokens/colors';
 import { runNavigationAction } from './design-system/utils/NavigationActionGate';
 
@@ -79,7 +83,7 @@ export class App extends StatefulComponent<AppViewModel, AppState, AppComponentC
         {
           animated: true,
           wrapInPlatformNavigationController: false,
-          pageBackgroundColor: colors.backgroundDark,
+          pageBackgroundColor: colors.backgroundPrimary,
         },
       );
     });
@@ -131,7 +135,35 @@ export class App extends StatefulComponent<AppViewModel, AppState, AppComponentC
     });
   };
 
-  private handleQuickAdd = (): void => {
+  private openProductVariantSheet = (product: MasonryProduct, intent: ProductVariantSelectionIntent): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.present(
+        ProductVariantSelectionSheet,
+        {
+          product,
+          intent,
+          onAddToCart: selectedProduct => {
+            TransientFeedback.show({
+              message: `${selectedProduct.title} ajouté au panier`,
+              icon: navigationIcons.shoppingCartAdd02,
+              duration: 2200,
+            });
+          },
+          onBuyNow: selectedProduct => {
+            TransientFeedback.show({ message: `Passage au paiement pour ${selectedProduct.title}`, duration: 2200 });
+          },
+        },
+        {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions({ transparentPageBackground: true }) },
+      );
+    });
+  };
+
+  private handleQuickAdd = (product: HomeProduct): void => {
+    if (getProductVariantGroups(product).length > 0) {
+      this.openProductVariantSheet(product, 'add-to-cart');
+      return;
+    }
     TransientFeedback.show({
       message: 'Votre article a été ajouté au panier',
       icon: navigationIcons.shoppingCartAdd02,

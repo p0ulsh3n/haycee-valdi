@@ -5,8 +5,10 @@ import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
 import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../res/navigation-icons';
+import { DSButton } from '../design-system/components/DSButton';
+import { Hairline } from '../design-system/components/Hairline';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
-import { colors, palette } from '../design-system/tokens/colors';
+import { colors } from '../design-system/tokens/colors';
 import { radius } from '../design-system/tokens/radius';
 import { spacing } from '../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../design-system/tokens/typography';
@@ -78,7 +80,7 @@ export class AddressPickerSheet extends NavigationPageStatefulComponent<AddressP
       {this.state.selectedAddress ? (
         <view style={styles.addressGroup}>
           {this.renderLocation(this.state.selectedAddress)}
-          <view style={styles.groupDivider} />
+          <Hairline />
           {this.renderAddLocation()}
         </view>
       ) : (
@@ -94,7 +96,7 @@ export class AddressPickerSheet extends NavigationPageStatefulComponent<AddressP
       accessibilityCategory="button"
       accessibilityLabel="Ajouter un point relais"
     >
-      <image src={navigationIcons.add01} tint={colors.textOnDarkSecondary} width={26} height={26} objectFit="contain" />
+      <image src={navigationIcons.add01} tint={colors.textSecondary} width={26} height={26} objectFit="contain" />
       <label value="Ajouter un point relais" style={styles.addLocationLabel} numberOfLines={1} />
     </view>;
   }
@@ -103,7 +105,7 @@ export class AddressPickerSheet extends NavigationPageStatefulComponent<AddressP
     <view style={styles.bodyContent}>
       <view style={styles.choicesHeading}>
         <view style={styles.backButton} onTap={this.returnToAddress} accessibilityCategory="button" accessibilityLabel="Retour">
-          <image src={navigationIcons.arrowLeft01Round} tint={colors.textInverted} width={20} height={20} objectFit="contain" />
+          <image src={navigationIcons.arrowLeft01Round} tint={colors.textPrimary} width={20} height={20} objectFit="contain" />
         </view>
         <label value="Choisir un point relais" style={styles.sectionTitle} numberOfLines={1} />
       </view>
@@ -135,46 +137,42 @@ export class AddressPickerSheet extends NavigationPageStatefulComponent<AddressP
           style={styles.footerNote}
           numberOfLines={2}
         />
-        <view
-          style={hasAddress ? styles.saveButton : styles.saveButtonDisabled}
-          onTap={hasAddress ? this.save : undefined}
-          accessibilityCategory="button"
+        <DSButton
+          title="Enregistrer"
+          variant="cta"
+          size="fullWidth"
+          height={56}
+          textCase="none"
+          onTap={this.save}
+          disabled={!hasAddress}
           accessibilityLabel="Enregistrer l’adresse"
-          accessibilityStateDisabled={!hasAddress}
-        >
-          <label value="Enregistrer" style={hasAddress ? styles.saveLabel : styles.saveLabelDisabled} numberOfLines={1} />
-        </view>
+        />
       </view>
     </view>;
   }
 }
 
 const styles = {
-  root: new Style<View>({ backgroundColor: colors.backgroundDark, flexDirection: 'column', flexGrow: 1, height: '100%', width: '100%' }),
-  header: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundBrand, flexDirection: 'row', height: 58, justifyContent: 'space-between', paddingLeft: spacing.lg, paddingRight: spacing.lg, width: '100%' }),
+  root: new Style<View>({ backgroundColor: colors.backgroundPrimary, flexDirection: 'column', flexGrow: 1, height: '100%', width: '100%' }),
+  header: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundPrimary, flexDirection: 'row', height: 58, justifyContent: 'space-between', paddingLeft: spacing.lg, paddingRight: spacing.lg, width: '100%' }),
   headerSide: new Style<View>({ width: 64 }),
-  headerTitle: new Style<Label>({ color: colors.textInverted, flexGrow: 1, font: montserrat.extraBold(fontSize.section), textAlign: 'center' }),
+  headerTitle: new Style<Label>({ color: colors.textPrimary, flexGrow: 1, font: montserrat.extraBold(fontSize.section), textAlign: 'center' }),
   closeButton: new Style<View>({ alignItems: 'flex-end', justifyContent: 'center', width: 64 }),
-  closeLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.product) }),
-  content: new Style<ScrollView>({ backgroundColor: colors.backgroundDark, flexGrow: 1, flexShrink: 1 }),
+  closeLabel: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.product) }),
+  content: new Style<ScrollView>({ backgroundColor: colors.backgroundPrimary, flexGrow: 1, flexShrink: 1 }),
   bodyContent: new Style<View>({ flexDirection: 'column', paddingBottom: spacing.xl, paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.xl }),
-  sectionTitle: new Style<Label>({ color: colors.textInverted, flexGrow: 1, flexShrink: 1, font: montserrat.extraBold(fontSize.product) }),
-  addressGroup: new Style<View>({ backgroundColor: palette.gray900, borderRadius: radius.lg, flexDirection: 'column', marginTop: spacing.lg, width: '100%' }),
+  sectionTitle: new Style<Label>({ color: colors.textPrimary, flexGrow: 1, flexShrink: 1, font: montserrat.extraBold(fontSize.product) }),
+  addressGroup: new Style<View>({ backgroundColor: colors.backgroundSecondary, borderRadius: radius.lg, flexDirection: 'column', marginTop: spacing.lg, width: '100%' }),
   locationRow: new Style<View>({ alignItems: 'center', flexDirection: 'row', minHeight: 64, paddingBottom: spacing.md, paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.md, width: '100%' }),
   locationRowSelected: new Style<View>({ alignItems: 'center', flexDirection: 'row', minHeight: 72, paddingBottom: spacing.md, paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.md, width: '100%' }),
-  radio: new Style<View>({ alignItems: 'center', borderColor: palette.gray500, borderRadius: radius.full, borderWidth: 2, flexShrink: 0, height: 24, justifyContent: 'center', marginRight: spacing.md, width: 24 }),
+  radio: new Style<View>({ alignItems: 'center', borderColor: colors.borderDefault, borderRadius: radius.full, borderWidth: 2, flexShrink: 0, height: 24, justifyContent: 'center', marginRight: spacing.md, width: 24 }),
   radioSelected: new Style<View>({ alignItems: 'center', borderColor: colors.backgroundBrand, borderRadius: radius.full, borderWidth: 2, flexShrink: 0, height: 24, justifyContent: 'center', marginRight: spacing.md, width: 24 }),
   radioDot: new Style<View>({ backgroundColor: colors.backgroundBrand, borderRadius: radius.full, height: 12, width: 12 }),
-  locationLabel: new Style<Label>({ color: colors.textInverted, flexGrow: 1, flexShrink: 1, font: montserrat.semiBold(fontSize.product) }),
-  groupDivider: new Style<View>({ backgroundColor: palette.gray800, height: 1, width: '100%' }),
+  locationLabel: new Style<Label>({ color: colors.textPrimary, flexGrow: 1, flexShrink: 1, font: montserrat.semiBold(fontSize.product) }),
   addLocationRow: new Style<View>({ alignItems: 'center', flexDirection: 'row', minHeight: 72, paddingBottom: spacing.md, paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.md, width: '100%' }),
-  addLocationLabel: new Style<Label>({ color: colors.textInverted, flexGrow: 1, flexShrink: 1, font: montserrat.regular(fontSize.product), marginLeft: spacing.lg }),
+  addLocationLabel: new Style<Label>({ color: colors.textPrimary, flexGrow: 1, flexShrink: 1, font: montserrat.regular(fontSize.product), marginLeft: spacing.lg }),
   choicesHeading: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginBottom: spacing.sm }),
   backButton: new Style<View>({ alignItems: 'center', height: 36, justifyContent: 'center', marginRight: spacing.sm, width: 36 }),
-  footer: new Style<View>({ backgroundColor: colors.backgroundDark, flexDirection: 'column', paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.md, width: '100%' }),
-  footerNote: new Style<Label>({ alignSelf: 'center', color: colors.textOnDarkSecondary, font: montserrat.regular(fontSize.metadata), marginBottom: spacing.md, textAlign: 'center' }),
-  saveButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonPrimary, borderRadius: radius.full, height: 56, justifyContent: 'center', width: '100%' }),
-  saveButtonDisabled: new Style<View>({ alignItems: 'center', backgroundColor: palette.gray800, borderRadius: radius.full, height: 56, justifyContent: 'center', width: '100%' }),
-  saveLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.product) }),
-  saveLabelDisabled: new Style<Label>({ color: palette.gray500, font: montserrat.extraBold(fontSize.product) }),
+  footer: new Style<View>({ backgroundColor: colors.backgroundPrimary, flexDirection: 'column', paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.md, width: '100%' }),
+  footerNote: new Style<Label>({ alignSelf: 'center', color: colors.textSecondary, font: montserrat.regular(fontSize.metadata), marginBottom: spacing.md, textAlign: 'center' }),
 };

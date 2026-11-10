@@ -27,6 +27,9 @@ import { spacing } from '../design-system/tokens/spacing';
 import { fontSize, montserrat, typography, transformText } from '../design-system/tokens/typography';
 import { MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { ProductImageViewerScreen } from './ProductImageViewerScreen';
+import { ProductVariantSelectionSheet, getProductVariantGroups } from './ProductVariantSelectionSheet';
+import type { ProductVariantSelectionIntent } from './ProductVariantSelectionSheet';
+import { getBottomSheetNavigationOptions } from '../design-system/components/BottomSheet';
 import { SellerProfileScreen } from '../sellers/SellerProfileScreen';
 
 export interface ProductDetailViewModel {
@@ -204,8 +207,33 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   };
 
   private handleBuyNow = (): void => {
+    if (this.openProductVariantSheet(this.viewModel.product, 'buy-now')) return;
     this.showFeedback('Passage au paiement');
   };
+
+  private openProductVariantSheet(product: MasonryProduct, intent: ProductVariantSelectionIntent): boolean {
+    if (getProductVariantGroups(product).length === 0) return false;
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        ProductVariantSelectionSheet,
+        {
+          product,
+          intent,
+          onAddToCart: selectedProduct => {
+            TransientFeedback.show({
+              message: `${selectedProduct.title} ajouté au panier`,
+              icon: navigationIcons.shoppingCartAdd02,
+              duration: 2200,
+            });
+          },
+          onBuyNow: selectedProduct => this.showFeedback(`Passage au paiement pour ${selectedProduct.title}`),
+        },
+        {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions({ transparentPageBackground: true }) },
+      );
+    });
+    return true;
+  }
 
   private handleMessageSeller = (): void => {
     this.showFeedback('Contacter le vendeur');
@@ -363,7 +391,9 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
       product={product}
       columnWidth={columnWidth}
       onTap={createReusableCallback(() => this.handleRecommendationTap(product, recommendations))}
-      onQuickAdd={createReusableCallback(() => this.showFeedback('Ajouté au panier'))}
+      onQuickAdd={createReusableCallback(() => {
+        if (!this.openProductVariantSheet(product, 'add-to-cart')) this.showFeedback('Ajouté au panier');
+      })}
     />;
   };
 
@@ -446,6 +476,7 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   }
 
   private handleAddToCart = (): void => {
+    if (this.openProductVariantSheet(this.viewModel.product, 'add-to-cart')) return;
     TransientFeedback.show({
       message: 'Votre article a été ajouté au panier',
       icon: navigationIcons.shoppingCartAdd02,

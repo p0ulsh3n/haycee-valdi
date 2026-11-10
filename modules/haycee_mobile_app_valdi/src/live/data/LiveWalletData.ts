@@ -9,6 +9,8 @@ export interface LiveWalletTransaction {
 
 export interface LiveWalletOrder {
   id: string;
+  /** Live session that produced this order; absent for boutique/storefront purchases. */
+  liveId?: string;
   storeName: string;
   date: string;
   items: LiveWalletOrderItem[];
@@ -42,3 +44,11 @@ export const LIVE_WALLET_ORDERS: LiveWalletOrder[] = [
   { id: 'wallet-order-07', storeName: 'Boutique Haycee', date: '02 octobre · 19:37', items: [{ id: 'order-07-item-01', title: 'La découverte du live', quantity: 1, unitPrice: 32900 }, { id: 'order-07-item-02', title: 'Dernière nouveauté', quantity: 1, unitPrice: 41750 }], totalAmount: 74650, status: 'Livrée' },
   { id: 'wallet-order-08', storeName: 'Atelier Nadia', date: '26 septembre · 10:52', items: [{ id: 'order-08-item-01', title: 'Accessoire du quotidien', quantity: 1, unitPrice: 14500 }], totalAmount: 14500, status: 'Livrée' },
 ];
+
+/** Local-only order examples scoped to the currently open Live session. */
+export const getDemoLiveOrdersForSession = (liveId: string): LiveWalletOrder[] =>
+  LIVE_WALLET_ORDERS.slice(0, 2).map((order, index) => ({
+    ...order,
+    id: `${liveId}-demo-order-${index + 1}`,
+    liveId,
+  }));
