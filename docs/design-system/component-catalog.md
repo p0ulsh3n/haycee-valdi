@@ -8,7 +8,7 @@ Source: `modules/haycee_mobile_app_valdi/src/design-system/tokens/`.
 
 | Token module | Shared responsibility | Rule |
 | --- | --- | --- |
-| `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, border, icon, product, stock-progress, messaging and Live colors, including chat-role badge surfaces and the shared near-black unread-count surface | Prefer a semantic token. Add a named token before using a new app-wide color. |
+| `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, border, icon, product, stock-progress, messaging and Live colors, including the shared 16%-alpha dark Live overlay surface, chat-role badge surfaces, the near-black unread-count surface and the Live shipping-line text gradient with explicit native-compatible stops | Prefer a semantic token. Add a named token before using a new app-wide color. |
 | `typography.ts` | Montserrat Regular, SemiBold, ExtraBold, Black; font sizes, line heights, named typography styles, `TextCase`, `transformText` | Do not load another font face or invent per-screen typography for a repeated role. Default text case is uppercase; set casing deliberately. |
 | `spacing.ts` | 4-point spacing scale and nested screen/layout measurements | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
 | `radius.ts` | Shared corner-radius scale | Reuse a semantic radius. Add a token for a repeated design role. |
@@ -68,9 +68,10 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | --- | --- |
 | `MasonryFeed` | Shared masonry feed layout and column/aspect-ratio helpers. |
 | `MasonryProductCard` | Reusable product card for masonry contexts. |
-| `LiveProductCard` | Live glass strip with a larger 1:1 or 3:4 thumbnail, padded content, two-line truncated title with a total-stock pill, price beneath the title, variant availability in a compact ticker, and a bottom row with the shipping fee aligned under the thumbnail, a `DSInlineLink` to view more, and a shared CTA `Acheter` button at the right. |
+| `LiveProductCard` | Live product strip with an optional blurred/translucent surface (enabled by default), a larger 1:1 or 3:4 thumbnail, two-line truncated title with a total-stock pill, price beneath the title, variant availability in a compact ticker, and a bottom row with a delivery truck or expedition plane, gradient shipping fees including the FCFA amount, and the shared CTA `Acheter` button aligned to one control height. |
 | `LiveProductPurchaseSheet` | Live purchase configuration for an in-stock product: summary, explicit variant selection when present, sold-out variant disabling, stock-bounded quantity, shipping estimate, total, and an intent-aware footer (`Ajouter au panier` or `Acheter`). The featured Live card opens it for its selected product; auction rows in the product list keep their separate auction affordance. |
 | `LiveChatRoleBadge` | Compact organizer/moderator marker beside a Live chat username; role and semantic surface are supplied by the message data. |
+| `PinnedLiveComment` | Live-domain callout above the scrolling chat for a host-pinned comment. It has no outline, uses the shared Live surface and tokens, and animates in/out independently while the regular chat remains scrollable below. |
 | `NewMessagesPill` | Compact opaque near-black pill over a chat feed, with a fixed leading white icon and white unread count. It enters/exits with a short native slide/fade and returns to the newest message only when tapped. The Live feed follows incoming messages only while already near the bottom; otherwise it leaves the current scroll offset unchanged and accumulates unread messages until the reader returns to the bottom threshold. |
 | `LiveViewerScreen` | Full-screen Live composition. Its local demo chat can add incoming fixture messages at varied intervals while visible; each new row enters with a short, subtle native fade/translation, the feed pauses under Live sheets/background navigation, and recent history is bounded. |
 | `ImageCarousel` | Shared image gallery/carousel and gesture paging. |
@@ -80,7 +81,7 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | `ProductRatingSummary` | Shared rating threshold and rating/avis display. |
 | `ProductStockIndicator` | Shared pill-shaped stock progress and availability label; uses the starting stock total, supports a low-stock threshold, and takes its height/minimum width from product layout tokens. |
 | `ProductStockCountPill` | Reusable compact total-stock pill (`STOCK : X`) with configurable surface and text colors. |
-| `ProductVariantStockPreview` | Fixed-height vertical ticker for variant-combination inventory. Cycles through all combinations two at a time, showing each combination's own available, low-stock or sold-out status. |
+| `ProductVariantStockPreview` | Fixed-height vertical ticker for variant-combination inventory. Cycles through all combinations one at a time, showing each combination's own available, low-stock or sold-out status. |
 | `ProductCardTypes` | Shared product-card data contracts, not a rendered component. |
 | `SkeletonView` | Reusable skeleton shape/animation. |
 | `SkeletonLoadingContainer` | Screen/content loading boundary that coordinates skeleton display and interaction state. |

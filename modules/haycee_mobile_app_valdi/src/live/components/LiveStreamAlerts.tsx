@@ -250,7 +250,7 @@ const styles = {
   pill: new Style<View>({
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: colors.liveActionSurface,
+    backgroundColor: colors.liveOverlaySurface,
     borderRadius: PILL_HEIGHT / 2,
     flexDirection: 'row',
     height: PILL_HEIGHT,
@@ -276,7 +276,7 @@ const styles = {
   }),
   avatarFallback: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.liveActionSurface,
+    backgroundColor: colors.liveOverlaySurface,
     borderRadius: radius.full,
     height: AVATAR_SIZE,
     justifyContent: 'center',

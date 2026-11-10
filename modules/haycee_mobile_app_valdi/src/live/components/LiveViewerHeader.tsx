@@ -5,6 +5,7 @@ import { Style } from 'valdi_core/src/Style';
 import { Asset } from 'valdi_tsx/src/Asset';
 import { ImageView, Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
+import { DSButton } from '../../design-system/components/DSButton';
 import { Ticker } from '../../design-system/components/Ticker';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
@@ -37,10 +38,7 @@ export class LiveViewerHeader extends Component<LiveViewerHeaderViewModel> {
       <layout style={styles.identityRow}>
         <view style={styles.sellerPill}>
           <view style={styles.profileTapArea} onTap={this.viewModel.onOpenProfile} accessibilityCategory="button" accessibilityLabel={`Profil de ${item.hostName}`}>
-            <view style={styles.avatar.extend({
-              backgroundColor: item.panelColor,
-              borderWidth: item.vendorAvatarUrl ? 0 : 2,
-            })}>
+            <view style={styles.avatar.extend({ backgroundColor: item.panelColor })}>
               <label value={initials} style={styles.avatarLabel} numberOfLines={1} />
               {item.vendorAvatarUrl ? (
                 <image src={item.vendorAvatarUrl} style={styles.avatarPhoto} objectFit="cover" />
@@ -51,7 +49,7 @@ export class LiveViewerHeader extends Component<LiveViewerHeaderViewModel> {
               <layout style={styles.sellerChips}>
                 {item.vendorRating ? (
                   <view style={styles.sellerChip}>
-                    <image src={navigationIcons.sellerRatingStarBold} tint={colors.textInverted} width={10} height={10} objectFit="contain" />
+                    <image src={navigationIcons.sellerRatingStarBold} tint={colors.textInverted} width={8} height={8} objectFit="contain" />
                     <label value={item.vendorRating} style={styles.sellerStatLabel} numberOfLines={1} textOverflow="ellipsis" />
                   </view>
                 ) : null}
@@ -73,16 +71,17 @@ export class LiveViewerHeader extends Component<LiveViewerHeaderViewModel> {
               </layout>
             </view>
           </view>
-          <view
-            style={this.viewModel.isFollowing ? styles.followButtonActive : styles.followButton}
-            onTap={this.viewModel.onToggleFollow}
-            accessibilityCategory="button"
-            accessibilityLabel={this.viewModel.isFollowing ? 'Ne plus suivre la boutique' : 'Suivre la boutique'}
-          >
-            <label
-              value={this.viewModel.isFollowing ? 'Suivi' : 'Suivre'}
-              style={this.viewModel.isFollowing ? styles.followLabelActive : styles.followLabel}
-              numberOfLines={1}
+          <view style={styles.followButtonSlot}>
+            <DSButton
+              title={this.viewModel.isFollowing ? 'Suivi' : 'Suivre'}
+              variant={this.viewModel.isFollowing ? 'neutral' : 'cta'}
+              size="compact"
+              width={72}
+              height={26}
+              labelTranslationY={-1.5}
+              onTap={this.viewModel.onToggleFollow}
+              accessibilityLabel={this.viewModel.isFollowing ? 'Ne plus suivre la boutique' : 'Suivre la boutique'}
+              textCase="none"
             />
           </view>
         </view>
@@ -245,13 +244,11 @@ const styles = {
     paddingTop: spacing.sm,
   }),
   identityRow: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }),
-  sellerPill: new Style<View>({ alignItems: 'center', backgroundColor: colors.liveActionSurface, borderRadius: radius.full, flexDirection: 'row', flexGrow: 0, flexShrink: 1, minWidth: 0, padding: 1, width: '58%' }),
+  sellerPill: new Style<View>({ alignItems: 'center', backgroundColor: colors.liveOverlaySurface, borderRadius: radius.full, flexDirection: 'row', flexGrow: 0, flexShrink: 1, height: layout.live.viewer.sellerAvatarSize, minWidth: 0, paddingRight: spacing.xs, width: '58%' }),
   profileTapArea: new Style<View>({ alignItems: 'center', flexDirection: 'row', flexGrow: 1, flexShrink: 1, minWidth: 0 }),
   avatar: new Style<View>({
     alignItems: 'center',
-    borderColor: colors.liveControlSurface,
     borderRadius: radius.full,
-    borderWidth: 2,
     height: layout.live.viewer.sellerAvatarSize,
     justifyContent: 'center',
     position: 'relative',
@@ -273,10 +270,7 @@ const styles = {
   sellerStatLabel: new Style<Label>({ color: colors.textInverted, flexShrink: 1, font: montserrat.semiBold(fontSize.nano), marginLeft: 3, minWidth: 0 }),
   heartStat: new Style<View>({ alignItems: 'center', flexDirection: 'row', flexShrink: 0, marginLeft: spacing.sm }),
   headerActions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginLeft: spacing.sm }),
-  followButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.interactivePrimary, borderRadius: radius.full, flexDirection: 'row', flexShrink: 0, height: 26, justifyContent: 'center', marginLeft: 2, width: 72 }),
-  followButtonActive: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonNeutral, borderRadius: radius.full, flexDirection: 'row', flexShrink: 0, height: 26, justifyContent: 'center', marginLeft: 2, width: 72 }),
-  followLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.label) }),
-  followLabelActive: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.label) }),
+  followButtonSlot: new Style<View>({ alignItems: 'center', flexShrink: 0, height: '100%', justifyContent: 'center', marginLeft: 2, width: 72 }),
   viewerBadgeGradient: new Style<View>({
     alignItems: 'center',
     borderRadius: radius.full,
@@ -286,7 +280,7 @@ const styles = {
   }),
   viewerBadge: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.liveActionSurface,
+    backgroundColor: colors.liveOverlaySurface,
     borderRadius: radius.full,
     flexDirection: 'row',
     paddingLeft: 0,
@@ -304,13 +298,13 @@ const styles = {
   viewerCount: new Style<Label>({ color: colors.textInverted, flexShrink: 0, font: montserrat.extraBold(fontSize.micro), marginLeft: 2, minWidth: 34, textAlign: 'center' }),
   shareButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.liveActionSurface,
+    backgroundColor: colors.liveOverlaySurface,
     borderRadius: radius.full,
     height: layout.live.viewer.headerButtonSize,
     justifyContent: 'center',
     width: layout.live.viewer.headerButtonSize,
   }),
-  logisticsPill: new Style<View>({ alignItems: 'center', backgroundColor: colors.liveActionSurface, borderRadius: radius.sm, flexDirection: 'row', flexShrink: 1, minWidth: 0, paddingBottom: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.xs }),
+  logisticsPill: new Style<View>({ alignItems: 'center', backgroundColor: colors.liveOverlaySurface, borderRadius: radius.sm, flexDirection: 'row', flexShrink: 1, minWidth: 0, paddingBottom: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.xs }),
   logisticsTickerFrame: new Style<View>({ flexShrink: 0, height: 16 }),
   logisticsTicker: new Style<ScrollView>({ flexGrow: 1, flexShrink: 1, height: 16, minWidth: 0, width: '100%' }),
   logisticsTickerText: new Style<Label>({ color: colors.textInverted, flexGrow: 1, flexShrink: 1, font: montserrat.semiBold(fontSize.tiny), textAlign: 'left', translationY: -4.5 }),
@@ -318,7 +312,7 @@ const styles = {
   shareRowSpacer: new Style<View>({ flexGrow: 1, flexShrink: 1 }),
   closeButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.liveActionSurface,
+    backgroundColor: colors.liveOverlaySurface,
     borderRadius: radius.full,
     height: layout.live.viewer.headerButtonSize,
     justifyContent: 'center',

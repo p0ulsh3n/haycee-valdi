@@ -7,7 +7,6 @@ import { radius } from '../../design-system/tokens/radius';
 import { layout, spacing } from '../../design-system/tokens/spacing';
 import { fontSize, montserrat } from '../../design-system/tokens/typography';
 import { DSButton } from '../../design-system/components/DSButton';
-import { DSInlineLink } from '../../design-system/components/DSInlineLink';
 import { ProductStockCountPill } from '../../design-system/components/ProductStockCountPill';
 import { ProductVariantStockPreview } from '../../design-system/components/ProductVariantStockPreview';
 import { formatFcfa } from '../../design-system/utils/money';
@@ -16,14 +15,15 @@ import type { LiveViewerProduct } from '../data/LiveViewerData';
 export interface LiveProductCardViewModel {
   product: LiveViewerProduct;
   width: number;
+  /** Keeps the blurred translucent surface by default; false renders only card content. */
+  showBackground?: boolean;
   onBuy: (product: LiveViewerProduct) => void;
-  onMore: () => void;
 }
 
 /** Reference-sized glass preview; full product details and purchase actions live in the products sheet. */
 export class LiveProductCard extends Component<LiveProductCardViewModel> {
   onRender(): void {
-    const { product, width, onBuy, onMore } = this.viewModel;
+    const { product, width, onBuy } = this.viewModel;
     const imageSize = layout.live.viewer.productImageHeight;
     const variantStocks = product.variantStocks ?? [];
     const stockCount = variantStocks.length > 0
@@ -38,99 +38,120 @@ export class LiveProductCard extends Component<LiveProductCardViewModel> {
     const imageWidth = imageSize * imageAspectRatio;
 
     <view style={styles.card} width={width} height={layout.live.viewer.productCardHeight}>
-      <blur style={styles.glassPanel} blurStyle="dark">
-        <view style={styles.glassTint}>
-          <layout style={styles.contentRow}>
-            <view
-              style={styles.productImage.extend({
-                backgroundColor: product.color,
-                height: imageSize,
-                width: imageWidth,
-              })}
-            >
-              {product.imageUrl ? (
-                <image
-                  src={product.imageUrl}
-                  width={imageWidth}
-                  height={imageSize}
-                  objectFit="cover"
-                />
-              ) : null}
-            </view>
+      {this.viewModel.showBackground === false ? (
+        <view style={styles.clearContent}>
+          {this.renderCardContents(product, imageSize, imageWidth, stockCount, discountPercent)}
+        </view>
+      ) : (
+        <blur style={styles.glassPanel} blurStyle="dark">
+          <view style={styles.glassTint}>
+            {this.renderCardContents(product, imageSize, imageWidth, stockCount, discountPercent)}
+          </view>
+        </blur>
+      )}
+    </view>;
+  }
 
-            <layout style={styles.productCopy}>
-              <layout style={styles.titleStockRow}>
-                <label
-                  value={product.title}
-                  style={styles.title}
-                  numberOfLines={2}
-                  textOverflow="ellipsis"
-                />
-                <ProductStockCountPill
-                  count={stockCount}
-                  surfaceColor={colors.liveControlSurface}
-                  textColor={colors.backgroundDark}
-                />
-              </layout>
-              <layout style={styles.priceRow}>
-                <label value={formatFcfa(product.price)} style={styles.price} numberOfLines={1} />
-                {discountPercent > 0 && product.originalPrice !== undefined ? (
-                  <label
-                    value={`${formatFcfa(product.originalPrice)} (-${discountPercent}%)`}
-                    style={styles.discountSummary}
-                    numberOfLines={1}
-                    textOverflow="ellipsis"
-                  />
-                ) : null}
-              </layout>
-              {variantStocks.length > 0 ? (
-                <view style={styles.variantStocks}>
-                  <ProductVariantStockPreview
-                    items={variantStocks}
-                    textColor={colors.textInverted}
-                    mutedColor={colors.textOnDarkSecondary}
-                  />
-                </view>
-              ) : null}
-            </layout>
+  private renderCardContents(
+    product: LiveViewerProduct,
+    imageSize: number,
+    imageWidth: number,
+    stockCount: number,
+    discountPercent: number,
+  ): void {
+    const variantStocks = product.variantStocks ?? [];
+    const { onBuy } = this.viewModel;
+    const isExpedition = product.shippingLabel === 'Expédition';
+    <layout style={styles.cardContents}>
+      <layout style={styles.contentRow}>
+        <view
+          style={styles.productImage.extend({
+            backgroundColor: product.color,
+            height: imageSize,
+            width: imageWidth,
+          })}
+        >
+          {product.imageUrl ? (
+            <image
+              src={product.imageUrl}
+              width={imageWidth}
+              height={imageSize}
+              objectFit="cover"
+            />
+          ) : null}
+        </view>
+
+        <layout style={styles.productCopy}>
+          <layout style={styles.titleStockRow}>
+            <label
+              value={product.title}
+              style={styles.title}
+              numberOfLines={2}
+              textOverflow="ellipsis"
+            />
+            <ProductStockCountPill
+              count={stockCount}
+              surfaceColor={colors.liveControlSurface}
+              textColor={colors.backgroundDark}
+            />
           </layout>
-          <layout style={styles.footerRow}>
-            <layout style={styles.shippingRow}>
-              <image
-                src={navigationIcons.deliveryTruck02}
-                tint={colors.textInverted}
-                width={layout.live.viewer.shippingIconSize}
-                height={layout.live.viewer.shippingIconSize}
-                objectFit="contain"
-              />
+          <layout style={styles.priceRow}>
+            <label value={formatFcfa(product.price)} style={styles.price} numberOfLines={1} />
+            {discountPercent > 0 && product.originalPrice !== undefined ? (
               <label
-                value={`${product.shippingLabel} · ${formatFcfa(product.shippingAmount)}`}
-                style={styles.shippingLabel}
+                value={`${formatFcfa(product.originalPrice)} (-${discountPercent}%)`}
+                style={styles.discountSummary}
                 numberOfLines={1}
                 textOverflow="ellipsis"
               />
-            </layout>
-            <view style={styles.footerActionSpacing}>
-              <DSInlineLink
-                title="Voir plus"
+            ) : null}
+          </layout>
+          {variantStocks.length > 0 ? (
+            <view style={styles.variantStocks}>
+              <ProductVariantStockPreview
+                items={variantStocks}
                 textColor={colors.textInverted}
-                onTap={onMore}
-                accessibilityLabel={`Voir les produits du live, dont ${product.title}`}
+                mutedColor={colors.textOnDarkSecondary}
               />
             </view>
-            <DSButton
-              title="Acheter"
-              textCase="none"
-              variant="cta"
-              size="compact"
-              marginLeft={spacing.xs}
-              onTap={() => onBuy(product)}
-              accessibilityLabel={`Acheter ${product.title}`}
-            />
-          </layout>
-        </view>
-      </blur>
-    </view>;
+          ) : null}
+        </layout>
+      </layout>
+      <layout style={styles.footerRow}>
+        <layout style={styles.shippingRow}>
+          <image
+            src={isExpedition ? navigationIcons.sellerDeliveryPlane : navigationIcons.deliveryTruck02}
+            tint={colors.textInverted}
+            width={layout.live.viewer.shippingIconSize}
+            height={layout.live.viewer.shippingIconSize}
+            objectFit="contain"
+          />
+          <label
+            value={isExpedition ? "Frais d’expédition:" : 'Frais de livraison:'}
+            style={styles.shippingLabel}
+            textGradient={colors.liveShippingPriceGradient}
+            numberOfLines={1}
+            textOverflow="ellipsis"
+          />
+          <label
+            value={formatFcfa(product.shippingAmount)}
+            style={styles.shippingAmount}
+            textGradient={colors.liveShippingPriceGradient}
+            numberOfLines={1}
+          />
+        </layout>
+        <DSButton
+          title="Acheter"
+          textCase="none"
+          variant="cta"
+          size="compact"
+          height={layout.live.viewer.productFooterControlHeight}
+          marginLeft={spacing.xs}
+          onTap={() => onBuy(product)}
+          accessibilityLabel={`Acheter ${product.title}`}
+        />
+      </layout>
+    </layout>;
   }
 }
 
@@ -142,8 +163,13 @@ const styles = {
     width: '100%',
   }),
   glassTint: new Style<View>({
-    backgroundColor: colors.liveActionSurface,
+    backgroundColor: colors.liveOverlaySurface,
     borderRadius: radius.md,
+    height: '100%',
+    width: '100%',
+  }),
+  clearContent: new Style<View>({ height: '100%', width: '100%' }),
+  cardContents: new Style<Layout>({
     flexDirection: 'column',
     height: '100%',
     justifyContent: 'space-between',
@@ -217,13 +243,21 @@ const styles = {
     flexDirection: 'row',
     flexGrow: 1,
     flexShrink: 1,
+    height: layout.live.viewer.productFooterControlHeight,
     minWidth: 0,
   }),
-  footerActionSpacing: new Style<View>({ marginLeft: spacing.xs, marginRight: spacing.xs }),
   shippingLabel: new Style<Label>({
     color: colors.textInverted,
     flexShrink: 1,
-    font: montserrat.regular(fontSize.tiny),
+    font: montserrat.semiBold(fontSize.label),
+    marginLeft: spacing.xs,
+    minWidth: 0,
+    textDecoration: 'underline',
+  }),
+  shippingAmount: new Style<Label>({
+    color: colors.textInverted,
+    flexShrink: 0,
+    font: montserrat.extraBold(fontSize.label),
     marginLeft: spacing.xs,
   }),
 };

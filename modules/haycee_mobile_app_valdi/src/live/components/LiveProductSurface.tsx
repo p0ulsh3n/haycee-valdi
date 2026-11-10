@@ -8,8 +8,9 @@ import type { LiveViewerProduct } from '../data/LiveViewerData';
 
 export interface LiveProductSurfaceViewModel {
   products: LiveViewerProduct[];
+  /** Defaults to the Live glass surface; false shows the card without a backdrop. */
+  showBackground?: boolean;
   onBuy: (product: LiveViewerProduct) => void;
-  onMore: () => void;
 }
 
 /** Shows one featured live offer card; the full product list remains in its sheet. */
@@ -24,8 +25,8 @@ export class LiveProductSurface extends Component<LiveProductSurfaceViewModel> {
       <LiveProductCard
         product={product}
         width={cardWidth}
+        showBackground={this.viewModel.showBackground}
         onBuy={this.viewModel.onBuy}
-        onMore={this.viewModel.onMore}
       />
     </view>;
   }

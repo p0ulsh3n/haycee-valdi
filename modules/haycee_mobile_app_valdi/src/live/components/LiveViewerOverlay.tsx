@@ -16,6 +16,7 @@ import { fontSize, montserrat } from '../../design-system/tokens/typography';
 
 export interface LiveViewerOverlayViewModel {
   messages: LiveViewerMessage[];
+  pinnedMessage?: LiveViewerMessage;
   chatAvatarBorderColor?: string;
   commentDraft: string;
   products: LiveViewerProduct[];
@@ -121,7 +122,11 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
     <view style={styles.root}>
       <layout style={styles.liveInteractionArea}>
         <view style={styles.chatColumn}>
-          <LiveChatFeed messages={model.messages} avatarBorderColor={model.chatAvatarBorderColor} />
+          <LiveChatFeed
+            messages={model.messages}
+            pinnedMessage={model.pinnedMessage}
+            avatarBorderColor={model.chatAvatarBorderColor}
+          />
           <view style={styles.composerSlot}>
             <LiveCommentComposer
               value={model.commentDraft}
@@ -160,7 +165,7 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
         height={this.productSurfaceCollapsed ? 0 : layout.live.viewer.productCardHeight}
         touchEnabled={this.overlayInteractive}
       >
-        <LiveProductSurface products={model.products} onBuy={model.onBuy} onMore={model.onOpenProducts} />
+        <LiveProductSurface products={model.products} showBackground={false} onBuy={model.onBuy} />
       </view>
     </view>;
   }

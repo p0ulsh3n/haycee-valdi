@@ -45,6 +45,7 @@ interface LiveViewerScreenState {
   likeCount: number;
   commentDraft: string;
   messages: LiveViewerMessage[];
+  pinnedMessage?: LiveViewerMessage;
   cartItems: LiveViewerCartItem[];
   requestedProductIds: string[];
   streamAlertEntries: LiveStreamAlertEntry[];
@@ -61,6 +62,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     likeCount: 0,
     commentDraft: '',
     messages: [],
+    pinnedMessage: undefined,
     cartItems: [],
     requestedProductIds: [],
     streamAlertEntries: [],
@@ -74,6 +76,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   private streamAlertDemoCycle = 0;
   private incomingDemoMessageSequence = 0;
   private incomingDemoMessageTimerScheduled = false;
+  private pinnedDemoTimerScheduled = false;
   private hasShownFollowPrompt = false;
   private isPageVisible = true;
   private followPromptPending = false;
@@ -86,6 +89,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
       if (!hasOpenSheet) {
         this.scheduleFollowPromptResume();
         this.scheduleIncomingDemoMessage();
+        this.scheduleDemoPinnedComment();
       }
     });
     const item = this.viewModel.item;
@@ -95,6 +99,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
       likeCount: Math.max(0, Math.round(item.viewers * 3.4)),
       commentDraft: '',
       messages: this.demoContent.messages,
+      pinnedMessage: undefined,
       cartItems: [],
       requestedProductIds: [],
       streamAlertEntries: [],
@@ -102,6 +107,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     if (item.status === 'live') {
       this.scheduleStreamAlertDemoCycle();
       this.scheduleIncomingDemoMessage();
+      this.scheduleDemoPinnedComment();
       if (!this.state.isFollowing) {
         this.setTimeoutDisposable(this.showFollowPrompt, FOLLOW_PROMPT_DELAY_MS);
       }
@@ -119,6 +125,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     if (this.isPageVisible) {
       this.scheduleFollowPromptResume();
       this.scheduleIncomingDemoMessage();
+      this.scheduleDemoPinnedComment();
     }
   };
 
@@ -148,6 +155,36 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
         messages: [...this.state.messages.slice(-(MAX_LIVE_CHAT_MESSAGES - 1)), message],
       });
       this.scheduleIncomingDemoMessage();
+    }, delayMs);
+  };
+
+  private scheduleDemoPinnedComment = (delayMs = PINNED_COMMENT_INITIAL_DELAY_MS): void => {
+    if (
+      this.isDestroyed()
+      || this.viewModel.item.status !== 'live'
+      || !this.demoContent?.simulatePinnedComments
+      || !this.isPageVisible
+      || hasOpenLiveSheet()
+      || this.pinnedDemoTimerScheduled
+    ) return;
+
+    this.pinnedDemoTimerScheduled = true;
+    this.setTimeoutDisposable(() => {
+      this.pinnedDemoTimerScheduled = false;
+      if (this.isDestroyed()) return;
+      if (!this.isPageVisible || hasOpenLiveSheet()) {
+        this.scheduleDemoPinnedComment(PINNED_COMMENT_RETRY_DELAY_MS);
+        return;
+      }
+
+      const pinnedMessage = this.demoContent?.messages.find(message => message.isHost);
+      if (!pinnedMessage) return;
+      this.setState({ pinnedMessage });
+      this.setTimeoutDisposable(() => {
+        if (this.isDestroyed()) return;
+        this.setState({ pinnedMessage: undefined });
+        this.scheduleDemoPinnedComment(PINNED_COMMENT_REPEAT_DELAY_MS);
+      }, PINNED_COMMENT_VISIBLE_MS);
     }, delayMs);
   };
 
@@ -524,7 +561,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
     const bottomInset = Math.max(0, Device.getDisplayBottomInset());
 
     <view style={styles.screen.extend({ backgroundColor: colors.liveBackdrop })}>
-      <view style={styles.content.extend({ backgroundColor: colors.liveActionSurface, paddingBottom: bottomInset + spacing.sm, paddingTop: topInset + spacing.xs })}>
+      <view style={styles.content.extend({ backgroundColor: colors.liveOverlaySurface, paddingBottom: bottomInset + spacing.sm, paddingTop: topInset + spacing.xs })}>
         <LiveViewerHeader
           item={item}
           isFollowing={this.state.isFollowing}
@@ -544,6 +581,7 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
         {isLive ? (
           <LiveViewerOverlay
             messages={this.state.messages}
+            pinnedMessage={this.state.pinnedMessage}
             commentDraft={this.state.commentDraft}
             products={content.products}
             onBuy={this.handleProductAction}
@@ -568,6 +606,10 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
 
 const FOLLOW_PROMPT_DELAY_MS = 30_000;
 const FOLLOW_PROMPT_RESUME_DELAY_MS = 350;
+const PINNED_COMMENT_INITIAL_DELAY_MS = 4500;
+const PINNED_COMMENT_RETRY_DELAY_MS = 1000;
+const PINNED_COMMENT_VISIBLE_MS = 8500;
+const PINNED_COMMENT_REPEAT_DELAY_MS = 18_000;
 const DEMO_CHAT_MESSAGE_INTERVALS_MS = [1800, 2800, 2100, 3600, 2400, 3200];
 const MAX_LIVE_CHAT_MESSAGES = 60;
 

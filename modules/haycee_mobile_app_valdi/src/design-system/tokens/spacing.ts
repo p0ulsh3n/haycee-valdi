@@ -42,10 +42,10 @@ export const layout = {
       headingHeight: 20,
       holdDurationMilliseconds: 4200,
       iconSize: 12,
-      itemsPerPage: 2,
+      itemsPerPage: 1,
       lowStockThreshold: 5,
-      rowHeight: 17,
-      tickerHeight: 34,
+      rowHeight: 19,
+      tickerHeight: 19,
       transitionDurationMilliseconds: 850,
     },
   },
@@ -174,6 +174,8 @@ export const layout = {
       productGlassHeight: 184,
       productImageHeight: 76,
       shippingIconSize: 14,
+      /** Shared centerline height for shipping details, inline link, and compact product action. */
+      productFooterControlHeight: 36,
       productAutoAdvanceMilliseconds: 5000,
       newMessagesBottomThreshold: 24,
       newMessagesPillEnterMilliseconds: 320,
@@ -182,6 +184,8 @@ export const layout = {
       newMessagesPillIconSize: 14,
       newMessagesPillTransitionDistance: 22,
       newMessagesPillWidth: 204,
+      /** Reserved strip above the Live chat viewport while a seller comment is pinned. */
+      pinnedCommentHeight: 68,
       wallet: {
         tabHeight: 44,
       },

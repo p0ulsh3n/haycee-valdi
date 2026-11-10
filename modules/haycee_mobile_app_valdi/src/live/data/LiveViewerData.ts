@@ -173,6 +173,7 @@ export function updateLiveViewerCartQuantity(
 export interface LiveViewerDemoContent {
   title: string;
   simulateIncomingMessages: boolean;
+  simulatePinnedComments: boolean;
   products: LiveViewerProduct[];
   messages: LiveViewerMessage[];
   presentationType: LivePresentationType;
@@ -182,6 +183,7 @@ export interface LiveViewerDemoContent {
 export const createLiveViewerDemoContent = (item: LiveFeedItem): LiveViewerDemoContent => ({
   title: item.title,
   simulateIncomingMessages: true,
+  simulatePinnedComments: true,
   presentationType: item.presentationType,
   products: [
     {

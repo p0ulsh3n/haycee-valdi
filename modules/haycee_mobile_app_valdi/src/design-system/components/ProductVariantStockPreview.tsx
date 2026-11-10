@@ -1,6 +1,6 @@
 import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
-import { Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { ImageView, Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
 import { Ticker } from './Ticker';
 import { colors } from '../tokens/colors';
@@ -30,14 +30,14 @@ interface VariantStockPresentation {
   icon: Asset;
 }
 
-/** Cycles through all variant combinations two at a time without increasing card height. */
+/** Cycles through each variant combination one at a time without increasing card height. */
 export class ProductVariantStockPreview extends Component<ProductVariantStockPreviewViewModel> {
   onRender(): void {
     const items = this.getPrioritizedItems();
     if (items.length === 0) return;
 
-    const pairs = this.createPages(items);
-    const tickerItems = pairs.map(pair => pair.map(item => {
+    const pages = this.createPages(items);
+    const tickerItems = pages.map(page => page.map(item => {
       const presentation = this.formatVariant(item);
       return `${presentation.label} : ${presentation.status}`;
     }).join('\n'));
@@ -63,7 +63,7 @@ export class ProductVariantStockPreview extends Component<ProductVariantStockPre
         style={styles.ticker}
         numberOfLines={layout.product.variantStockPreview.itemsPerPage}
         accessibilityLabel="Variantes et stocks du produit"
-        renderRotateItem={(_item, index) => this.renderVariantPair(pairs[index % pairs.length])}
+        renderRotateItem={(_item, index) => this.renderVariantPage(pages[index % pages.length])}
       />
     </view>;
   }
@@ -82,9 +82,7 @@ export class ProductVariantStockPreview extends Component<ProductVariantStockPre
     const pages: ProductVariantStockItem[][] = [];
 
     for (let index = 0; index < items.length; index += pageSize) {
-      const pair = items.slice(index, index + pageSize);
-      if (pair.length === 1 && items.length > 1) pair.push(items[0]);
-      pages.push(pair);
+      pages.push(items.slice(index, index + pageSize));
     }
 
     return pages;
@@ -125,15 +123,16 @@ export class ProductVariantStockPreview extends Component<ProductVariantStockPre
     };
   }
 
-  private renderVariantPair(pair: ProductVariantStockItem[]): void {
+  private renderVariantPage(page: ProductVariantStockItem[]): void {
     <layout style={styles.variantPair}>
-      {pair.map(item => {
+      {page.map(item => {
         const presentation = this.formatVariant(item);
         return (
           <layout key={item.id} style={styles.variantRow}>
             <image
               src={presentation.icon}
               tint={presentation.iconColor}
+              style={styles.variantIcon}
               width={layout.product.variantStockPreview.iconSize}
               height={layout.product.variantStockPreview.iconSize}
               objectFit="contain"
@@ -175,7 +174,7 @@ const styles = {
   heading: new Style<Label>({
     flexGrow: 1,
     flexShrink: 1,
-    font: montserrat.semiBold(fontSize.tiny),
+    font: montserrat.semiBold(fontSize.label),
     minWidth: 0,
   }),
   ticker: new Style<ScrollView>({
@@ -192,13 +191,13 @@ const styles = {
     minWidth: 0,
     width: '100%',
   }),
+  variantIcon: new Style<ImageView>({ translationY: 2 }),
   variantLabel: new Style<Label>({
     flexShrink: 1,
-    font: montserrat.semiBold(fontSize.tiny),
-    lineHeight: lineHeight.tiny / fontSize.tiny,
+    font: montserrat.semiBold(fontSize.label),
+    lineHeight: lineHeight.label / fontSize.label,
     marginLeft: spacing.xs,
     minWidth: 0,
-    translationY: -1,
   }),
   separator: new Style<Label>({
     flexShrink: 0,
@@ -206,14 +205,12 @@ const styles = {
     lineHeight: lineHeight.tiny / fontSize.tiny,
     marginLeft: spacing.xs,
     marginRight: spacing.xs,
-    translationY: -1,
   }),
   statusLabel: new Style<Label>({
     flexGrow: 1,
     flexShrink: 1,
-    font: montserrat.extraBold(fontSize.tiny),
-    lineHeight: lineHeight.tiny / fontSize.tiny,
+    font: montserrat.extraBold(fontSize.label),
+    lineHeight: lineHeight.label / fontSize.label,
     minWidth: 0,
-    translationY: -1,
   }),
 };

@@ -58,9 +58,12 @@ export const colors = {
   liveGlassBorder: 'rgba(255, 255, 255, 0.34)',
   /** Shared near-black elevated surface for unread counts in Live. */
   liveUnreadCountSurface: palette.gray900,
-  /** Translucent dark material used over Live content, including its action buttons. */
+  /** Existing dark Live action surface, kept for contexts that need stronger contrast. */
   liveActionSurface: 'rgba(8, 14, 18, 0.42)',
+  /** Very light dark glass used by overlay surfaces across Live. */
+  liveOverlaySurface: 'rgba(8, 14, 18, 0.16)',
   liveChatUsername: '#B6B6B8',
+  liveChatAvatarFallback: 'rgba(255, 255, 255, 0.16)',
   /** Warm gold surface distinguishes the Live organizer badge from moderator. */
   liveChatRoleOrganizer: '#F2C45F',
   /** Dark translucent moderator badge surface keeps its white label legible over video. */
@@ -96,6 +99,8 @@ export const colors = {
   offerWarning: palette.orange,
   /** Lime-to-yellow fill for the shared product stock progress bar. */
   stockProgressGradient: 'linear-gradient(90deg, #67F667 0%, #7FF766 15%, #9AF963 30%, #B8FC61 45%, #D2FE5F 60%, #DBFE5F 75%, #E4FF5E 92%, #E5FF5E 100%)',
+  /** Lime-to-yellow Live shipping text gradient; every stop is explicit for Valdi's native parser. */
+  liveShippingPriceGradient: 'linear-gradient(90deg, #67F667 0%, #68F667 6.67%, #6BF667 13.33%, #71F766 20%, #7AF766 26.67%, #84F865 33.33%, #91F964 40%, #9FFA63 46.67%, #ADFB62 53.33%, #BBFC61 60%, #C8FD60 66.67%, #D2FE5F 73.33%, #DBFE5F 80%, #E1FF5E 86.67%, #E4FF5E 93.33%, #E5FF5E 100%)',
   offerTeal: '#008F83',
   offerMuted: palette.gray700,
   liveWalletStatusDelivered: '#E8EFE8',

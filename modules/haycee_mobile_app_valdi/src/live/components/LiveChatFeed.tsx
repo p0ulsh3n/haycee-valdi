@@ -7,6 +7,7 @@ import { ScrollEvent } from 'valdi_tsx/src/GestureEvents';
 import { ImageView, Label, Layout, ScrollView, ScrollViewInteractive, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { LiveChatRoleBadge } from '../../design-system/components/LiveChatRoleBadge';
 import { NewMessagesPill } from '../../design-system/components/NewMessagesPill';
+import { PinnedLiveComment } from './PinnedLiveComment';
 import navigationIcons from '../../../res/navigation-icons';
 import { noBounceScrollAttributes } from '../../design-system/tokens/scrollBehavior';
 import { normalizeUsername } from '../../design-system/utils/identity';
@@ -19,11 +20,13 @@ import type { LiveViewerMessage } from '../data/LiveViewerData';
 
 export interface LiveChatFeedViewModel {
   messages: LiveViewerMessage[];
+  pinnedMessage?: LiveViewerMessage;
   avatarBorderColor?: string;
 }
 
 interface LiveChatFeedState {
   unreadMessageCount: number;
+  pinnedSlotReserved: boolean;
 }
 
 const LIVE_CHAT_MASK_IMAGE =
@@ -100,7 +103,7 @@ class LiveChatMessageRow extends Component<{
 
 /** Bounded, independently rendered comment viewport above the live composer. */
 export class LiveChatFeed extends StatefulComponent<LiveChatFeedViewModel, LiveChatFeedState> {
-  state: LiveChatFeedState = { unreadMessageCount: 0 };
+  state: LiveChatFeedState = { unreadMessageCount: 0, pinnedSlotReserved: false };
   private readonly scrollRef = new ElementRef<ScrollViewInteractive>();
   private readonly maskRef = new ElementRef<View>();
   private scrollOffsetY = 0;
@@ -117,9 +120,16 @@ export class LiveChatFeed extends StatefulComponent<LiveChatFeedViewModel, LiveC
   onCreate(): void {
     const messages = this.viewModel.messages;
     this.lastMessageId = messages[messages.length - 1]?.id;
+    this.state = {
+      unreadMessageCount: 0,
+      pinnedSlotReserved: Boolean(this.viewModel.pinnedMessage),
+    };
   }
 
   onViewModelUpdate(_previous?: Readonly<LiveChatFeedViewModel>): void {
+    if (this.viewModel.pinnedMessage && !this.state.pinnedSlotReserved) {
+      this.setState({ pinnedSlotReserved: true });
+    }
     const allMessages = this.viewModel.messages;
     const latestMessageId = allMessages[allMessages.length - 1]?.id;
     if (!latestMessageId || latestMessageId === this.lastMessageId) return;
@@ -152,13 +162,36 @@ export class LiveChatFeed extends StatefulComponent<LiveChatFeedViewModel, LiveC
     this.messageContentHeight = size.height;
     const maxOffset = Math.max(0, this.messageContentHeight - this.scrollViewportHeight);
     this.scrollOffsetY = Math.min(maxOffset, this.scrollOffsetY);
+    // Native layout/content callbacks can arrive in either order while the
+    // pinned slot is being removed. Reconcile against the newest content size
+    // whenever this reader was already following the latest message.
+    if (this.followingLatest) this.shouldScrollToBottom = true;
     this.scrollToBottom();
     this.updateMaskImage();
   };
 
   private handleScrollLayout = (frame: ElementFrame): void => {
+    const viewportChanged = Math.abs(this.scrollViewportHeight - frame.height) > SCROLL_EDGE_THRESHOLD;
     this.scrollViewportHeight = frame.height;
-    this.scrollToBottom();
+    if (viewportChanged && this.followingLatest) {
+      // Recompute the native offset after the pinned comment releases its
+      // reserved height; an offset calculated using the old viewport leaves a
+      // visible blank strip below the newest messages.
+      this.shouldScrollToBottom = true;
+      this.scrollToBottom();
+    } else if (viewportChanged) {
+      const maxOffset = Math.max(0, this.messageContentHeight - this.scrollViewportHeight);
+      if (this.scrollOffsetY > maxOffset) {
+        this.scrollOffsetY = maxOffset;
+        const scroll = this.scrollRef.single();
+        if (scroll) {
+          scroll.setAttribute('contentOffsetAnimated', false);
+          scroll.setAttribute('contentOffsetY', maxOffset);
+        }
+      }
+    } else {
+      this.scrollToBottom();
+    }
     this.updateMaskImage();
   };
 
@@ -204,6 +237,12 @@ export class LiveChatFeed extends StatefulComponent<LiveChatFeedViewModel, LiveC
     this.jumpToBottomPending = false;
   };
 
+  private handlePinnedExitComplete = (): void => {
+    if (this.state.pinnedSlotReserved && !this.viewModel.pinnedMessage) {
+      this.setState({ pinnedSlotReserved: false });
+    }
+  };
+
   private getMaskImage(): string {
     if (this.messageContentHeight <= 0 || this.scrollViewportHeight <= 0) {
       return LIVE_CHAT_MASK_IMAGE_NO_SCROLL;
@@ -223,11 +262,11 @@ export class LiveChatFeed extends StatefulComponent<LiveChatFeedViewModel, LiveC
     this.maskRef.setAttribute('maskImage', maskImage);
   }
 
-  private renderMessagesScroll(messages: LiveViewerMessage[], enteringMessageId?: string): void {
+  private renderMessagesScroll(messages: LiveViewerMessage[], height: number, enteringMessageId?: string): void {
     <scroll
       ref={this.scrollRef}
       {...noBounceScrollAttributes}
-      style={styles.scroll}
+      style={styles.scroll.extend({ height })}
       showsVerticalScrollIndicator={false}
       bounces={false}
       bouncesFromDragAtStart={false}
@@ -253,13 +292,19 @@ export class LiveChatFeed extends StatefulComponent<LiveChatFeedViewModel, LiveC
 
   onRender(): void {
     const allMessages = this.viewModel.messages;
+    const pinnedHeight = this.state.pinnedSlotReserved ? layout.live.viewer.pinnedCommentHeight : 0;
+    const feedHeight = Math.max(0, layout.live.viewer.chatHeight - pinnedHeight);
 
     <view style={styles.root}>
+      <PinnedLiveComment
+        message={this.viewModel.pinnedMessage}
+        onDismissComplete={this.handlePinnedExitComplete}
+      />
       <OpacityMask
-        style={styles.maskViewport}
+        style={styles.maskViewport.extend({ height: feedHeight })}
         maskRef={this.maskRef}
         maskImage={this.getMaskImage()}
-        renderContent={() => this.renderMessagesScroll(allMessages, this.enteringMessageId)}
+        renderContent={() => this.renderMessagesScroll(allMessages, feedHeight, this.enteringMessageId)}
       />
       <NewMessagesPill
         count={this.state.unreadMessageCount}
@@ -323,7 +368,7 @@ const styles = {
   }),
   avatarFallback: new Style<View>({
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    backgroundColor: colors.liveChatAvatarFallback,
     borderRadius: radius.full,
     height: layout.live.viewer.sellerAvatarSize,
     justifyContent: 'center',
