@@ -30,6 +30,29 @@ export const layout = {
       posterAspectRatio: 0.75,
     },
   },
+  feed: {
+    verticalActionRail: {
+      actionHeight: 58,
+      bottomOffset: 48,
+      iconSize: 28,
+      itemGap: 14,
+      rightInset: 12,
+      width: 58,
+    },
+    videoPlayer: {
+      centerControlSize: 64,
+      centerTapBottomInset: 92,
+      centerTapTopInset: 80,
+      feedbackHoldMilliseconds: 620,
+      progressStallTimeoutMilliseconds: 2200,
+      seekBarHitHeight: 32,
+      seekBarHeight: 3,
+      seekThumbSize: 10,
+      timelineBottomInset: 8,
+      seekSettleToleranceMilliseconds: 750,
+      seekIndicatorTimeoutMilliseconds: 2200,
+    },
+  },
   product: {
     stockIndicator: {
       progressHeight: 8,

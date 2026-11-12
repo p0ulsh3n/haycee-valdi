@@ -2,6 +2,12 @@ import { MasonryProduct } from '../../design-system/components/MasonryProductCar
 import { colors } from '../../design-system/tokens/colors';
 import { formatFcfa } from '../../design-system/utils/money';
 import type { LiveFeedItem } from '../../live/data/LiveFeedData';
+import {
+  DEMO_SELLER_VIDEO_ASSET_IDS,
+  getSellerVideoThumbnailFit,
+  getSellerVideoThumbnailUrl,
+  getSellerVideoUrl,
+} from './SellerVideoMedia';
 
 export interface SellerStoreCategory {
   id: string;
@@ -14,6 +20,15 @@ export interface SellerVideoPreview {
   viewCountLabel: string;
   color: string;
   thumbnailUrl?: string;
+  thumbnailFit?: 'cover' | 'contain';
+  /** Optional HTTPS playback source supplied by seller-video data. */
+  videoUrl?: string;
+  likeCount?: number;
+  commentCount?: number;
+  favoriteCount?: number;
+  shareCount?: number;
+  isLiked?: boolean;
+  isFavorited?: boolean;
 }
 
 /** Demo storefront categories; replace with the seller catalog API when available. */
@@ -87,40 +102,48 @@ const demoProducts: Array<Pick<MasonryProduct, 'id' | 'title' | 'price' | 'color
   { id: 'city-sneakers', title: 'Sneakers City', price: formatFcfa(29500), color: colors.livePanelLavender, category: 'chaussures', masonryAspectRatio: 0.92 },
 ];
 
-const demoSellerVideoPreviews: Array<Pick<SellerVideoPreview, 'title' | 'viewCountLabel' | 'color'>> = [
-  { title: 'Les nouveautés de la boutique', viewCountLabel: '12,4 K', color: colors.livePanelLavender },
-  { title: 'Une tenue facile pour tous les jours', viewCountLabel: '8 240', color: colors.livePanelPeach },
-  { title: 'Les détails de notre sélection', viewCountLabel: '6 105', color: colors.livePanelBlue },
-  { title: 'Comment porter les pièces de saison', viewCountLabel: '5 890', color: colors.livePanelSage },
-  { title: 'Un aperçu des nouvelles matières', viewCountLabel: '4 720', color: colors.livePanelSand },
-  { title: 'La sélection du week-end', viewCountLabel: '3 680', color: colors.livePanelPeach },
-  { title: 'Trois façons de porter ce sac', viewCountLabel: '2 940', color: colors.livePanelBlue },
-  { title: 'Les pièces préférées de la semaine', viewCountLabel: '1 860', color: colors.livePanelLavender },
-  { title: 'Préparation des commandes', viewCountLabel: '1 240', color: colors.livePanelSage },
-  { title: 'Les accessoires du moment', viewCountLabel: '980', color: colors.livePanelSand },
-  { title: 'Zoom sur les finitions', viewCountLabel: '760', color: colors.livePanelBlue },
-  { title: 'Une nouveauté à découvrir', viewCountLabel: '540', color: colors.livePanelPeach },
+const demoSellerVideoPreviews: Array<Pick<SellerVideoPreview, 'title' | 'viewCountLabel' | 'color' | 'likeCount' | 'commentCount' | 'favoriteCount' | 'shareCount'>> = [
+  { title: 'Les nouveautés de la boutique', viewCountLabel: '12,4 K', color: colors.livePanelLavender, likeCount: 3240, commentCount: 128, favoriteCount: 486, shareCount: 92 },
+  { title: 'Une tenue facile pour tous les jours', viewCountLabel: '8 240', color: colors.livePanelPeach, likeCount: 2180, commentCount: 86, favoriteCount: 342, shareCount: 57 },
+  { title: 'Les détails de notre sélection', viewCountLabel: '6 105', color: colors.livePanelBlue, likeCount: 1640, commentCount: 64, favoriteCount: 231, shareCount: 42 },
+  { title: 'Comment porter les pièces de saison', viewCountLabel: '5 890', color: colors.livePanelSage, likeCount: 1490, commentCount: 58, favoriteCount: 218, shareCount: 38 },
+  { title: 'Un aperçu des nouvelles matières', viewCountLabel: '4 720', color: colors.livePanelSand, likeCount: 1180, commentCount: 46, favoriteCount: 176, shareCount: 31 },
+  { title: 'La sélection du week-end', viewCountLabel: '3 680', color: colors.livePanelPeach, likeCount: 920, commentCount: 39, favoriteCount: 144, shareCount: 26 },
+  { title: 'Trois façons de porter ce sac', viewCountLabel: '2 940', color: colors.livePanelBlue, likeCount: 740, commentCount: 32, favoriteCount: 118, shareCount: 21 },
+  { title: 'Les pièces préférées de la semaine', viewCountLabel: '1 860', color: colors.livePanelLavender, likeCount: 480, commentCount: 23, favoriteCount: 84, shareCount: 16 },
+  { title: 'Préparation des commandes', viewCountLabel: '1 240', color: colors.livePanelSage, likeCount: 326, commentCount: 18, favoriteCount: 62, shareCount: 12 },
+  { title: 'Les accessoires du moment', viewCountLabel: '980', color: colors.livePanelSand, likeCount: 254, commentCount: 14, favoriteCount: 49, shareCount: 9 },
+  { title: 'Zoom sur les finitions', viewCountLabel: '760', color: colors.livePanelBlue, likeCount: 192, commentCount: 11, favoriteCount: 38, shareCount: 7 },
+  { title: 'Une nouveauté à découvrir', viewCountLabel: '540', color: colors.livePanelPeach, likeCount: 138, commentCount: 8, favoriteCount: 27, shareCount: 5 },
+  { title: 'Les pièces qu’on porte cette saison', viewCountLabel: '486', color: colors.livePanelLavender, likeCount: 124, commentCount: 7, favoriteCount: 24, shareCount: 4 },
+  { title: 'Un sac, trois idées de tenues', viewCountLabel: '392', color: colors.livePanelBlue, likeCount: 98, commentCount: 6, favoriteCount: 19, shareCount: 3 },
+  { title: 'Dans les coulisses de la boutique', viewCountLabel: '318', color: colors.livePanelSage, likeCount: 81, commentCount: 5, favoriteCount: 16, shareCount: 3 },
+  { title: 'Les matières en détail', viewCountLabel: '274', color: colors.livePanelSand, likeCount: 69, commentCount: 4, favoriteCount: 13, shareCount: 2 },
+  { title: 'Notre sélection de bijoux', viewCountLabel: '231', color: colors.livePanelPeach, likeCount: 58, commentCount: 3, favoriteCount: 11, shareCount: 2 },
+  { title: 'Comment choisir sa taille', viewCountLabel: '187', color: colors.livePanelBlue, likeCount: 47, commentCount: 3, favoriteCount: 9, shareCount: 1 },
+  { title: 'Les nouveautés arrivent', viewCountLabel: '154', color: colors.livePanelLavender, likeCount: 39, commentCount: 2, favoriteCount: 8, shareCount: 1 },
+  { title: 'Une tenue pour le week-end', viewCountLabel: '128', color: colors.livePanelSage, likeCount: 32, commentCount: 2, favoriteCount: 6, shareCount: 1 },
+  { title: 'Zoom sur les finitions', viewCountLabel: '96', color: colors.livePanelSand, likeCount: 24, commentCount: 1, favoriteCount: 5, shareCount: 1 },
 ];
 
-/** Local video-tab fixtures; real seller media can replace these through the view model. */
+/** Local video-tab fixtures; all media URLs are resolved in the data layer. */
 export const createDemoSellerVideoPreviews = (
   seller: MasonryProduct,
-  products: MasonryProduct[] = [],
+  _products: MasonryProduct[] = [],
 ): SellerVideoPreview[] => {
-  const availableThumbnails = Array.from(new Set(
-    [
-      ...products.map(product => product.imageUrl),
-      ...products.flatMap(product => product.imageUrls ?? []),
-      seller.imageUrl,
-      ...(seller.imageUrls ?? []),
-    ].filter((url): url is string => Boolean(url)),
-  ));
-
   const sellerId = seller.vendorId ?? seller.id;
   return demoSellerVideoPreviews.map((preview, index) => ({
     ...preview,
     id: `${sellerId}-video-preview-${index + 1}`,
-    thumbnailUrl: availableThumbnails[index],
+    thumbnailUrl: DEMO_SELLER_VIDEO_ASSET_IDS[index]
+      ? getSellerVideoThumbnailUrl(DEMO_SELLER_VIDEO_ASSET_IDS[index])
+      : undefined,
+    thumbnailFit: DEMO_SELLER_VIDEO_ASSET_IDS[index]
+      ? getSellerVideoThumbnailFit(DEMO_SELLER_VIDEO_ASSET_IDS[index])
+      : undefined,
+    videoUrl: DEMO_SELLER_VIDEO_ASSET_IDS[index]
+      ? getSellerVideoUrl(DEMO_SELLER_VIDEO_ASSET_IDS[index])
+      : undefined,
   }));
 };
 

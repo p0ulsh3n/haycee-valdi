@@ -11,6 +11,7 @@ export {
   MONEY_GROUP_SEPARATOR,
 } from './utils/money';
 export type { WholeAmountInputResult } from './utils/money';
+export { formatCompactCount } from './utils/counts';
 export {
   fontSize,
   fontWeight,
@@ -122,5 +123,14 @@ export type {
 } from './components/ProductVariantStockPreview';
 export { ImageCarousel } from './components/ImageCarousel';
 export type { ImageCarouselViewModel } from './components/ImageCarousel';
+export { VerticalSnapFeed } from './components/VerticalSnapFeed';
+export type { VerticalSnapFeedViewModel } from './components/VerticalSnapFeed';
+export { VerticalFeedActionRail } from './components/VerticalFeedActionRail';
+export type {
+  VerticalFeedActionItem,
+  VerticalFeedActionRailViewModel,
+} from './components/VerticalFeedActionRail';
+export { VideoPlaybackControls } from './components/VideoPlaybackControls';
+export type { VideoPlaybackControlsViewModel } from './components/VideoPlaybackControls';
 export { Tooltip } from './components/Tooltip';
 export type { TooltipPlacement, TooltipViewModel } from './components/Tooltip';

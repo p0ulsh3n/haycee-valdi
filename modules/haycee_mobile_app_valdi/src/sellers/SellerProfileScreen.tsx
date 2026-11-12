@@ -19,6 +19,7 @@ import type { LiveFeedItem } from '../live/data/LiveFeedData';
 import { UpcomingLiveScreen } from '../live/UpcomingLiveScreen';
 import { SellerLiveFeed } from './components/SellerLiveFeed';
 import { SellerVideoGrid } from './components/SellerVideoGrid';
+import { SellerVideoFeedScreen } from './SellerVideoFeedScreen';
 import {
   createDemoSellerVideoPreviews,
   createDemoSellerLiveItems,
@@ -41,6 +42,12 @@ export interface SellerProfileViewModel {
   sellerProducts?: MasonryProduct[];
   sellerLiveItems?: LiveFeedItem[];
   sellerVideos?: SellerVideoPreview[];
+  sellerVideosHasMore?: boolean;
+  onLoadMoreSellerVideos?: () => void | Promise<unknown>;
+  onLikeSellerVideo?: (videoId: string, isLiked: boolean) => void;
+  onSaveSellerVideo?: (videoId: string, isSaved: boolean) => void;
+  onOpenSellerVideoComments?: (videoId: string) => void;
+  onShareSellerVideo?: (videoId: string) => void;
   onOpenLive?: (item: LiveFeedItem) => void;
   /** Set only when the screen represents the signed-in seller's own storefront. */
   isOwnProfile?: boolean;
@@ -437,7 +444,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
     if (tab.id === 'videos') {
       const videos = this.sellerVideos();
       if (videos.length > 0) {
-        <SellerVideoGrid videos={videos} />;
+        <SellerVideoGrid videos={videos} onVideoTap={this.handleOpenSellerVideo} />;
       } else {
         <view style={styles.emptyTab}>
           <label
@@ -457,6 +464,30 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
         numberOfLines={0}
       />
     </view>;
+  };
+
+  private handleOpenSellerVideo = (index: number): void => {
+    const videos = this.sellerVideos();
+    if (index < 0 || index >= videos.length) return;
+
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController.push(
+        SellerVideoFeedScreen,
+        {
+          vendorDisplayName: this.vendorDisplayName(),
+          videos,
+          initialIndex: index,
+          hasMore: this.viewModel.sellerVideosHasMore,
+          onLoadMore: this.viewModel.onLoadMoreSellerVideos,
+          onLikeVideo: this.viewModel.onLikeSellerVideo,
+          onSaveVideo: this.viewModel.onSaveSellerVideo,
+          onOpenVideoComments: this.viewModel.onOpenSellerVideoComments,
+          onShareVideo: this.viewModel.onShareSellerVideo,
+        },
+        {},
+        { animated: true },
+      );
+    });
   };
 
   private renderSellerTabPreviewSkeleton(): void {

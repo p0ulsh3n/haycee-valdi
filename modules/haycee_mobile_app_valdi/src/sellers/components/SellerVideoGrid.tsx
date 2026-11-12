@@ -1,6 +1,7 @@
 import { Device } from 'valdi_core/src/Device';
 import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
+import { createReusableCallback } from 'valdi_core/src/utils/Callback';
 import { Label, Layout, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
 import { colors } from '../../design-system/tokens/colors';
@@ -10,6 +11,7 @@ import type { SellerVideoPreview } from '../data/SellerStorefrontData';
 
 export interface SellerVideoGridViewModel {
   videos: SellerVideoPreview[];
+  onVideoTap?: (index: number) => void;
 }
 
 /** Three-column seller short-video gallery, sized to the current device viewport. */
@@ -35,7 +37,7 @@ export class SellerVideoGrid extends Component<SellerVideoGridViewModel> {
     return rows;
   }
 
-  private renderTile(video: SellerVideoPreview, tileWidth: number, tileHeight: number, rightGap: number): void {
+  private renderTile(video: SellerVideoPreview, index: number, tileWidth: number, tileHeight: number, rightGap: number): void {
     <view
       key={video.id}
       style={styles.poster.extend({
@@ -44,13 +46,15 @@ export class SellerVideoGrid extends Component<SellerVideoGridViewModel> {
         marginRight: rightGap,
         width: tileWidth,
       })}
+      onTap={createReusableCallback(() => this.viewModel.onVideoTap?.(index))}
+      accessibilityCategory="button"
       accessibilityLabel={video.title}
     >
       {video.thumbnailUrl ? (
         <image
           src={video.thumbnailUrl}
           style={styles.posterImage}
-          objectFit="cover"
+          objectFit={video.thumbnailFit ?? 'cover'}
         />
       ) : null}
       <view style={styles.viewCount}>
@@ -79,6 +83,7 @@ export class SellerVideoGrid extends Component<SellerVideoGridViewModel> {
           {row.map((video, columnIndex) => (
             this.renderTile(
               video,
+              rowIndex * columns + columnIndex,
               tileWidth,
               tileHeight,
               columnIndex < row.length - 1 ? config.columnGap : 0,

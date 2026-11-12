@@ -10,7 +10,7 @@ Source: `modules/haycee_mobile_app_valdi/src/design-system/tokens/`.
 | --- | --- | --- |
 | `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, border, icon, product, stock-progress, messaging and Live colors, including the shared 16%-alpha dark Live overlay surface, chat-role badge surfaces, the near-black unread-count surface and the Live shipping-line text gradient with explicit native-compatible stops | Prefer a semantic token. Add a named token before using a new app-wide color. |
 | `typography.ts` | Montserrat Regular, SemiBold, ExtraBold, Black; font sizes, line heights, named typography styles, `TextCase`, `transformText` | Do not load another font face or invent per-screen typography for a repeated role. Default text case is uppercase; set casing deliberately. |
-| `spacing.ts` | 4-point spacing scale and nested screen/layout measurements, including the compact product-variant sheet height/gallery width/footer button height and Live order-sheet tab width | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
+| `spacing.ts` | 4-point spacing scale and nested screen/layout measurements, including compact product-sheet sizing, Live order-sheet tabs, vertical-feed action-rail geometry and video playback controls | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
 | `radius.ts` | Shared corner-radius scale | Reuse a semantic radius. Add a token for a repeated design role. |
 | `scrollBehavior.ts` | `noBounceScrollAttributes` app scroll contract | Spread it on shared/native scroll containers unless the interaction explicitly requires another verified behavior. |
 
@@ -19,6 +19,7 @@ Source: `modules/haycee_mobile_app_valdi/src/design-system/tokens/`.
 Source: `modules/haycee_mobile_app_valdi/src/design-system/utils/`.
 
 - `money.ts`: `formatFcfa`, `formatIntegerWithDotSeparator`, `formatPriceLabel`, `normalizeWholeAmountInput`, and `MONEY_GROUP_SEPARATOR`; use for all displayed and entered prices.
+- `counts.ts`: `formatCompactCount`; use for compact social and engagement counts (`K`, `M`, `B`).
 - `NavigationActionGate.ts`: `runNavigationAction`; use for user-triggered navigation presentation/pushes to prevent duplicate routes.
 - `identity.ts` and `sellerBio.ts`: shared identity/name and seller-bio rules; inspect these before adding another formatter or constraint.
 
@@ -77,6 +78,9 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | `NewMessagesPill` | Compact opaque near-black pill over a chat feed, with a fixed leading white icon and white unread count. It enters/exits with a short native slide/fade and returns to the newest message only when tapped. The Live feed follows incoming messages only while already near the bottom; otherwise it leaves the current scroll offset unchanged and accumulates unread messages until the reader returns to the bottom threshold. |
 | `LiveViewerScreen` | Full-screen Live composition. Its local demo chat can add incoming fixture messages at varied intervals while visible; each new row enters with a short, subtle native fade/translation, the feed pauses under Live sheets/background navigation, and recent history is bounded. |
 | `ImageCarousel` | Shared image gallery/carousel. `pager` presents one swipe-paged image; `strip` exposes all images in a horizontal rail. Supports caller-provided surface, contain/cover fit, rounded previews, decoded-dimension callbacks and native no-bounce scrolling. |
+| `VerticalSnapFeed` | Shared full-viewport vertical feed using native Valdi paging. Clamps each drag to the adjacent page and both ends, disables scrolling for zero/one page, renders stable keyed pages with viewport extensions, exposes active-index and guarded near-end pagination callbacks, and provides a page-scoped action overlay slot. |
+| `VerticalFeedActionRail` | Data-driven, transparent engagement controls for full-screen feeds. The caller supplies SVGs, accessible names, labels/counts, active states and callbacks; the component aligns them on the right edge using shared layout/typography tokens. |
+| `VideoPlaybackControls` | Shared full-screen video overlay with a native-progress-driven timeline, in-drag preview, latest-seek retention until native progress catches up, pre-metadata fractional seek queuing, center play/pause feedback and optional loading spinner. The feature page owns the native `<video>` and passes its callbacks/state. |
 | `ProductCardBadge` | Shared product status/promotion badge. |
 | `ProductPopularityBadge` | Shared popularity badge. |
 | `ProductOfferPlacement` | Shared product-offer placement/content layout. |
