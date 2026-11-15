@@ -2,3 +2,11 @@
 
 bazel-*
 node_modules
+
+# Local device captures and generated Android/debug outputs
+/artifacts/
+/AndroidDebugAppManifest.xml
+/AndroidReleaseAppManifest.xml
+/*.apk
+/hs_err_pid*.log
+/scripts/__pycache__/
