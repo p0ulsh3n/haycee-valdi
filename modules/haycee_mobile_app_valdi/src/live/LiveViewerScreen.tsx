@@ -81,12 +81,23 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   private isPageVisible = true;
   private followPromptPending = false;
   private followPromptResumeScheduled = false;
+  private exitFollowPromptPending = false;
+  private exitFollowPromptRetryScheduled = false;
+  private exitLivePending = false;
   private unsubscribeLiveSheetVisibility?: () => void;
 
   onCreate(): void {
     this.navigationController.addPageVisibilityObserver(this.handlePageVisibilityChange);
     this.unsubscribeLiveSheetVisibility = observeLiveSheetVisibility(hasOpenSheet => {
       if (!hasOpenSheet) {
+        if (this.exitLivePending) {
+          this.finishLiveExit();
+          return;
+        }
+        if (this.exitFollowPromptPending) {
+          this.showExitFollowPrompt();
+          return;
+        }
         this.scheduleFollowPromptResume();
         this.scheduleIncomingDemoMessage();
         this.scheduleDemoPinnedComment();
@@ -207,6 +218,61 @@ export class LiveViewerScreen extends NavigationPageStatefulComponent<LiveViewer
   };
 
   private handleBack = (): void => {
+    if (this.viewModel.item.status === 'live' && !this.state.isFollowing) {
+      this.exitFollowPromptPending = true;
+      this.showExitFollowPrompt();
+      return;
+    }
+    this.navigationController.pop();
+  };
+
+  private showExitFollowPrompt = (): void => {
+    if (this.isDestroyed() || !this.exitFollowPromptPending || this.exitLivePending) return;
+    if (!this.isPageVisible || hasOpenLiveSheet()) return;
+
+    const opened = runNavigationAction(this.navigationController, () => {
+      this.navigationController.present(
+        LiveFollowPromptSheet,
+        {
+          sellerName: this.viewModel.item.hostName,
+          sellerAvatarUrl: this.viewModel.item.vendorAvatarUrl,
+          mode: 'exit-confirmation',
+          onFollow: this.followFromPrompt,
+          onExit: this.requestExitLive,
+          showOverlay: false,
+          enableGestures: true,
+        },
+        {},
+        {
+          animated: true,
+          wrapInPlatformNavigationController: false,
+          ...getBottomSheetNavigationOptions({ transparentPageBackground: true }),
+        },
+      );
+    });
+
+    if (opened) {
+      this.exitFollowPromptPending = false;
+      return;
+    }
+
+    if (this.exitFollowPromptRetryScheduled) return;
+    this.exitFollowPromptRetryScheduled = true;
+    this.setTimeoutDisposable(() => {
+      this.exitFollowPromptRetryScheduled = false;
+      this.showExitFollowPrompt();
+    }, 700);
+  };
+
+  private requestExitLive = (): void => {
+    this.followPromptPending = false;
+    this.exitFollowPromptPending = false;
+    this.exitLivePending = true;
+  };
+
+  private finishLiveExit = (): void => {
+    if (this.isDestroyed() || !this.exitLivePending || hasOpenLiveSheet()) return;
+    this.exitLivePending = false;
     this.navigationController.pop();
   };
 

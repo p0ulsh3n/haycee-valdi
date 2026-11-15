@@ -1,18 +1,20 @@
 import { NavigationPage } from 'valdi_navigation/src/NavigationPage';
-import { NavigationPageComponent } from 'valdi_navigation/src/NavigationPageComponent';
+import { NavigationPageStatefulComponent } from 'valdi_navigation/src/NavigationPageComponent';
 import { NavigationPresentOptions } from 'valdi_navigation/src/NavigationController';
 import { Component } from 'valdi_core/src/Component';
 import { ElementRef } from 'valdi_core/src/ElementRef';
+import { AnimationCurve } from 'valdi_core/src/AnimationOptions';
 import { IRenderedElementAttributeApplier } from 'valdi_core/src/IRenderedElementApplier';
 import { Style } from 'valdi_core/src/Style';
-import { DragEvent, ScrollEndEvent } from 'valdi_tsx/src/GestureEvents';
+import { DragEvent, ScrollEndEvent, TouchEventState } from 'valdi_tsx/src/GestureEvents';
 import { IRenderedElementBase } from 'valdi_tsx/src/IRenderedElementBase';
 import { IRenderedElementHolder } from 'valdi_tsx/src/IRenderedElementHolder';
 import { Label, Layout, ScrollView, ScrollViewInteractive, SpinnerView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { when } from 'valdi_core/src/utils/When';
+import navigationIcons from '../../../res/navigation-icons';
 import { colors } from '../tokens/colors';
 import { radius } from '../tokens/radius';
-import { spacing } from '../tokens/spacing';
+import { layout, spacing } from '../tokens/spacing';
 import { noBounceScrollAttributes } from '../tokens/scrollBehavior';
 import { transformText, typography, TextCase } from '../tokens/typography';
 import { AsyncActionButton } from './AsyncActionButton';
@@ -72,6 +74,17 @@ export interface BottomSheetViewModel {
   onFooterTap?: () => void | Promise<unknown>;
   /** Footer surface; defaults to transparent to support floating actions. */
   footerBackground?: 'transparent' | 'surface';
+  /**
+   * Opts into a detent-style sheet. The sheet opens at this percentage of its
+   * parent height (for example, 85), can be dragged down or dismissed, and can
+   * reach 100% only through the header expand control. Omit to preserve the
+   * standard sheet behavior.
+   */
+  snapPointPercent?: number;
+}
+
+interface BottomSheetState {
+  isMaximized: boolean;
 }
 
 export interface BottomSheetFooterViewModel {
@@ -186,12 +199,39 @@ export function getBottomSheetNavigationOptions(
 
 /** App-standard bottom sheet with optional title, message and loading state. */
 @NavigationPage(module)
-export class BottomSheet extends NavigationPageComponent<BottomSheetViewModel> {
+export class BottomSheet extends NavigationPageStatefulComponent<BottomSheetViewModel, BottomSheetState> {
+  state: BottomSheetState = { isMaximized: false };
   private readonly sheetRef = new SingleElementHolder<View>();
+  private isDismissing = false;
 
   private handleDrag = (event: DragEvent): void => {
     const sheet = this.sheetRef.current;
-    if (!sheet) {
+    if (!sheet || this.isDismissing) return;
+
+    const snapPointPercent = this.getSnapPointPercent();
+    if (snapPointPercent !== undefined) {
+      if (event.state === TouchEventState.Ended) {
+        const draggedDown = Math.max(0, event.deltaY);
+        const snapLayout = layout.bottomSheet.snapPoint;
+        if (event.velocityY > snapLayout.dismissVelocity || draggedDown >= snapLayout.dismissDragDistance) {
+          this.dismiss();
+          return;
+        }
+
+        const animation = {
+          duration: snapLayout.transitionDurationSeconds,
+          curve: AnimationCurve.EaseOut,
+          beginFromCurrentState: true,
+        };
+        if (this.state.isMaximized && draggedDown >= snapLayout.collapseDragDistance) {
+          this.setStateAnimated({ isMaximized: false }, animation);
+        }
+        this.animate(animation, () => sheet.setAttribute('translationY', 0));
+        return;
+      }
+
+      // A detent sheet never follows an upward drag past its configured stop.
+      sheet.setAttribute('translationY', Math.max(0, event.deltaY));
       return;
     }
 
@@ -211,9 +251,74 @@ export class BottomSheet extends NavigationPageComponent<BottomSheetViewModel> {
     this.dismiss();
   };
 
+  private handleSnapPointToggle = (): void => {
+    if (this.isDismissing || this.getSnapPointPercent() === undefined) return;
+    this.setStateAnimated(
+      { isMaximized: !this.state.isMaximized },
+      {
+        duration: layout.bottomSheet.snapPoint.transitionDurationSeconds,
+        curve: AnimationCurve.EaseInOut,
+        beginFromCurrentState: true,
+      },
+    );
+  };
+
+  private getSnapPointPercent(): number | undefined {
+    const percentage = this.viewModel.snapPointPercent;
+    return typeof percentage === 'number' && Number.isFinite(percentage) && percentage > 0 && percentage < 100
+      ? percentage
+      : undefined;
+  }
+
   private dismiss = (): void => {
+    if (this.isDismissing) return;
+    this.isDismissing = true;
     this.navigationController.dismiss(true);
   };
+
+  private renderSnapPointHeader(): void {
+    <layout style={styles.snapPointHeader}>
+      {this.viewModel.title ? (
+        <label
+          style={styles.snapPointTitle}
+          value={transformText(this.viewModel.title, this.viewModel.textCase)}
+          numberOfLines={1}
+        />
+      ) : <view style={styles.snapPointTitlePlaceholder} />}
+      <layout style={styles.snapPointHeaderActions}>
+        <view
+          style={styles.snapPointHeaderButton}
+          onTapDisabled={this.isDismissing}
+          onTap={this.handleSnapPointToggle}
+          accessibilityCategory="button"
+          accessibilityLabel={this.state.isMaximized ? 'Réduire le panneau' : 'Agrandir le panneau'}
+        >
+          <image
+            src={this.state.isMaximized ? navigationIcons.minimize01 : navigationIcons.maximize01}
+            tint={colors.iconDefault}
+            width={layout.bottomSheet.snapPoint.headerIconSize}
+            height={layout.bottomSheet.snapPoint.headerIconSize}
+            objectFit="contain"
+          />
+        </view>
+        <view
+          style={styles.snapPointHeaderButton}
+          onTapDisabled={this.isDismissing}
+          onTap={this.handleCloseTap}
+          accessibilityCategory="button"
+          accessibilityLabel="Fermer le panneau"
+        >
+          <image
+            src={navigationIcons.cancel01}
+            tint={colors.iconDefault}
+            width={layout.bottomSheet.snapPoint.headerIconSize}
+            height={layout.bottomSheet.snapPoint.headerIconSize}
+            objectFit="contain"
+          />
+        </view>
+      </layout>
+    </layout>;
+  }
 
   private renderLoadingSpinner(): void {
     if ((this.viewModel.showLoading ?? BOTTOM_SHEET_DEFAULTS.showLoading) !== true) {
@@ -235,7 +340,21 @@ export class BottomSheet extends NavigationPageComponent<BottomSheetViewModel> {
   }
 
   onRender(): void {
-    const sheetStyle = (this.viewModel.roundBottomCorners ?? BOTTOM_SHEET_DEFAULTS.roundBottomCorners) === true ? styles.sheetRounded : styles.sheet;
+    const snapPointPercent = this.getSnapPointPercent();
+    const isSnapPointSheet = snapPointPercent !== undefined;
+    const isMaximized = isSnapPointSheet && this.state.isMaximized;
+    const baseSheetStyle = (this.viewModel.roundBottomCorners ?? BOTTOM_SHEET_DEFAULTS.roundBottomCorners) === true
+      ? styles.sheetRounded
+      : styles.sheet;
+    const sheetStyle = isSnapPointSheet
+      ? baseSheetStyle.extend({
+          height: `${isMaximized ? 100 : snapPointPercent}%`,
+          minHeight: 0,
+          borderRadius: isMaximized ? 0 : (this.viewModel.roundBottomCorners ?? BOTTOM_SHEET_DEFAULTS.roundBottomCorners) === true
+            ? radius.xl
+            : `${radius.xl} ${radius.xl} 0 0`,
+        })
+      : baseSheetStyle;
 
     <layout style={styles.root}>
       {when((this.viewModel.showOverlay ?? BOTTOM_SHEET_DEFAULTS.showOverlay) === true, () => {
@@ -257,8 +376,9 @@ export class BottomSheet extends NavigationPageComponent<BottomSheetViewModel> {
             <view style={styles.handle} />
           </layout>;
         })}
+        {isSnapPointSheet ? this.renderSnapPointHeader() : null}
         {this.renderLoadingSpinner()}
-        {when(this.viewModel.title, title => {
+        {when(!isSnapPointSheet && this.viewModel.title, title => {
           <label
             style={typography.title2}
             value={transformText(title, this.viewModel.textCase)}
@@ -271,12 +391,14 @@ export class BottomSheet extends NavigationPageComponent<BottomSheetViewModel> {
             numberOfLines={0}
           />;
         })}
-        <view style={styles.closeButton} onTap={this.handleCloseTap} accessibilityCategory="button">
-          <label
-            style={styles.closeButtonLabel}
-            value={transformText('Fermer', this.viewModel.textCase)}
-          />
-        </view>
+        {!isSnapPointSheet ? (
+          <view style={styles.closeButton} onTap={this.handleCloseTap} accessibilityCategory="button">
+            <label
+              style={styles.closeButtonLabel}
+              value={transformText('Fermer', this.viewModel.textCase)}
+            />
+          </view>
+        ) : null}
         {this.viewModel.footerLabel && this.viewModel.onFooterTap ? (
           <BottomSheetFooter
             label={this.viewModel.footerLabel}
@@ -375,6 +497,26 @@ const styles = {
     borderRadius: radius.full,
     height: 5,
     width: 48,
+  }),
+  snapPointHeader: new Style<Layout>({
+    alignItems: 'center',
+    flexDirection: 'row',
+    height: layout.bottomSheet.snapPoint.headerHeight,
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+    width: '100%',
+  }),
+  snapPointTitle: typography.title2.extend({ flexGrow: 1, flexShrink: 1, marginRight: spacing.md, numberOfLines: 1 }),
+  snapPointTitlePlaceholder: new Style<View>({ flexGrow: 1, flexShrink: 1 }),
+  snapPointHeaderActions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row' }),
+  snapPointHeaderButton: new Style<View>({
+    alignItems: 'center',
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: radius.full,
+    height: layout.bottomSheet.snapPoint.headerTouchTarget,
+    justifyContent: 'center',
+    marginLeft: spacing.xs,
+    width: layout.bottomSheet.snapPoint.headerTouchTarget,
   }),
   contentPager: new Style<ScrollView>({
     flexGrow: 1,

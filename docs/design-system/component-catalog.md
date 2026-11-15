@@ -10,7 +10,7 @@ Source: `modules/haycee_mobile_app_valdi/src/design-system/tokens/`.
 | --- | --- | --- |
 | `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, border, icon, product, stock-progress, messaging and Live colors, including the shared 16%-alpha dark Live overlay surface, chat-role badge surfaces, the near-black unread-count surface and the Live shipping-line text gradient with explicit native-compatible stops | Prefer a semantic token. Add a named token before using a new app-wide color. |
 | `typography.ts` | Montserrat Regular, SemiBold, ExtraBold, Black; font sizes, line heights, named typography styles, `TextCase`, `transformText` | Do not load another font face or invent per-screen typography for a repeated role. Default text case is uppercase; set casing deliberately. |
-| `spacing.ts` | 4-point spacing scale and nested screen/layout measurements, including compact product-sheet sizing, Live order-sheet tabs, vertical-feed action-rail geometry and video playback controls | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
+| `spacing.ts` | 4-point spacing scale and nested screen/layout measurements, including snap-point sheet controls and gesture thresholds, compact product-sheet sizing, Live order-sheet tabs, Live exit-follow sheet geometry, vertical-feed action-rail geometry and video playback controls | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
 | `radius.ts` | Shared corner-radius scale | Reuse a semantic radius. Add a token for a repeated design role. |
 | `scrollBehavior.ts` | `noBounceScrollAttributes` app scroll contract | Spread it on shared/native scroll containers unless the interaction explicitly requires another verified behavior. |
 
@@ -44,13 +44,14 @@ All of these live under `modules/haycee_mobile_app_valdi/src/design-system/compo
 
 | Component | Use |
 | --- | --- |
-| `BottomSheet` | Standard sheet surface, presentation options, optional fixed footer and horizontal content pager. Respect `BOTTOM_SHEET_DEFAULTS`; use the navigation-options helper when the page underneath must show through. |
+| `BottomSheet` | Standard sheet surface, presentation options, optional fixed footer and horizontal content pager. Opt into a fixed initial detent with `snapPointPercent` for a sheet that can drag downward, dismiss, or expand to 100% from its header; this is off by default. Respect `BOTTOM_SHEET_DEFAULTS`; use the navigation-options helper when the page underneath must show through. |
 | `MediaActionSheetContent` | Shared implementation for media-led sheets; normally use the public wrappers instead of composing this internal content directly. |
 | `FeatureDiscoverySheet` | Contextual feature education/discovery, with optional image, animation or video. |
 | `UpsellSheet` | Offer, upgrade or plan-presentation flow. |
 | `LegalUpdateSheet` | Versioned legal/policy update, links, change summary, effective date, optional explicit confirmation and required-acceptance flow. It does not store acceptance or supply legal copy; the caller owns those contracts. |
 
 Detailed media-sheet API and presentation guidance: `docs/design-system/media-action-sheets.md`.
+Detent behavior and `snapPointPercent` usage: `docs/design-system/bottom-sheets.md`.
 Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/design-system/live-chat.md`.
 
 ### Navigation, tabs and selection
@@ -77,6 +78,7 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | `PinnedLiveComment` | Live-domain callout above the scrolling chat for a host-pinned comment. It has no outline, uses the shared Live surface and tokens, and animates in/out independently while the regular chat remains scrollable below. |
 | `NewMessagesPill` | Compact opaque near-black pill over a chat feed, with a fixed leading white icon and white unread count. It enters/exits with a short native slide/fade and returns to the newest message only when tapped. The Live feed follows incoming messages only while already near the bottom; otherwise it leaves the current scroll offset unchanged and accumulates unread messages until the reader returns to the bottom threshold. |
 | `LiveViewerScreen` | Full-screen Live composition. Its local demo chat can add incoming fixture messages at varied intervals while visible; each new row enters with a short, subtle native fade/translation, the feed pauses under Live sheets/background navigation, and recent history is bounded. |
+| `LiveFollowPromptSheet` | Live seller-follow prompt with a separate exit-confirmation mode. The exit confirmation has no colored illustration panel or avatar backing, and places a centered orange host pill with a white store icon over the avatar's lower edge. An unfollowed viewer sees a follow-and-exit CTA or an exit-only action when closing an active Live; the Live page exits after the sheet dismisses. |
 | `ImageCarousel` | Shared image gallery/carousel. `pager` presents one swipe-paged image; `strip` exposes all images in a horizontal rail. Supports caller-provided surface, contain/cover fit, rounded previews, decoded-dimension callbacks and native no-bounce scrolling. |
 | `VerticalSnapFeed` | Shared full-viewport vertical feed using native Valdi paging. Clamps each drag to the adjacent page and both ends, disables scrolling for zero/one page, renders stable keyed pages with viewport extensions, exposes active-index and guarded near-end pagination callbacks, and provides a page-scoped action overlay slot. |
 | `VerticalFeedActionRail` | Data-driven, transparent engagement controls for full-screen feeds. The caller supplies SVGs, accessible names, labels/counts, active states and callbacks; the component aligns them on the right edge using shared layout/typography tokens. |

@@ -14,6 +14,17 @@ export const spacing = {
 
 /** Resolved Shellby-inspired Home layout tokens. */
 export const layout = {
+  bottomSheet: {
+    snapPoint: {
+      collapseDragDistance: 72,
+      dismissDragDistance: 180,
+      dismissVelocity: 600,
+      headerHeight: 48,
+      headerIconSize: 20,
+      headerTouchTarget: 40,
+      transitionDurationSeconds: 0.24,
+    },
+  },
   navigation: {
     /** Height of the app bottom tabs, excluding the device safe-area inset. */
     bottomTabsHeight: 72,
@@ -227,6 +238,12 @@ export const layout = {
       },
       wallet: {
         tabHeight: 44,
+      },
+      exitFollowSheet: {
+        avatarSize: 70,
+        badgeWidth: 64,
+        height: '40%',
+        illustrationHeight: 104,
       },
       ordersTabWidth: 112,
     },
