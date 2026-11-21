@@ -26,6 +26,8 @@ export {
 } from './tokens/typography';
 export { DSButton } from './components/DSButton';
 export type { DSButtonSize, DSButtonVariant, DSButtonViewModel } from './components/DSButton';
+export { QuantityStepper } from './components/QuantityStepper';
+export type { QuantityStepperAppearance, QuantityStepperSize, QuantityStepperViewModel } from './components/QuantityStepper';
 export { DSSwitch } from './components/DSSwitch';
 export type { DSSwitchViewModel } from './components/DSSwitch';
 export { DSInlineLink } from './components/DSInlineLink';
@@ -115,6 +117,8 @@ export { ProductStockIndicator } from './components/ProductStockIndicator';
 export type { ProductStockIndicatorViewModel } from './components/ProductStockIndicator';
 export { ProductStockCountPill } from './components/ProductStockCountPill';
 export type { ProductStockCountPillViewModel } from './components/ProductStockCountPill';
+export { SellerRatingSummary } from './components/SellerRatingSummary';
+export type { SellerRatingSummaryViewModel } from './components/SellerRatingSummary';
 export { LiveChatRoleBadge } from './components/LiveChatRoleBadge';
 export type { LiveChatRole, LiveChatRoleBadgeViewModel } from './components/LiveChatRoleBadge';
 export { NewMessagesPill } from './components/NewMessagesPill';

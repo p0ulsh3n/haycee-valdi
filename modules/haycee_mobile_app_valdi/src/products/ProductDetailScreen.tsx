@@ -15,6 +15,7 @@ import navigationIcons from '../../res/navigation-icons';
 import { Hairline } from '../design-system/components/Hairline';
 import { ImageCarousel } from '../design-system/components/ImageCarousel';
 import { MasonryFeed } from '../design-system/components/MasonryFeed';
+import { QuantityStepper, SellerRatingSummary, DSButton } from '../design-system/index';
 import type { MasonryItem } from '../design-system/components/MasonryFeed';
 import { MasonryProductCard, estimateMasonryProductCardHeight } from '../design-system/components/MasonryProductCard';
 import { TransientFeedback } from '../design-system/components/SnackBar';
@@ -23,7 +24,7 @@ import { colors } from '../design-system/tokens/colors';
 import { noBounceScrollAttributes } from '../design-system/tokens/scrollBehavior';
 import { formatPriceLabel } from '../design-system/utils/money';
 import { radius } from '../design-system/tokens/radius';
-import { spacing } from '../design-system/tokens/spacing';
+import { layout, spacing } from '../design-system/tokens/spacing';
 import { fontSize, montserrat, typography, transformText } from '../design-system/tokens/typography';
 import { MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { ProductImageViewerScreen } from './ProductImageViewerScreen';
@@ -31,7 +32,6 @@ import { ProductVariantSelectionSheet, getProductVariantGroups } from './Product
 import type { ProductVariantSelectionIntent, SelectedProductVariant } from './ProductVariantSelectionSheet';
 import { getBottomSheetNavigationOptions } from '../design-system/components/BottomSheet';
 import { SellerProfileScreen } from '../sellers/SellerProfileScreen';
-import { DSButton } from '../design-system/index';
 
 export interface ProductDetailViewModel {
   product: MasonryProduct;
@@ -45,6 +45,7 @@ interface ProductDetailState {
   selectedSize: string;
   quantity: number;
   isFavorited: boolean;
+  isFollowingSeller: boolean;
   openSection: string;
 }
 
@@ -94,6 +95,7 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
     selectedSize: 'Unique',
     quantity: 1,
     isFavorited: false,
+    isFollowingSeller: false,
     openSection: 'shipping',
   };
 
@@ -206,6 +208,12 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
       icon: navigationIcons.favourite,
       duration: 1800,
     });
+  };
+
+  private handleToggleSellerFollow = (): void => {
+    const isFollowingSeller = !this.state.isFollowingSeller;
+    this.setState({ isFollowingSeller });
+    this.showFeedback(isFollowingSeller ? 'Vendeur suivi' : 'Suivi annulé');
   };
 
   private handleBuyNow = (): void => {
@@ -504,27 +512,60 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
     <view
       style={styles.vendorRow}
       onLayout={this.handleVendorLayout}
-      onTap={this.handleOpenSeller}
-      accessibilityCategory="button"
     >
-      {product.vendorAvatarUrl ? (
-        <image src={product.vendorAvatarUrl} style={styles.vendorAvatar} objectFit="cover" />
-      ) : (
-        <view style={styles.vendorAvatarFallback}>
-          <label value={initial} style={styles.vendorInitial} />
+      <view style={styles.vendorAvatarWrap}>
+        {product.vendorAvatarUrl ? (
+          <image src={product.vendorAvatarUrl} style={styles.vendorAvatar} objectFit="cover" />
+        ) : (
+          <view style={styles.vendorAvatarFallback}>
+            <label value={initial} style={styles.vendorInitial} />
+          </view>
+        )}
+        <view style={styles.vendorAvatarRing} />
+        <view
+          style={styles.vendorFollowTapTarget}
+          onTap={this.handleToggleSellerFollow}
+          accessibilityCategory="button"
+          accessibilityLabel={this.state.isFollowingSeller ? `Ne plus suivre ${vendorName}` : `Suivre ${vendorName}`}
+          accessibilityStateSelected={this.state.isFollowingSeller}
+        >
+          <view style={this.state.isFollowingSeller ? styles.vendorFollowBadgeSelected : styles.vendorFollowBadge}>
+            <image
+              src={this.state.isFollowingSeller ? navigationIcons.tick03 : navigationIcons.add01}
+              tint={colors.textPrimary}
+              width={layout.product.vendorFollowIconSize}
+              height={layout.product.vendorFollowIconSize}
+              objectFit="contain"
+            />
+          </view>
         </view>
-      )}
-      <layout style={styles.vendorDetails}>
-        <label value={vendorName} style={styles.vendorName} numberOfLines={1} />
-        <label
-          value={(product.vendorRating ?? '4.8') + ' · ' + (product.vendorSales ?? '120 ventes')}
-          style={styles.vendorMeta}
-          numberOfLines={1}
-        />
-      </layout>
-      <view style={styles.vendorAction} onTap={this.handleOpenSeller} accessibilityCategory="button">
-        <label value="Voir la boutique" style={styles.vendorActionText} />
       </view>
+      <view
+        style={styles.vendorDetails}
+        onTap={this.handleOpenSeller}
+        accessibilityCategory="button"
+        accessibilityLabel={`Ouvrir la boutique ${vendorName}`}
+      >
+        <label value={vendorName} style={styles.vendorName} numberOfLines={1} />
+        <SellerRatingSummary
+          rating={product.vendorRating}
+          reviewSummary={product.vendorReviewSummary}
+          followersCount={product.vendorFollowersCount}
+        />
+      </view>
+      <DSButton
+        title="Voir la boutique"
+        onTap={this.handleOpenSeller}
+        variant="black"
+        surfaceColor={colors.backgroundSecondary}
+        labelColor={colors.textPrimary}
+        size="compact"
+        width={layout.product.vendorActionWidth}
+        marginLeft={spacing.sm}
+        textCase="none"
+        labelTranslationY={-1}
+        accessibilityLabel={`Ouvrir la boutique ${vendorName}`}
+      />
     </view>;
   }
 
@@ -550,10 +591,11 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
       )}
       <view style={styles.stickyVendorDetails}>
         <label value={vendorName} style={styles.stickyVendorName} numberOfLines={1} />
-        <label
-          value={(product.vendorRating ?? '4.8') + ' ★ · ' + (product.vendorSales ?? '120 ventes')}
-          style={styles.stickyVendorMeta}
-          numberOfLines={1}
+        <SellerRatingSummary
+          rating={product.vendorRating}
+          reviewSummary={product.vendorReviewSummary}
+          followersCount={product.vendorFollowersCount}
+          compact={true}
         />
       </view>
       <image src={navigationIcons.moreHorizontalCircle01} tint={colors.textPrimary} width={24} height={24} objectFit="contain" />
@@ -563,12 +605,11 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
   private renderVariants(): void {
     const colorsList = this.productColors();
     const sizes = this.productSizes();
+    const selectedColor = colorsList.find(item => item.id === this.state.selectedColorId)?.name ?? 'Standard';
 
     <layout style={styles.variantsSection}>
-      <label value="Options" style={styles.sectionTitle} />
-      <layout style={styles.optionHeading}>
-        <label value="Couleur" style={styles.optionLabel} />
-        <label value={colorsList.find(item => item.id === this.state.selectedColorId)?.name ?? 'Standard'} style={styles.optionValue} />
+      <layout style={styles.optionHeadingFirst}>
+        <label value={`Couleur: ${selectedColor}`} style={styles.optionLabel} />
       </layout>
       <scroll {...noBounceScrollAttributes} horizontal={true} showsHorizontalScrollIndicator={false} style={styles.optionScroll}>
         <layout style={styles.colorOptions}>
@@ -586,7 +627,6 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
       </scroll>
       <layout style={styles.optionHeading}>
         <label value="Taille" style={styles.optionLabel} />
-        <label value={this.state.selectedSize} style={styles.optionValue} />
       </layout>
       <scroll {...noBounceScrollAttributes} horizontal={true} showsHorizontalScrollIndicator={false} style={styles.optionScroll}>
         <layout style={styles.sizeOptions}>
@@ -604,15 +644,14 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
       </scroll>
       <layout style={styles.quantityRow}>
         <label value="Quantité" style={styles.optionLabel} />
-        <layout style={styles.quantityControls}>
-          <view style={styles.quantityButton} onTap={this.decreaseQuantity} accessibilityCategory="button">
-            <image src={navigationIcons.remove02} tint={colors.textPrimary} width={16} height={16} objectFit="contain" />
-          </view>
-          <label value={String(this.state.quantity)} style={styles.quantityValue} />
-          <view style={styles.quantityButton} onTap={this.increaseQuantity} accessibilityCategory="button">
-            <image src={navigationIcons.add02} tint={colors.textPrimary} width={16} height={16} objectFit="contain" />
-          </view>
-        </layout>
+        <QuantityStepper
+          value={this.state.quantity}
+          size="product"
+          appearance="outlined"
+          onDecrease={this.decreaseQuantity}
+          onIncrease={this.increaseQuantity}
+          itemLabel={this.viewModel.product.title}
+        />
       </layout>
     </layout>;
   }
@@ -676,7 +715,9 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
       opacity={this.recommendationsSectionVisible ? 0 : 1}
       translationY={this.recommendationsSectionVisible ? 28 : 0}
     >
-      <Hairline color={colors.borderDefault} />
+      <view style={styles.bottomBarHairline}>
+        <Hairline color={colors.borderDefault} />
+      </view>
       <layout style={styles.bottomActions}>
         <view style={styles.bottomMessage} onTap={this.recommendationsSectionVisible ? undefined : this.handleMessageSeller} accessibilityCategory="button">
           <image src={navigationIcons.bubbleChat} tint={colors.textPrimary} width={20} height={20} objectFit="contain" />
@@ -739,49 +780,47 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
         {this.renderMedia(product, images)}
 
         <view style={styles.content} onLayout={this.handleContentLayout}>
-          {this.renderVendor(product)}
-          {product.isLive ? (
-            <view style={styles.liveRow} onTap={() => this.showFeedback('Live')} accessibilityCategory="button">
-              <label value="PRÉSENTÉ EN DIRECT" style={styles.liveTitle} />
-              <label value="Rejoindre le live" style={styles.liveAction} />
-            </view>
-          ) : null}
-          {product.isFlashSale ? (
-            <view style={styles.offerBanner}>
-              <label value="VENTE FLASH" style={styles.offerTitle} />
-              <label value="Offre limitée dans le temps" style={styles.offerBody} />
-            </view>
-          ) : null}
-          <label
-            value={transformText(product.title, 'capitalize')}
-            style={styles.productTitle}
-            numberOfLines={0}
-            onLayout={this.handleProductTitleLayout}
-          />
-
-          <layout style={styles.priceRow}>
-            <label value={formatPriceLabel(product.price)} style={styles.price} />
-            {product.originalPrice ? (
-              <label value={formatPriceLabel(product.originalPrice)} style={styles.originalPrice} />
-            ) : null}
-            {discount ? (
-              <view style={styles.discountBadge}>
-                <label value={discount} style={styles.discountText} />
+            {this.renderVendor(product)}
+            {product.isLive ? (
+              <view style={styles.liveRow} onTap={() => this.showFeedback('Live')} accessibilityCategory="button">
+                <label value="PRÉSENTÉ EN DIRECT" style={styles.liveTitle} />
+                <label value="Rejoindre le live" style={styles.liveAction} />
               </view>
             ) : null}
-          </layout>
+            <label
+              value={transformText(product.title, 'capitalize')}
+              style={styles.productTitle}
+              numberOfLines={0}
+              onLayout={this.handleProductTitleLayout}
+            />
 
-          <layout style={styles.statsRow}>
-            <label value={`★ ${product.rating ?? '4.8'}`} style={styles.statStrong} />
-            <label value={product.soldCount ?? '120 vendus'} style={styles.stat} />
-            {product.isFlashSale ? (
-              <label value="Flash" style={styles.flashStat} />
-            ) : null}
-          </layout>
+            <layout style={styles.priceRow}>
+              <label value={formatPriceLabel(product.price)} style={styles.price} />
+              {product.originalPrice ? (
+                <label value={formatPriceLabel(product.originalPrice)} style={styles.originalPrice} />
+              ) : null}
+              {discount ? (
+                <view style={styles.discountBadge}>
+                  <label value={discount} style={styles.discountText} />
+                </view>
+              ) : null}
+            </layout>
+
+            <layout style={styles.statsRow}>
+              <label value={`★ ${product.rating ?? '4.8'}`} style={styles.statStrong} />
+              <label value={product.soldCount ?? '120 vendus'} style={styles.stat} />
+              {product.isFlashSale ? (
+                <label value="Flash" style={styles.flashStat} />
+              ) : null}
+            </layout>
+        </view>
+        <view style={styles.contentGap} />
+        <view style={styles.optionsContent}>
           {product.isFeatured ? <label value="SÉLECTION HAYCEE" style={styles.featuredLabel} /> : null}
-          <Hairline color={colors.borderDefault} />
           {this.renderVariants()}
-          <Hairline color={colors.borderDefault} />
+        </view>
+        <view style={styles.contentGap} />
+        <view style={styles.detailsContent}>
           {this.renderAccordions(product)}
           {this.viewModel.recommendations && this.viewModel.recommendations.length > 0 ? (
             <layout style={styles.recommendations} onVisibilityChanged={this.handleRecommendationsVisibility}>
@@ -886,7 +925,6 @@ const styles = {
     marginLeft: spacing.md,
   }),
   stickyVendorName: typography.bodyEmphasis,
-  stickyVendorMeta: typography.caption.extend({ marginTop: spacing.xs }),
   headerTitle: typography.headline.extend({
     font: montserrat.extraBold(fontSize.large),
   }),
@@ -952,28 +990,45 @@ const styles = {
   badgeText: typography.badge,
   content: new Style<View>({
     backgroundColor: colors.backgroundPrimary,
-    borderRadius: `${radius.xl} ${radius.xl} 0 0`,
     marginTop: -spacing.lg,
     paddingLeft: spacing.lg,
     paddingRight: spacing.lg,
     paddingTop: spacing.xl,
+    width: '100%',
   }),
-  productTitle: typography.title1,
+  contentGap: new Style<View>({
+    backgroundColor: colors.backgroundSecondary,
+    height: layout.product.detailSectionDividerHeight,
+    width: '100%',
+  }),
+  optionsContent: new Style<View>({
+    backgroundColor: colors.backgroundPrimary,
+    paddingLeft: spacing.lg,
+    paddingRight: spacing.lg,
+    width: '100%',
+  }),
+  detailsContent: new Style<View>({
+    backgroundColor: colors.backgroundPrimary,
+    paddingLeft: spacing.lg,
+    paddingRight: spacing.lg,
+    width: '100%',
+  }),
+  productTitle: typography.productTitle,
   priceRow: new Style<Layout>({
     alignItems: 'center',
     flexDirection: 'row',
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
   }),
-  price: typography.price.extend({
-    font: montserrat.black(fontSize.priceLarge),
-  }),
-  originalPrice: typography.priceRegular.extend({
+  price: typography.price,
+  originalPrice: typography.caption.extend({
     color: colors.textTertiary,
     marginLeft: spacing.sm,
   }),
   discountBadge: new Style<View>({
+    alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,
     borderRadius: radius.xs,
+    justifyContent: 'center',
     marginLeft: spacing.sm,
     paddingBottom: spacing.xs,
     paddingLeft: spacing.sm,
@@ -984,22 +1039,26 @@ const styles = {
   statsRow: new Style<Layout>({
     alignItems: 'center',
     flexDirection: 'row',
-    marginBottom: spacing.xl,
-    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+    marginTop: spacing.xs,
   }),
-  statStrong: typography.bodyEmphasis,
+  statStrong: typography.caption.extend({
+    color: colors.textPrimary,
+    font: montserrat.semiBold(fontSize.metadata),
+  }),
   stat: typography.caption.extend({
-    marginLeft: spacing.md,
+    marginLeft: spacing.sm,
   }),
   flashStat: typography.caption.extend({
     color: colors.textDanger,
-    marginLeft: spacing.md,
+    font: montserrat.semiBold(fontSize.metadata),
+    marginLeft: spacing.sm,
   }),
   section: new Style<Layout>({
     paddingBottom: spacing.xl,
     paddingTop: spacing.xl,
   }),
-  sectionTitle: typography.title2,
+  sectionTitle: typography.productTitle,
   body: typography.body.extend({
     color: colors.textSecondary,
     marginTop: spacing.md,
@@ -1074,38 +1133,77 @@ const styles = {
     paddingBottom: spacing.lg,
     paddingTop: spacing.sm,
   }),
+  vendorAvatarWrap: new Style<View>({
+    flexShrink: 0,
+    height: layout.product.vendorAvatarVisualHeight,
+    position: 'relative',
+    width: layout.product.vendorAvatarSize,
+  }),
   vendorAvatar: new Style<View>({
     borderRadius: radius.full,
-    height: 40,
-    width: 40,
+    height: layout.product.vendorAvatarSize,
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    width: layout.product.vendorAvatarSize,
   }),
   vendorAvatarFallback: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,
     borderRadius: radius.full,
-    height: 40,
+    height: layout.product.vendorAvatarSize,
     justifyContent: 'center',
-    width: 40,
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    width: layout.product.vendorAvatarSize,
   }),
-  vendorInitial: typography.headline.extend({ font: montserrat.extraBold(fontSize.body) }),
-  vendorDetails: new Style<Layout>({
-    flexGrow: 1,
-    marginLeft: spacing.md,
+  vendorAvatarRing: new Style<View>({
+    borderColor: colors.backgroundPrimary,
+    borderRadius: radius.full,
+    borderWidth: 2,
+    height: layout.product.vendorAvatarSize,
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    width: layout.product.vendorAvatarSize,
+    zIndex: 1,
   }),
-  vendorName: typography.bodyEmphasis,
-  vendorMeta: typography.caption.extend({ marginTop: spacing.xs }),
-  vendorAction: new Style<View>({
+  vendorFollowTapTarget: new Style<View>({
+    alignItems: 'center',
+    alignSelf: 'center',
+    // Keep the avatar badge anchored to the image edge while reserving its visible overlap below.
+    bottom: -(layout.product.vendorFollowTouchTargetSize - layout.product.vendorFollowBadgeSize) / 2,
+    height: layout.product.vendorFollowTouchTargetSize,
+    justifyContent: 'center',
+    position: 'absolute',
+    width: layout.product.vendorFollowTouchTargetSize,
+    zIndex: 2,
+  }),
+  vendorFollowBadge: new Style<View>({
+    alignItems: 'center',
+    backgroundColor: colors.buttonPrimary,
+    borderRadius: radius.full,
+    height: layout.product.vendorFollowBadgeSize,
+    justifyContent: 'center',
+    width: layout.product.vendorFollowBadgeSize,
+  }),
+  vendorFollowBadgeSelected: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,
     borderRadius: radius.full,
+    height: layout.product.vendorFollowBadgeSize,
     justifyContent: 'center',
-    marginLeft: spacing.sm,
-    paddingBottom: spacing.sm,
-    paddingLeft: spacing.md,
-    paddingRight: spacing.md,
-    paddingTop: spacing.sm,
+    width: layout.product.vendorFollowBadgeSize,
   }),
-  vendorActionText: typography.buttonSmall,
+  vendorInitial: typography.headline.extend({ font: montserrat.extraBold(fontSize.body) }),
+  vendorDetails: new Style<View>({
+    flexDirection: 'column',
+    flexGrow: 1,
+    marginLeft: spacing.md,
+    translationY: -spacing.sm,
+  }),
+  vendorName: typography.bodyEmphasis,
   liveRow: new Style<View>({
     borderColor: colors.borderDefault,
     borderWidth: 1,
@@ -1116,100 +1214,104 @@ const styles = {
   }),
   liveTitle: typography.badge,
   liveAction: typography.buttonSmall.extend({ color: colors.textDanger }),
-  offerBanner: new Style<View>({
-    borderColor: colors.interactivePrimary,
-    borderWidth: 1,
-    marginBottom: spacing.lg,
-    padding: spacing.lg,
-  }),
-  offerTitle: typography.badge,
-  offerBody: typography.caption.extend({ marginTop: spacing.sm }),
   featuredLabel: typography.badge.extend({ color: colors.textSecondary, marginBottom: spacing.lg }),
   variantsSection: new Style<Layout>({
-    paddingBottom: spacing.xl,
-    paddingTop: spacing.xl,
+    paddingBottom: spacing.sm,
+    paddingTop: spacing.xs,
   }),
   optionHeading: new Style<Layout>({
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: spacing.lg,
+    justifyContent: 'flex-start',
+    marginTop: spacing.md,
   }),
-  optionLabel: typography.caption,
-  optionValue: typography.bodyEmphasis,
-  optionScroll: new Style<ScrollView>({ marginTop: spacing.sm }),
+  optionHeadingFirst: new Style<Layout>({
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: spacing.xs,
+  }),
+  optionLabel: typography.caption.extend({
+    color: colors.textPrimary,
+    font: montserrat.extraBold(fontSize.body),
+  }),
+  optionScroll: new Style<ScrollView>({
+    marginTop: spacing.xs,
+    paddingBottom: spacing.xs,
+    paddingLeft: spacing.xs,
+    paddingRight: spacing.xs,
+    paddingTop: spacing.xs,
+  }),
   colorOptions: new Style<Layout>({ flexDirection: 'row' }),
   colorOption: new Style<View>({
     alignItems: 'center',
     borderColor: 'transparent',
     borderRadius: radius.full,
     borderWidth: 2,
-    height: 44,
+    height: 38,
     justifyContent: 'center',
     marginRight: spacing.sm,
-    width: 44,
+    width: 38,
   }),
   colorOptionSelected: new Style<View>({
     alignItems: 'center',
     borderColor: colors.textPrimary,
     borderRadius: radius.full,
     borderWidth: 2,
-    height: 44,
+    height: 38,
     justifyContent: 'center',
     marginRight: spacing.sm,
-    width: 44,
+    width: 38,
   }),
   colorDot: new Style<View>({
-    borderColor: colors.borderDefault,
     borderRadius: radius.full,
-    borderWidth: 1,
-    height: 30,
-    width: 30,
+    height: 28,
+    width: 28,
   }),
   sizeOptions: new Style<Layout>({ flexDirection: 'row' }),
   sizeOption: new Style<View>({
     alignItems: 'center',
     borderColor: colors.borderDefault,
+    borderRadius: radius.md,
     borderWidth: 1,
+    height: 40,
     justifyContent: 'center',
     marginRight: spacing.sm,
     minWidth: 56,
-    paddingBottom: spacing.sm,
     paddingLeft: spacing.md,
     paddingRight: spacing.md,
-    paddingTop: spacing.sm,
   }),
   sizeOptionSelected: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.textPrimary,
     borderColor: colors.textPrimary,
+    borderRadius: radius.md,
     borderWidth: 1,
+    height: 40,
     justifyContent: 'center',
     marginRight: spacing.sm,
     minWidth: 56,
-    paddingBottom: spacing.sm,
     paddingLeft: spacing.md,
     paddingRight: spacing.md,
-    paddingTop: spacing.sm,
   }),
-  sizeText: typography.buttonSmall,
-  sizeTextSelected: typography.buttonSmall.extend({ color: colors.textInverted }),
+  sizeText: typography.caption.extend({
+    color: colors.textPrimary,
+    font: montserrat.semiBold(fontSize.metadata),
+    textAlign: 'center',
+    translationY: -1,
+  }),
+  sizeTextSelected: typography.caption.extend({
+    color: colors.textInverted,
+    font: montserrat.semiBold(fontSize.metadata),
+    textAlign: 'center',
+    translationY: -1,
+  }),
   quantityRow: new Style<Layout>({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: spacing.xl,
+    marginTop: spacing.lg,
   }),
-  quantityControls: new Style<Layout>({ alignItems: 'center', flexDirection: 'row' }),
-  quantityButton: new Style<View>({
-    alignItems: 'center',
-    borderColor: colors.borderDefault,
-    borderWidth: 1,
-    height: 32,
-    justifyContent: 'center',
-    width: 32,
-  }),
-  quantityValue: typography.bodyEmphasis.extend({ marginLeft: spacing.md, marginRight: spacing.md }),
   accordions: new Style<Layout>({ paddingTop: spacing.md }),
   accordion: new Style<Layout>({
     // Keep the accordion surface explicit so stale style metadata cannot omit it.
@@ -1217,13 +1319,13 @@ const styles = {
     paddingLeft: 0,
     paddingRight: 0,
   }),
-  accordionHeader: new Style<View>({ alignItems: 'center', flexDirection: 'row', minHeight: 64 }),
-  accordionTitle: typography.button.extend({ flexGrow: 1, marginLeft: spacing.md }),
+  accordionHeader: new Style<View>({ alignItems: 'center', flexDirection: 'row', minHeight: 52 }),
+  accordionTitle: typography.productTitle.extend({ flexGrow: 1, marginLeft: spacing.md }),
   accordionSummary: typography.caption.extend({ marginRight: spacing.sm }),
   accordionBody: typography.body.extend({
     color: colors.textSecondary,
     paddingBottom: spacing.lg,
-    paddingLeft: 32,
+    paddingLeft: spacing.xxl,
     paddingRight: spacing.xl,
   }),
   recommendations: new Style<Layout>({ paddingBottom: spacing.xl, paddingTop: spacing.xxl }),
@@ -1237,6 +1339,13 @@ const styles = {
     paddingTop: spacing.sm,
     position: 'absolute',
     right: 0,
+  }),
+  bottomBarHairline: new Style<View>({
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: '100%',
   }),
   bottomActions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', paddingBottom: spacing.sm, paddingTop: spacing.sm }),
   bottomMessage: new Style<View>({ alignItems: 'center', height: 52, justifyContent: 'center', width: 58 }),

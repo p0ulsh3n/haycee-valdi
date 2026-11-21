@@ -4,7 +4,7 @@ import { Component } from 'valdi_core/src/Component';
 import { Style } from 'valdi_core/src/Style';
 import { Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../res/navigation-icons';
-import { DSButton, Hairline, MasonryFeed, getMasonryImageAspectRatio } from '../design-system/index';
+import { DSButton, Hairline, MasonryFeed, QuantityStepper, getMasonryImageAspectRatio } from '../design-system/index';
 import type { MasonryItem } from '../design-system/components/MasonryFeed';
 import type { MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { MasonryProductCard } from '../design-system/components/MasonryProductCard';
@@ -118,29 +118,16 @@ export class CartScreen extends Component<CartScreenViewModel> {
           {discount ? <label value={discount} style={styles.discountLabel} numberOfLines={1} /> : null}
         </layout>
         <layout style={styles.itemActions}>
-          <view style={styles.quantityControl}>
-            <view
-              style={styles.quantityButton}
-              onTapDisabled={item.quantity <= 1}
-              opacity={item.quantity <= 1 ? 0.45 : 1}
-              onTap={createReusableCallback(() => this.viewModel.onChangeQuantity(item.id, -1))}
-              accessibilityCategory="button"
-              accessibilityLabel={`Diminuer la quantité de ${product.title}`}
-            >
-              <image src={navigationIcons.remove02} tint={colors.textPrimary} width={15} height={15} objectFit="contain" />
-            </view>
-            <label value={`${item.quantity}`} style={styles.quantityValue} numberOfLines={1} />
-            <view
-              style={styles.quantityButton}
-              onTapDisabled={item.stockLimit !== undefined && item.quantity >= item.stockLimit}
-              opacity={item.stockLimit !== undefined && item.quantity >= item.stockLimit ? 0.45 : 1}
-              onTap={createReusableCallback(() => this.viewModel.onChangeQuantity(item.id, 1))}
-              accessibilityCategory="button"
-              accessibilityLabel={`Augmenter la quantité de ${product.title}`}
-            >
-              <image src={navigationIcons.add02} tint={colors.textPrimary} width={15} height={15} objectFit="contain" />
-            </view>
-          </view>
+          <QuantityStepper
+            value={item.quantity}
+            size="compact"
+            appearance="grouped"
+            decreaseDisabled={item.quantity <= 1}
+            increaseDisabled={item.stockLimit !== undefined && item.quantity >= item.stockLimit}
+            onDecrease={createReusableCallback(() => this.viewModel.onChangeQuantity(item.id, -1))}
+            onIncrease={createReusableCallback(() => this.viewModel.onChangeQuantity(item.id, 1))}
+            itemLabel={product.title}
+          />
         </layout>
       </layout>
     </view>;
@@ -303,9 +290,6 @@ const styles = {
   originalPrice: new Style<Label>({ color: colors.textTertiary, font: montserrat.regular(fontSize.tiny), marginRight: spacing.xs, textDecoration: 'strikethrough' }),
   discountLabel: new Style<Label>({ color: colors.textDanger, font: montserrat.semiBold(fontSize.tiny) }),
   itemActions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginTop: spacing.sm, width: '100%' }),
-  quantityControl: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, flexDirection: 'row', flexShrink: 0, height: layout.cart.quantityButtonSize, justifyContent: 'space-between', paddingLeft: spacing.xs, paddingRight: spacing.xs }),
-  quantityButton: new Style<View>({ alignItems: 'center', borderRadius: radius.full, height: layout.cart.quantityButtonSize, justifyContent: 'center', width: layout.cart.quantityButtonSize }),
-  quantityValue: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata), minWidth: 22, textAlign: 'center' }),
   storeShippingInfo: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginBottom: spacing.xs, marginLeft: spacing.sm, minWidth: 0 }),
   storeShippingLabel: new Style<Label>({ color: colors.textSecondary, flexShrink: 0, font: montserrat.semiBold(fontSize.label), marginLeft: spacing.xs }),
   storeShippingAmount: new Style<Label>({ color: colors.textTertiary, flexShrink: 1, font: montserrat.semiBold(fontSize.label), marginLeft: spacing.xs }),

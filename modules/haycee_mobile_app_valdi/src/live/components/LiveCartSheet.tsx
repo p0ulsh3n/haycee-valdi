@@ -4,8 +4,7 @@ import { NavigationPageStatefulComponent } from 'valdi_navigation/src/Navigation
 import { Style } from 'valdi_core/src/Style';
 import { Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
-import { BottomSheetFooter, bottomSheetSurfaceStyle } from '../../design-system/components/BottomSheet';
-import { Hairline } from '../../design-system/components/Hairline';
+import { BottomSheetFooter, Hairline, QuantityStepper, bottomSheetSurfaceStyle } from '../../design-system/index';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
@@ -61,22 +60,16 @@ export class LiveCartSheet extends NavigationPageStatefulComponent<LiveCartSheet
         {item.variantLabel ? <label value={item.variantLabel} style={styles.itemVariant} numberOfLines={1} /> : null}
         <label value={formatFcfa(product.price)} style={styles.itemPrice} numberOfLines={1} />
       </layout>
-      <layout style={styles.quantityControl}>
-        <view style={styles.quantityButton} onTap={() => this.updateQuantity(product.id, item.variantId, -1)} accessibilityCategory="button" accessibilityLabel="Diminuer la quantité">
-          <image src={navigationIcons.remove02} width={16} height={16} objectFit="contain" />
-        </view>
-        <label value={`${item.quantity}`} style={styles.quantity} numberOfLines={1} />
-        <view
-          style={styles.quantityButton}
-          opacity={item.quantity >= (item.stockLimit ?? product.stockLeft) ? 0.4 : 1}
-          onTapDisabled={item.quantity >= (item.stockLimit ?? product.stockLeft)}
-          onTap={() => this.updateQuantity(product.id, item.variantId, 1)}
-          accessibilityCategory="button"
-          accessibilityLabel="Augmenter la quantité"
-        >
-          <image src={navigationIcons.add02} width={16} height={16} objectFit="contain" />
-        </view>
-      </layout>
+      <QuantityStepper
+        value={item.quantity}
+        size="compact"
+        appearance="white"
+        marginLeft={spacing.sm}
+        increaseDisabled={item.quantity >= (item.stockLimit ?? product.stockLeft)}
+        onDecrease={() => this.updateQuantity(product.id, item.variantId, -1)}
+        onIncrease={() => this.updateQuantity(product.id, item.variantId, 1)}
+        itemLabel={product.title}
+      />
     </layout>;
   }
 
@@ -157,9 +150,6 @@ const styles = {
   itemTitle: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata) }),
   itemVariant: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.nano), marginTop: 2 }),
   itemPrice: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.metadata), marginTop: spacing.xs }),
-  quantityControl: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginLeft: spacing.sm }),
-  quantityButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundPrimary, borderRadius: radius.xs, height: 30, justifyContent: 'center', width: 30 }),
-  quantity: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata), marginLeft: spacing.sm, marginRight: spacing.sm }),
   emptyState: new Style<View>({ alignItems: 'center', flexGrow: 1, justifyContent: 'center' }),
   emptyText: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.body) }),
   summarySection: new Style<Layout>({ flexDirection: 'column' }),

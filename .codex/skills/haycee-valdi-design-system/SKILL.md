@@ -21,6 +21,7 @@ Use this skill for every app UI task: new screens, visual changes, layout, typog
 ## Shared-system rules
 
 - Use semantic tokens from `src/design-system/tokens/` for colors, spacing/layout, radius, typography, and scrolling. Do not introduce raw app palette values or one-off spacing/font/radius values where a shared token or semantic variant belongs. If the design needs a genuinely new value, create a named token first.
+- Quantity steppers across the app use the shared `QuantityStepper` component, which keeps a fixed-width count slot so the controls do not shift as values change. It uses the bold `navigationIcons.add01` and `navigationIcons.remove01` assets; do not create screen-local quantity steppers or substitute another plus/minus icon.
 - Use `DSButton` for every labeled action and only its global `cta`, `black`, `neutral`, or `outline` variants. Do not build a screen-local button skin. Follow the button skill for semantic choice.
 - Use shared navigation, `BottomSheet` options/surface, sheets, tabs/chips, `Hairline`, `RadioSelection`, `Ticker`, `Tooltip`, `TransientFeedback`/`SnackBar`, `InAppBanner`, product components and loading primitives where appropriate. See the catalog for purpose and boundaries.
 - Preserve Montserrat faces and typography scales from the shared typography tokens. The default text case is uppercase; override it deliberately through `transformText`/`textCase` rather than hand-transforming labels.

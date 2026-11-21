@@ -4,7 +4,7 @@ import { NavigationPageStatefulComponent } from 'valdi_navigation/src/Navigation
 import { Style } from 'valdi_core/src/Style';
 import { ImageView, Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import navigationIcons from '../../../res/navigation-icons';
-import { DSButton, Hairline, RadioSelection, bottomSheetSurfaceStyle, TransientFeedback } from '../../design-system/index';
+import { DSButton, Hairline, QuantityStepper, RadioSelection, bottomSheetSurfaceStyle, TransientFeedback } from '../../design-system/index';
 import { colors } from '../../design-system/tokens/colors';
 import { radius } from '../../design-system/tokens/radius';
 import { spacing } from '../../design-system/tokens/spacing';
@@ -209,29 +209,17 @@ export class LiveProductPurchaseSheet extends NavigationPageStatefulComponent<Li
                   numberOfLines={1}
                 />
               </layout>
-              <layout style={styles.quantityControls}>
-                <view
-                  style={styles.quantityButton}
-                  opacity={!quantityEnabled || this.state.quantity <= 1 ? 0.45 : 1}
-                  onTapDisabled={!quantityEnabled || this.state.quantity <= 1}
-                  onTap={() => this.changeQuantity(-1)}
-                  accessibilityCategory="button"
-                  accessibilityLabel="Diminuer la quantité"
-                >
-                  <image src={navigationIcons.remove02} tint={colors.textPrimary} width={17} height={17} objectFit="contain" />
-                </view>
-                <label value={`${this.state.quantity}`} style={styles.quantityValue} numberOfLines={1} />
-                <view
-                  style={styles.quantityButton}
-                  opacity={!quantityEnabled || this.state.quantity >= availableStock ? 0.45 : 1}
-                  onTapDisabled={!quantityEnabled || this.state.quantity >= availableStock}
-                  onTap={() => this.changeQuantity(1)}
-                  accessibilityCategory="button"
-                  accessibilityLabel="Augmenter la quantité"
-                >
-                  <image src={navigationIcons.add02} tint={colors.textPrimary} width={17} height={17} objectFit="contain" />
-                </view>
-              </layout>
+              <QuantityStepper
+                value={this.state.quantity}
+                size="standard"
+                appearance="soft"
+                marginLeft={spacing.md}
+                decreaseDisabled={!quantityEnabled || this.state.quantity <= 1}
+                increaseDisabled={!quantityEnabled || this.state.quantity >= availableStock}
+                onDecrease={() => this.changeQuantity(-1)}
+                onIncrease={() => this.changeQuantity(1)}
+                itemLabel={product.title}
+              />
             </layout>
 
             <Hairline color={colors.borderDefault} />
@@ -288,9 +276,6 @@ const styles = {
   quantitySection: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.sm }),
   quantityCopy: new Style<Layout>({ flexDirection: 'column', flexGrow: 1, flexShrink: 1 }),
   stockLabel: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.nano), marginTop: 3 }),
-  quantityControls: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginLeft: spacing.md }),
-  quantityButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: radius.full, height: 34, justifyContent: 'center', width: 34 }),
-  quantityValue: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.body), marginLeft: spacing.md, marginRight: spacing.md, minWidth: 18, textAlign: 'center' }),
   costRow: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', paddingTop: spacing.md }),
   costLabel: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.metadata) }),
   costValue: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata) }),
