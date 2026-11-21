@@ -312,7 +312,7 @@ export class MediaActionSheetContent extends StatefulComponent<MediaActionSheetC
           {benefit.icon ? (
             <image src={benefit.icon} tint={this.viewModel.tone === 'dark' ? colors.textInverted : colors.iconDefault} width={20} height={20} objectFit="contain" />
           ) : (
-            <view style={styles.benefitMark.extend({ backgroundColor: this.viewModel.tone === 'dark' ? colors.textInverted : colors.interactivePrimary })} />
+            <view style={styles.benefitMark.extend({ backgroundColor: this.viewModel.tone === 'dark' ? colors.textInverted : colors.buttonPrimary })} />
           )}
           <view style={styles.benefitCopy}>
             <label value={benefit.title} style={styles.benefitTitle.extend({ color: this.primaryTextColor() })} numberOfLines={2} />
@@ -334,7 +334,7 @@ export class MediaActionSheetContent extends StatefulComponent<MediaActionSheetC
         >
           <label
             value={this.viewModel.eyebrow}
-            style={styles.eyebrow.extend({ color: colors.textInverted })}
+            style={styles.eyebrow.extend({ color: this.viewModel.tone === 'dark' ? colors.textInverted : colors.textPrimary })}
             numberOfLines={1}
           />
         </view>

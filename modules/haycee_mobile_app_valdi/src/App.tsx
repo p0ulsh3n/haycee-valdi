@@ -11,7 +11,7 @@ import { layout } from './design-system/tokens/spacing';
 import navigationIcons from '../res/navigation-icons';
 import { ProductDetailScreen } from './products/ProductDetailScreen';
 import { ProductVariantSelectionSheet, getProductVariantGroups } from './products/ProductVariantSelectionSheet';
-import type { ProductVariantSelectionIntent } from './products/ProductVariantSelectionSheet';
+import type { ProductVariantSelectionIntent, SelectedProductVariant } from './products/ProductVariantSelectionSheet';
 import type { HomeCollectionKind, HomeProduct } from './home/components/HomeProductRail';
 import type { MasonryProduct } from './design-system/components/MasonryProductCard';
 import { ConversationScreen } from './messaging/ConversationScreen';
@@ -25,9 +25,23 @@ import { SearchScreen } from './search/SearchScreen';
 import { SellerProfileScreen } from './sellers/SellerProfileScreen';
 import { HomeCategoriesScreen } from './home/HomeCategoriesScreen';
 import { AddressPickerSheet } from './cart/AddressPickerSheet';
+import { CartCheckoutScreen } from './cart/CartCheckoutScreen';
+import type { MarketplaceCartItem } from './cart/data/CartData';
+import { addMarketplaceCartItem, removeMarketplaceCartItem, updateMarketplaceCartQuantity } from './cart/data/CartData';
+import { WalletScreen } from './profile/WalletScreen';
+import { WalletWithdrawalScreen } from './profile/WalletWithdrawalScreen';
+import { ProfileAccountDestinationScreen } from './profile/ProfileAccountDestinationScreen';
+import type { ProfileAccountDestinationKind } from './profile/ProfileAccountDestinationScreen';
+import { ProfileSettingsScreen } from './profile/ProfileSettingsScreen';
+import { ProfileSettingsDestinationScreen } from './profile/ProfileSettingsDestinationScreen';
+import type { SettingsDestinationKind, ProfileSettingsValues } from './profile/data/ProfileSettingsData';
+import { DEFAULT_PROFILE_SETTINGS } from './profile/data/ProfileSettingsData';
+import { WALLET_OVERVIEW } from './profile/data/WalletDemoData';
 import { getBottomSheetNavigationOptions } from './design-system/components/BottomSheet';
+import { AlertDialog } from './design-system/components/AlertDialog';
 import { colors } from './design-system/tokens/colors';
 import { runNavigationAction } from './design-system/utils/NavigationActionGate';
+import { formatFcfa } from './design-system/utils/money';
 
 /**
  * @ViewModel
@@ -44,13 +58,15 @@ export interface AppComponentContext {}
 interface AppState {
   selectedHomeCategoryKey: string;
   selectedPickupAddress?: string;
+  cartItems: MarketplaceCartItem[];
+  profileSettings: ProfileSettingsValues;
 }
 
 /** Application root: Home is the first page and bottom tabs stay visible. */
 export class App extends StatefulComponent<AppViewModel, AppState, AppComponentContext> {
   private navigationController?: NavigationController;
 
-  state: AppState = { selectedHomeCategoryKey: 'all' };
+  state: AppState = { selectedHomeCategoryKey: 'all', cartItems: [], profileSettings: { ...DEFAULT_PROFILE_SETTINGS } };
 
   private handleOpenCategories = (selectedCategoryKey: string): void => {
     runNavigationAction(this.navigationController, () => {
@@ -93,9 +109,168 @@ export class App extends StatefulComponent<AppViewModel, AppState, AppComponentC
     this.setState({ selectedPickupAddress: address });
   };
 
+  private handleOpenWallet = (): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(
+        WalletScreen,
+        { onWithdrawTap: this.handleOpenWalletWithdrawal },
+        {},
+        { animated: true },
+      );
+    });
+  };
+
+  private handleOpenWalletWithdrawal = (): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(
+        WalletWithdrawalScreen,
+        {
+          onSubmit: amount => {
+            TransientFeedback.show({
+              message: `Demande de retrait de ${formatFcfa(amount)} simulée. Aucun transfert n’a été effectué.`,
+              duration: 2400,
+            });
+          },
+        },
+        {},
+        { animated: true },
+      );
+    });
+  };
+
+  private handleOpenProfileDestination = (kind: ProfileAccountDestinationKind): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(
+        ProfileAccountDestinationScreen,
+        {
+          kind,
+          selectedAddress: this.state.selectedPickupAddress,
+          onAddressChange: this.handleSavePickupAddress,
+        },
+        {},
+        { animated: true, pageBackgroundColor: colors.backgroundPrimary },
+      );
+    });
+  };
+
+  private handleProfileSettingsTap = (): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(
+        ProfileSettingsScreen,
+        {
+          values: this.state.profileSettings,
+          onNavigate: this.handleOpenSettingsDestination,
+          onLogout: this.handleRequestLogout,
+        },
+        {},
+        { animated: true, pageBackgroundColor: colors.backgroundPrimary },
+      );
+    });
+  };
+
+  private handleOpenSettingsDestination = (kind: SettingsDestinationKind, onValuesUpdated: (values: ProfileSettingsValues) => void): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(
+        ProfileSettingsDestinationScreen,
+        {
+          kind,
+          values: this.state.profileSettings,
+          onSave: values => {
+            this.handleSaveProfileSettings(values);
+            onValuesUpdated(values);
+          },
+        },
+        {},
+        { animated: true, pageBackgroundColor: colors.backgroundPrimary },
+      );
+    });
+  };
+
+  private handleSaveProfileSettings = (profileSettings: ProfileSettingsValues): void => {
+    this.setState({ ...this.state, profileSettings });
+  };
+
+  private handleRequestLogout = (): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.present(
+        AlertDialog,
+        {
+          title: 'Se déconnecter de Haycee ?',
+          message: 'La connexion au service de compte n’est pas encore disponible dans cette version.',
+          confirmLabel: 'Se déconnecter',
+          cancelLabel: 'Rester connecté',
+          confirmStyle: 'danger',
+          textCase: 'none',
+          showOverlay: true,
+          onConfirm: () => TransientFeedback.show({ message: 'La déconnexion sera activée avec le service de compte.' }),
+        },
+        {},
+        { animated: true, wrapInPlatformNavigationController: false, ...getBottomSheetNavigationOptions({ transparentPageBackground: true }) },
+      );
+    });
+  };
+
   private handleProductTap = (product: HomeProduct, recommendations?: HomeProduct[]): void => {
     runNavigationAction(this.navigationController, () => {
-      this.navigationController?.push(ProductDetailScreen, { product, recommendations }, {});
+      this.navigationController?.push(ProductDetailScreen, { product, recommendations, onAddToCart: this.handleAddToCart }, {});
+    });
+  };
+
+  private handleAddToCart = (
+    product: MasonryProduct,
+    quantity: number,
+    selections: SelectedProductVariant[] = [],
+    combinationId?: string,
+  ): void => {
+    const nextItems = addMarketplaceCartItem(this.state.cartItems, product, quantity, selections, combinationId);
+    if (nextItems === this.state.cartItems) {
+      TransientFeedback.show({ message: 'La quantité disponible pour cet article est déjà dans le panier.' });
+      return;
+    }
+    this.setState({ cartItems: nextItems });
+    TransientFeedback.show({
+      message: `${product.title} ajouté au panier`,
+      icon: navigationIcons.shoppingCartCheck02,
+      duration: 2200,
+    });
+  };
+
+  private handleCartQuantityChange = (itemId: string, delta: number): void => {
+    this.setState({ cartItems: updateMarketplaceCartQuantity(this.state.cartItems, itemId, delta) });
+  };
+
+  private handleCartItemRemove = (itemId: string): void => {
+    this.setState({ cartItems: removeMarketplaceCartItem(this.state.cartItems, itemId) });
+  };
+
+  private handleCartStoreTap = (product: MasonryProduct): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(SellerProfileScreen, { product }, {});
+    });
+  };
+
+  private handleCartCheckout = (): void => {
+    runNavigationAction(this.navigationController, () => {
+      this.navigationController?.push(
+        CartCheckoutScreen,
+        {
+          items: this.state.cartItems,
+          selectedAddress: this.state.selectedPickupAddress,
+          onAddressSaved: this.handleSavePickupAddress,
+          onStoreTap: this.handleCartStoreTap,
+          onOrderCompleted: () => this.setState({ ...this.state, cartItems: [] }),
+          onViewOrders: () => {
+            this.navigationController?.push(
+              ProfileAccountDestinationScreen,
+              { kind: 'orders', selectedAddress: this.state.selectedPickupAddress, onAddressChange: this.handleSavePickupAddress },
+              {},
+              { animated: true, pageBackgroundColor: colors.backgroundPrimary },
+            );
+          },
+        },
+        {},
+        { animated: true, pageBackgroundColor: colors.backgroundPrimary },
+      );
     });
   };
 
@@ -142,13 +317,7 @@ export class App extends StatefulComponent<AppViewModel, AppState, AppComponentC
         {
           product,
           intent,
-          onAddToCart: selectedProduct => {
-            TransientFeedback.show({
-              message: `${selectedProduct.title} ajouté au panier`,
-              icon: navigationIcons.shoppingCartAdd02,
-              duration: 2200,
-            });
-          },
+          onAddToCart: this.handleAddToCart,
           onBuyNow: selectedProduct => {
             TransientFeedback.show({ message: `Passage au paiement pour ${selectedProduct.title}`, duration: 2200 });
           },
@@ -164,11 +333,7 @@ export class App extends StatefulComponent<AppViewModel, AppState, AppComponentC
       this.openProductVariantSheet(product, 'add-to-cart');
       return;
     }
-    TransientFeedback.show({
-      message: 'Votre article a été ajouté au panier',
-      icon: navigationIcons.shoppingCartAdd02,
-      duration: 2200,
-    });
+    this.handleAddToCart(product, 1);
   };
 
   private handleLiveTap = (item: LiveFeedItem): void => {
@@ -197,8 +362,25 @@ export class App extends StatefulComponent<AppViewModel, AppState, AppComponentC
             onConversationTap={this.handleConversationTap}
             onLiveTap={this.handleLiveTap}
             onQuickAdd={this.handleQuickAdd}
+            cartItems={this.state.cartItems}
+            onCartQuantityChange={this.handleCartQuantityChange}
+            onCartItemRemove={this.handleCartItemRemove}
+            onCartStoreTap={this.handleCartStoreTap}
+            onCartCheckout={this.handleCartCheckout}
             selectedPickupAddress={this.state.selectedPickupAddress}
             onSelectAddress={this.handleOpenAddressPicker}
+            onProfileSupportTap={() => TransientFeedback.show({ message: 'Service client' })}
+            onProfileShareTap={() => TransientFeedback.show({ message: 'Partager mon profil' })}
+            onProfileSettingsTap={this.handleProfileSettingsTap}
+            onProfileWalletTap={this.handleOpenWallet}
+            profileWalletBalance={WALLET_OVERVIEW.availableBalance}
+            profileUnreadNotificationCount={0}
+            profileDisplayName={this.state.profileSettings.displayName.trim() || undefined}
+            onProfileOrdersTap={() => this.handleOpenProfileDestination('orders')}
+            onProfileLiveSupportTap={() => this.handleOpenProfileDestination('live-support')}
+            onProfileNotificationsTap={() => this.handleOpenProfileDestination('notifications')}
+            onProfilePaymentTap={() => this.handleOpenProfileDestination('payment')}
+            onProfileShippingTap={() => this.handleOpenProfileDestination('shipping')}
           />;
         })}
       </NavigationRoot>

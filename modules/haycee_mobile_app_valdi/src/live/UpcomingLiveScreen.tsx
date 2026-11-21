@@ -179,7 +179,7 @@ export class UpcomingLiveScreen extends NavigationPageStatefulComponent<
           accessibilityCategory="button"
           accessibilityLabel={this.state.isReminderSet ? 'Désactiver le rappel du live' : 'Activer le rappel du live'}
         >
-          <image src={this.state.isReminderSet ? navigationIcons.notification01Bold : navigationIcons.notification01} tint={colors.iconInverted} width={18} height={18} objectFit="contain" />
+          <image src={this.state.isReminderSet ? navigationIcons.notification01Bold : navigationIcons.notification01} tint={colors.iconDefault} width={18} height={18} objectFit="contain" />
           <label value={this.state.isReminderSet ? 'Rappel activé' : 'Prévenez-moi'} style={styles.reminderTitle} numberOfLines={1} />
         </view>
         <LiveCountdown targetTimestampMs={this.countdownTarget} compact={true} />
@@ -293,7 +293,7 @@ const styles = {
   eventTitle: typography.title1,
   scheduleLabel: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.label), marginTop: spacing.md }),
   reminderCta: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonPrimary, borderRadius: radius.full, flexDirection: 'row', height: 36, justifyContent: 'center', marginBottom: spacing.sm, paddingLeft: spacing.md, paddingRight: spacing.md }),
-  reminderTitle: new Style<Label>({ color: colors.textInverted, font: montserrat.semiBold(fontSize.metadata), marginLeft: spacing.sm }),
+  reminderTitle: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.metadata), marginLeft: spacing.sm }),
   section: new Style<View>({ flexDirection: 'column', paddingBottom: spacing.xl, paddingTop: spacing.xl }),
   sectionTitle: typography.sectionHeader.extend({ marginLeft: spacing.lg, marginRight: spacing.lg }),
   sectionSubtitle: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.metadata), marginLeft: spacing.lg, marginRight: spacing.lg, marginTop: spacing.xs }),

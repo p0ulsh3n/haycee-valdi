@@ -112,7 +112,7 @@ export class LiveViewerOverlay extends Component<LiveViewerOverlayViewModel> {
     >
       <image
         src={icon}
-        tint={isActive ? colors.interactivePrimary : colors.textInverted}
+        tint={isActive ? colors.buttonPrimary : colors.textInverted}
         width={19}
         height={19}
         objectFit="contain"

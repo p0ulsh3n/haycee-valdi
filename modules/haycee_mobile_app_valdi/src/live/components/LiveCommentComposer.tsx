@@ -36,7 +36,7 @@ export class LiveCommentComposer extends Component<LiveCommentComposerViewModel>
       />
       {this.viewModel.value.trim().length > 0 ? (
         <view style={styles.sendButton} onTap={this.viewModel.onSend} accessibilityCategory="button">
-          <image src={navigationIcons.sent} tint={colors.textInverted} width={18} height={18} objectFit="contain" />
+          <image src={navigationIcons.sent} tint={colors.textPrimary} width={18} height={18} objectFit="contain" />
         </view>
       ) : null}
     </view>;
@@ -66,7 +66,7 @@ const styles = {
   }),
   sendButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: radius.full,
     height: 32,
     justifyContent: 'center',

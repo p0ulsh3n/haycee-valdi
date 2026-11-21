@@ -40,6 +40,6 @@ const styles = {
   row: new Style<View>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', minHeight: 50, paddingBottom: spacing.sm, paddingRight: spacing.xs, paddingTop: spacing.sm }),
   label: new Style<Label>({ color: colors.textPrimary, flexGrow: 1, flexShrink: 1, font: montserrat.semiBold(fontSize.body), marginRight: spacing.lg, minWidth: 0 }),
   radio: new Style<View>({ alignItems: 'center', borderColor: colors.borderDefault, borderRadius: radius.full, borderWidth: 2, flexShrink: 0, height: 22, justifyContent: 'center', width: 22 }),
-  radioSelected: new Style<View>({ alignItems: 'center', borderColor: colors.interactivePrimary, borderRadius: radius.full, borderWidth: 2, flexShrink: 0, height: 22, justifyContent: 'center', width: 22 }),
-  radioDot: new Style<View>({ backgroundColor: colors.interactivePrimary, borderRadius: radius.full, height: 10, width: 10 }),
+  radioSelected: new Style<View>({ alignItems: 'center', borderColor: colors.buttonPrimary, borderRadius: radius.full, borderWidth: 2, flexShrink: 0, height: 22, justifyContent: 'center', width: 22 }),
+  radioDot: new Style<View>({ backgroundColor: colors.buttonPrimary, borderRadius: radius.full, height: 10, width: 10 }),
 };

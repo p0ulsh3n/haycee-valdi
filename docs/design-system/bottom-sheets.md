@@ -17,6 +17,8 @@
 
 `snapPointPercent` is the initial sheet height as a percentage of its parent, such as `80` or `85`. It must be greater than `0` and less than `100`. Omitting it, or passing an invalid value, preserves the standard sheet layout and behavior.
 
+Feature sheets can pass `renderContent` to compose their own rich body inside the shared white sheet surface. Keep presentation, dismissal, overlay and detent behavior in `BottomSheet`; keep feature-specific rows and data in the caller. Put long content in an internal native `<scroll>` using `noBounceScrollAttributes`, with the shared sheet header outside that scroll view.
+
 When enabled, the sheet opens at that fixed height and renders header actions to expand to `100%` or close. In the expanded state, the same expand control returns it to its configured initial height. Upward drags cannot exceed the configured initial detent. A downward drag settles back to the current detent, dismisses after a sufficiently long or fast swipe, or returns a maximized sheet to its initial detent after a moderate drag. The close icon, overlay dismissal, and drag dismissal share a per-sheet one-shot guard.
 
 The implementation uses Valdi's native view drag events (`DragEvent.deltaY` and `velocityY`), `translationY`, and component state animations. The pinned official source is recorded in `docs/valdi-reference/SOURCE_MANIFEST.json` (Valdi beta-0.2.1, commit `f26bee4dc170b6c929f71d4dd07d44e033f47176`).

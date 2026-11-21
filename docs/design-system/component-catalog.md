@@ -8,17 +8,21 @@ Source: `modules/haycee_mobile_app_valdi/src/design-system/tokens/`.
 
 | Token module | Shared responsibility | Rule |
 | --- | --- | --- |
-| `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, border, icon, product, stock-progress, messaging and Live colors, including the shared 16%-alpha dark Live overlay surface, chat-role badge surfaces, the near-black unread-count surface and the Live shipping-line text gradient with explicit native-compatible stops | Prefer a semantic token. Add a named token before using a new app-wide color. |
+| `colors.ts` | Palette plus semantic background (including elevated dark surfaces), text, interactive, pending/success/danger order statuses, border, icon, product, stock-progress, messaging and Live colors. Brand colors include CTA lime `#F0FF85`, blue `#4094B0`, and black. Decorative Live panel colors remain independent from the brand palette. Includes the Wallet's lime caption, shared 16%-alpha dark Live overlay, role badges, unread count and Live shipping gradient | Prefer a semantic token. Add a named token before using a new app-wide color. |
 | `typography.ts` | Montserrat Regular, SemiBold, ExtraBold, Black; font sizes, line heights, named typography styles, `TextCase`, `transformText` | Do not load another font face or invent per-screen typography for a repeated role. Default text case is uppercase; set casing deliberately. |
-| `spacing.ts` | 4-point spacing scale and nested screen/layout measurements, including snap-point sheet controls and gesture thresholds, compact product-sheet sizing, Live order-sheet tabs, Live exit-follow sheet geometry, vertical-feed action-rail geometry and video playback controls | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
+| `spacing.ts` | 4-point spacing scale and nested screen/layout measurements, including profile cover/avatar overlap, account rows, order color-panel, detail-timeline and seller-avatar dimensions, wallet form/card geometry, the full-bleed Wallet balance overview and its shortcuts, unequal wallet KPI columns for full FCFA labels, and the measured width budget for nine-digit FCFA amounts; settings header, sections, inputs and switch geometry; cart item, seller-avatar, quantity, shipping and checkout dimensions; snap-point sheet controls and gesture thresholds, compact product-sheet sizing, Live order-sheet tabs, Live exit-follow sheet geometry, vertical-feed action-rail geometry and video playback controls | Reuse scale and named layout measurements. Add repeated layout values here instead of scattering them. |
 | `radius.ts` | Shared corner-radius scale | Reuse a semantic radius. Add a token for a repeated design role. |
 | `scrollBehavior.ts` | `noBounceScrollAttributes` app scroll contract | Spread it on shared/native scroll containers unless the interaction explicitly requires another verified behavior. |
+
+Order tracking status color usage is documented in [status colors](status-colors.md).
+Brand surface and contrast-token usage is documented in [colors](colors.md).
 
 ## Shared utilities
 
 Source: `modules/haycee_mobile_app_valdi/src/design-system/utils/`.
 
 - `money.ts`: `formatFcfa`, `formatIntegerWithDotSeparator`, `formatPriceLabel`, `normalizeWholeAmountInput`, and `MONEY_GROUP_SEPARATOR`; use for all displayed and entered prices.
+- `date.ts`: `formatFrenchLongDate`; formats validated ISO calendar dates as French long dates without timezone drift.
 - `counts.ts`: `formatCompactCount`; use for compact social and engagement counts (`K`, `M`, `B`).
 - `NavigationActionGate.ts`: `runNavigationAction`; use for user-triggered navigation presentation/pushes to prevent duplicate routes.
 - `identity.ts` and `sellerBio.ts`: shared identity/name and seller-bio rules; inspect these before adding another formatter or constraint.
@@ -31,7 +35,8 @@ All of these live under `modules/haycee_mobile_app_valdi/src/design-system/compo
 
 | Component | Use |
 | --- | --- |
-| `DSButton` | All labeled actions, with exactly `cta`, `black`, `neutral`, `outline`; supports contextual semantic surface/label tints, interaction blocking without a disabled appearance, optional icons, fixed leading-icon alignment for changing labels, and a small label baseline adjustment for optical alignment. Selection rules live in `.codex/skills/haycee-valdi-buttons/SKILL.md` and `docs/design-system/buttons.md`. |
+| `DSButton` | All labeled actions, with exactly `cta`, `black`, `neutral`, `outline`; supports contextual semantic surface/label tints, shared radius-token overrides, interaction blocking without a disabled appearance, optional icons, fixed leading-icon alignment for changing labels, and a small label baseline adjustment for optical alignment. Selection rules live in `.codex/skills/haycee-valdi-buttons/SKILL.md` and `docs/design-system/buttons.md`. |
+| `DSSwitch` | Shared accessible on/off preference control; takes an explicit selected value, disabled state and idempotent setter callback. |
 | `DSInlineLink` | Compact underlined text navigation inside content rows, with semantic color and accessibility label options. |
 | `AsyncActionButton` | Shared single-flight button primitive used by higher-level controls. Prefer `DSButton` for product-facing labeled actions. |
 | `ActionSheet` | Short action/choice list. |
@@ -44,7 +49,7 @@ All of these live under `modules/haycee_mobile_app_valdi/src/design-system/compo
 
 | Component | Use |
 | --- | --- |
-| `BottomSheet` | Standard sheet surface, presentation options, optional fixed footer and horizontal content pager. Opt into a fixed initial detent with `snapPointPercent` for a sheet that can drag downward, dismiss, or expand to 100% from its header; this is off by default. Respect `BOTTOM_SHEET_DEFAULTS`; use the navigation-options helper when the page underneath must show through. |
+| `BottomSheet` | Standard sheet surface, presentation options, optional feature-owned `renderContent` body, fixed footer and horizontal content pager. Opt into a fixed initial detent with `snapPointPercent` for a sheet that can drag downward, dismiss, or expand to 100% from its header; this is off by default. Respect `BOTTOM_SHEET_DEFAULTS`; use the navigation-options helper when the page underneath must show through. |
 | `MediaActionSheetContent` | Shared implementation for media-led sheets; normally use the public wrappers instead of composing this internal content directly. |
 | `FeatureDiscoverySheet` | Contextual feature education/discovery, with optional image, animation or video. |
 | `UpsellSheet` | Offer, upgrade or plan-presentation flow. |
@@ -69,7 +74,9 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | Component | Use |
 | --- | --- |
 | `MasonryFeed` | Shared masonry feed layout and column/aspect-ratio helpers. |
-| `MasonryProductCard` | Reusable product card for masonry contexts; the full card uses `radius.xs` and its product image uses `radius.cardImage`. |
+| `MasonryProductCard` | Reusable product card for masonry contexts; the full card uses `radius.xs` and its product image uses `radius.cardImage`. Product data includes an optional `shippingMethod` (`delivery` or `expedition`) for downstream logistics presentation. |
+| `CartScreen` | Groups Marketplace products under a tappable seller avatar/name with a navigation arrow, supports variant-aware quantity and removal, shows one delivery/expedition fee with a matching SVG per seller group, includes that fee once in the cart total, and retains the shared full-width `MasonryFeed` recommendation geometry beneath the cart rows. |
+| `CartCheckoutScreen` / `CartOrderSuccessScreen` | Marketplace checkout and order confirmation. Checkout keeps each seller's products and one delivery/expedition charge grouped together, shows item discounts, a Wallet-only payment choice, address selection and an optional seller note; the order total includes shipping once per seller. Its total and CTA stay in the footer. The demo confirmation explicitly says that Wallet debit is not connected and no real payment occurred. See `cart-checkout.md`. |
 | `LiveProductCard` | Live product strip with an optional blurred/translucent surface (enabled by default), a larger 1:1 or 3:4 thumbnail, two-line truncated title with a total-stock pill, price beneath the title, variant availability in a compact ticker, and a bottom row with a delivery truck or expedition plane, gradient shipping fees including the FCFA amount, and the shared CTA `Acheter` button aligned to one control height. |
 | `LiveProductPurchaseSheet` | Live purchase configuration for an in-stock product: summary, explicit variant selection when present, sold-out variant disabling, stock-bounded quantity, shipping estimate, total, and an intent-aware footer (`Ajouter au panier` or `Acheter`). The featured Live card opens it for its selected product; auction rows in the product list keep their separate auction affordance. |
 | `ProductVariantSelectionSheet` | Compact white Marketplace sheet opened by Add/Buy when a product has dynamic options; keeps its header at the top, shows all product photos in a horizontal strip with 1:1 or 3:4 frames, places title and price below the gallery, and supports dynamic options, per-combination availability and stock limits. |
@@ -98,6 +105,25 @@ Live chat follow/unread behavior and the pinned Valdi scroll anchor API: `docs/d
 | `DSBadge` | General semantic badge primitive when a domain-specific badge is not a closer match. |
 
 `SkeletonDemoScreen` is a development/demo surface, not a product component to add to production screens.
+
+### Profile composition
+
+These profile-domain components compose the shared design system for the signed-in profile and seller storefronts.
+
+| Component | Use |
+| --- | --- |
+| `ProfileCover` | Shared profile banner with optional image/color panel, seller-style shade, and an optional overlay render slot. Used by personal profiles and seller storefronts. |
+| `ProfileAccountMenu` | Profile/account navigation rows with leading SVGs, optional detail and unread-count badge, trailing chevron, no row dividers, and a semantic danger tone for destructive rows. |
+| `ProfileScreenHeader` | Transparent profile-cover toolbar with support, share and preferences SVG actions; transitions to a white surface with the user's avatar/name when the identity scrolls beneath it. |
+| `ProfileIdentitySection` | Reusable profile name, handle, optional location, statistics and bio block, positioned above that profile's `SwipeTabs`. |
+| `ProfileAccountDestinationScreen` / `ProfileOrderDetailScreen` | Profile account pages for orders, Live support, notifications, payment and shipping, plus a complete per-order detail view with the seller storefront link, items, payment and delivery. The total recap stays in a fixed footer while details scroll; the first order card opens the shared detent sheet for the delivery timeline and address. Pending states use semantic yellow, shipped/delivered states green, and cancellations red in both the detail card and tracking timeline. Uses demo order fixtures, colored panels, French long dates, the shared navigation guard and the existing pickup address selector. |
+| `WalletScreen` / `WalletWithdrawalScreen` | Account wallet overview with summary cards and account KPIs, plus an amount-validated withdrawal flow with a saved payout account and fixed CTA. Current figures/accounts are demo fixtures. |
+| `WalletBalanceOverview`, `WalletBalanceCard`, `WalletMetricCard`, `WalletPaymentRow` | A full-width, unboxed Wallet summary spans behind the Wallet header, presenting available and pending balances with useful `Retirer` and `Recharger` shortcuts on the standard white page surface. A lime caption highlights availability. The reusable balance card remains available for compact balance summaries elsewhere. Wallet KPI cards separate title, accent period/status, primary value and supporting caption; callers provide comparison data before showing a trend. |
+| `ProfileSettingsScreen` / `ProfileSettingsDestinationScreen` | Profile gear destination and its seven options: personal information, security, notification preferences, language, appearance, privacy/legal and sign-out confirmation. Composes `ProfileAccountMenu`, `DSSwitch`, `RadioSelection`, `DSButton` and `AlertDialog`; settings use in-memory app state until persistence/authentication services are connected. |
+
+See [profile settings](profile-settings.md) for the navigation structure and current service boundaries.
+
+See [profile composition](profile.md) for the current tab layout and reuse contract.
 
 ## Choosing the right layer
 

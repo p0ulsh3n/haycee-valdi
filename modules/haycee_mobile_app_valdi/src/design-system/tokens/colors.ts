@@ -5,8 +5,8 @@
  * makes a future light/dark palette change local to this module.
  */
 export const palette = {
-  brandPurple: '#5E00FF',
-  brandPurplePressed: '#4B00CC',
+  brandPrimary: '#F0FF85',
+  brandSecondary: '#4094B0',
 
   black: '#000000',
   gray900: '#1F1F1F',
@@ -19,11 +19,11 @@ export const palette = {
 
   red: '#D93025',
   green: '#188038',
+  pendingYellow: '#8A6700',
   blue: '#1A73E8',
   messageBlue: '#3556C8',
   messageBlueLight: '#5475E0',
   orange: '#E37400',
-  purple: '#5E00FF',
   liveLavender: '#EEE9F7',
   livePeach: '#F4E9E2',
   liveBlue: '#E6EEF4',
@@ -43,7 +43,8 @@ export const colors = {
   /** Translucent dark material used by default transient feedback. */
   backgroundTransient: 'rgba(72, 72, 72, 0.82)',
   backgroundProfileHeader: 'rgba(0, 0, 0, 0.48)',
-  backgroundBrand: palette.brandPurple,
+  backgroundBrand: palette.brandPrimary,
+  backgroundBrandSecondary: palette.brandSecondary,
   backgroundMessageSent: palette.messageBlue,
   backgroundOverlay: 'rgba(0, 0, 0, 0.56)',
   mediaIndicatorActive: palette.white,
@@ -70,11 +71,11 @@ export const colors = {
   liveChatRoleModerator: 'rgba(0, 0, 0, 0.46)',
   liveControlSurface: 'rgba(255, 255, 255, 0.88)',
   liveChatSurface: 'rgba(255, 255, 255, 0.76)',
-  liveIndicatorGradient: `linear-gradient(${palette.red}, ${palette.brandPurple})`,
+  liveIndicatorGradient: `linear-gradient(${palette.red}, ${palette.brandPrimary})`,
   liveCardBadgeExclusive: '#F2C45F',
   liveCardBadgeSold: palette.gray700,
   liveCardBadgeClearance: palette.red,
-  liveCardBadgePromotion: palette.brandPurple,
+  liveCardBadgePromotion: palette.brandPrimary,
   liveCardBadgeNew: '#DCEBFF',
   liveCardBadgeLimited: palette.black,
   productRatingStar: '#FF9529',
@@ -85,7 +86,7 @@ export const colors = {
   productBadgeTrending: '#FF3A67',
   productBadgeHot: palette.red,
   productBadgeLoved: '#D63384',
-  productBadgeTopPick: palette.brandPurple,
+  productBadgeTopPick: palette.brandPrimary,
   productBadgeNew: palette.green,
   productBadgeElite: '#C9960C',
   productBadgeCertified: palette.gray700,
@@ -111,15 +112,18 @@ export const colors = {
   textTertiary: palette.gray500,
   textInverted: palette.white,
   textOnDarkSecondary: palette.gray300,
-  textBrand: palette.white,
+  textBrand: palette.black,
+  /** Bright brand caption with sufficient contrast on the Wallet's black balance card. */
+  walletAccentOnDark: palette.brandPrimary,
   textMessageSent: palette.white,
   textDanger: palette.red,
   textSuccess: palette.green,
 
-  interactivePrimary: palette.brandPurple,
-  interactivePrimaryPressed: palette.brandPurplePressed,
-  /** CTA button surface (purple). */
-  buttonPrimary: palette.brandPurple,
+  /** Dark foreground for readable links and icons; brand fills remain buttonPrimary. */
+  interactivePrimary: palette.black,
+  interactivePrimaryPressed: palette.gray800,
+  /** Shared CTA button surface (lime yellow). */
+  buttonPrimary: palette.brandPrimary,
   /** Light neutral fill used by the neutral button variant. */
   buttonNeutral: palette.gray100,
   /** Black filled button surface. */
@@ -127,6 +131,8 @@ export const colors = {
   interactiveDisabled: palette.gray300,
   interactiveDanger: palette.red,
   interactiveSuccess: palette.green,
+  /** Dark yellow status color for orders and steps awaiting completion. */
+  interactivePending: palette.pendingYellow,
   interactiveWarning: palette.orange,
 
   borderDefault: palette.gray300,
@@ -135,5 +141,5 @@ export const colors = {
 
   iconDefault: palette.black,
   iconInverted: palette.white,
-  iconBrand: palette.white,
+  iconBrand: palette.black,
 } as const;

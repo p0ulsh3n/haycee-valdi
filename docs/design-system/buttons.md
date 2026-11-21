@@ -6,7 +6,7 @@ Use `DSButton` from `src/design-system` for app actions so each screen reuses th
 
 | Variant | Appearance | Use |
 | --- | --- | --- |
-| `cta` | Brand purple fill, white extra-bold label | The primary action that moves the current task forward. Example: “Suivre le vendeur” in LiveFollow. |
+| `cta` | Lime yellow (`#F0FF85`) fill, black extra-bold label | The primary action that moves the current task forward. Example: “Suivre le vendeur” in LiveFollow. |
 | `black` | Black fill, white extra-bold label | A meaningful filled secondary action that offers another valid path. |
 | `neutral` | Light neutral fill, black extra-bold label and icon | An already-active state, such as “Suivi” or “Sélectionné”. Do not use it as a generic secondary action. |
 | `outline` | White fill, subtle neutral border, black semibold label | Cancel, close, skip, or defer. Example: “Pas maintenant” in LiveFollow. |
@@ -27,5 +27,7 @@ Use `size="fullWidth"` for side-by-side sheet actions, `size="compact"` for the 
 ```
 
 `DSButton` delegates to `AsyncActionButton`: return a promise from asynchronous callbacks to get single-flight behavior and pending state. Synchronous state actions can return `void`. Keep validation and handler-level idempotency in place for actions that can also be triggered elsewhere. Dense shared controls may override `width` and `height` while keeping one of the four semantic variants; do not define a second button skin for them. Contextual surfaces may pass semantic `surfaceColor` and `labelColor` tokens. Use `interactionDisabled` when an invisible or transitioning control must reject taps without switching to the disabled appearance. Use `iconAlignment="fixedLeading"` when a changing label must not move its leading icon inside a fixed-width button. When a leading icon and label need a small optical baseline correction, use the optional `labelTranslationY` on `DSButton` instead of shifting the whole button or introducing a screen-local label.
+
+Use the optional `cornerRadius` only with a shared `radius` token when a context needs a less rounded shape than the default pill. Keep paired actions on the same radius.
 
 Disabled and loading are separate states: a disabled button blocks taps and uses the disabled appearance, but does not show a spinner. The spinner appears only while an action is actually pending (`loading` or the async callback's returned promise).

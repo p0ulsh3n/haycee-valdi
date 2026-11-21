@@ -12,6 +12,7 @@ export {
 } from './utils/money';
 export type { WholeAmountInputResult } from './utils/money';
 export { formatCompactCount } from './utils/counts';
+export { formatFrenchLongDate } from './utils/date';
 export {
   fontSize,
   fontWeight,
@@ -25,6 +26,8 @@ export {
 } from './tokens/typography';
 export { DSButton } from './components/DSButton';
 export type { DSButtonSize, DSButtonVariant, DSButtonViewModel } from './components/DSButton';
+export { DSSwitch } from './components/DSSwitch';
+export type { DSSwitchViewModel } from './components/DSSwitch';
 export { DSInlineLink } from './components/DSInlineLink';
 export type { DSInlineLinkViewModel } from './components/DSInlineLink';
 export { AsyncActionButton } from './components/AsyncActionButton';

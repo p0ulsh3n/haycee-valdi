@@ -148,7 +148,7 @@ const styles = {
   }),
   pinnedText: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.nano) }),
   discountBadge: new Style<View>({
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.buttonPrimary,
     paddingBottom: 2,
     paddingLeft: 4,
     paddingRight: 4,
@@ -215,7 +215,7 @@ const styles = {
   }),
   buyButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: radius.xs,
     height: 36,
     justifyContent: 'center',

@@ -48,7 +48,7 @@ export class TabChips extends Component<TabChipsViewModel> {
           key={`tab-chip-${tab.id}`}
           style={chipStyle.extend({
             backgroundColor: selected
-              ? this.viewModel.selectedBackgroundColor ?? colors.interactivePrimary
+              ? this.viewModel.selectedBackgroundColor ?? colors.buttonPrimary
               : this.viewModel.unselectedBackgroundColor ?? colors.backgroundSecondary,
             height: this.viewModel.chipHeight ?? 36,
             marginRight: this.viewModel.chipSpacing ?? spacing.sm,
@@ -71,7 +71,7 @@ export class TabChips extends Component<TabChipsViewModel> {
               value={transformText(tab.label, this.viewModel.textCase)}
               style={labelStyle.extend({
                 color: selected
-                  ? this.viewModel.selectedTextColor ?? colors.textInverted
+                  ? this.viewModel.selectedTextColor ?? colors.textPrimary
                   : this.viewModel.unselectedTextColor ?? colors.textSecondary,
                 marginLeft: tab.swatchColor ? spacing.xs : 0,
               })}

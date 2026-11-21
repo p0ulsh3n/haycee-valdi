@@ -224,7 +224,7 @@ const styles = {
     marginBottom: spacing.sm,
   }),
   retryButton: new Style<View>({
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: 16,
     paddingBottom: 8,
     paddingLeft: 14,
@@ -232,7 +232,7 @@ const styles = {
     paddingTop: 8,
   }),
   retryLabel: new Style<Label>({
-    color: colors.textInverted,
+    color: colors.textPrimary,
     font: montserrat.extraBold(12),
   }),
   retryContent: new Style<View>({

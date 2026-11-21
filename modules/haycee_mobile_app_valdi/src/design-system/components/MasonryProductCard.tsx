@@ -82,6 +82,8 @@ export interface MasonryProduct {
   reviewCount?: string;
   stockCount?: number;
   stockTotal?: number;
+  /** Cart shipping mode controls the logistics label and leading icon. */
+  shippingMethod?: 'delivery' | 'expedition';
   shippingFree?: boolean;
   shippingPrice?: string;
   conditionLabel?: string;
@@ -298,7 +300,7 @@ export class MasonryProductCard extends StatefulComponent<
         ) : null}
         {product.badgeText ? (
           <view style={styles.badge.extend({ top: product.isLive ? 34 : 8 })}>
-            <ProductCardBadge label={product.badgeText} backgroundColor={colors.liveCardBadgePromotion} />
+            <ProductCardBadge label={product.badgeText} backgroundColor={colors.liveCardBadgePromotion} textColor={colors.textPrimary} />
           </view>
         ) : null}
 
@@ -338,7 +340,7 @@ export class MasonryProductCard extends StatefulComponent<
                   ? navigationIcons.shoppingCartCheck02
                   : navigationIcons.shoppingCartAdd02
               }
-              tint={colors.textInverted}
+              tint={colors.textPrimary}
               width={18}
               height={18}
               objectFit="contain"

@@ -15,6 +15,9 @@ import { ConversationPreview } from '../../messaging/MessagingTypes';
 import { LiveHomeScreen } from '../../live/LiveHomeScreen';
 import type { LiveFeedItem } from '../../live/data/LiveFeedData';
 import { CartScreen } from '../../cart/CartScreen';
+import type { MarketplaceCartItem } from '../../cart/data/CartData';
+import type { MasonryProduct } from './MasonryProductCard';
+import { ProfileScreen } from '../../profile/ProfileScreen';
 
 export interface BottomTabItem {
   id: string;
@@ -39,10 +42,27 @@ export interface BottomTabsNavigationViewModel {
   onOpenCollection?: HomeScreenViewModel['onOpenCollection'];
   onProductTap?: HomeScreenViewModel['onProductTap'];
   onQuickAdd?: HomeScreenViewModel['onQuickAdd'];
+  cartItems?: MarketplaceCartItem[];
+  onCartQuantityChange?: (itemId: string, delta: number) => void;
+  onCartItemRemove?: (itemId: string) => void;
+  onCartStoreTap?: (product: MasonryProduct) => void;
+  onCartCheckout?: () => void;
   onConversationTap?: (conversation: ConversationPreview) => void;
   onLiveTap?: (item: LiveFeedItem) => void;
   selectedPickupAddress?: string;
   onSelectAddress?: () => void;
+  onProfileSupportTap?: () => void;
+  onProfileShareTap?: () => void;
+  onProfileSettingsTap?: () => void;
+  onProfileWalletTap?: () => void;
+  onProfileOrdersTap?: () => void;
+  onProfileLiveSupportTap?: () => void;
+  onProfileNotificationsTap?: () => void;
+  onProfilePaymentTap?: () => void;
+  onProfileShippingTap?: () => void;
+  profileWalletBalance?: number;
+  profileUnreadNotificationCount?: number;
+  profileDisplayName?: string;
 }
 
 interface BottomTabsNavigationState {
@@ -125,10 +145,30 @@ export class BottomTabsNavigation extends StatefulComponent<BottomTabsNavigation
         <LiveHomeScreen onOpenLive={this.viewModel.onLiveTap ?? this.handlePreviewLiveTap} />
       ) : activeTab.id === 'cart' ? (
         <CartScreen
+          cartItems={this.viewModel.cartItems ?? []}
+          onChangeQuantity={this.viewModel.onCartQuantityChange ?? (() => undefined)}
+          onRemoveItem={this.viewModel.onCartItemRemove ?? (() => undefined)}
+          onStoreTap={this.viewModel.onCartStoreTap}
+          onCheckout={this.viewModel.onCartCheckout}
           onProductTap={this.viewModel.onProductTap}
           onQuickAdd={this.viewModel.onQuickAdd}
           selectedAddress={this.viewModel.selectedPickupAddress}
           onSelectAddress={this.viewModel.onSelectAddress}
+        />
+      ) : activeTab.id === 'profile' ? (
+        <ProfileScreen
+          onSupportTap={this.viewModel.onProfileSupportTap}
+          onShareTap={this.viewModel.onProfileShareTap}
+          onSettingsTap={this.viewModel.onProfileSettingsTap}
+          onWalletTap={this.viewModel.onProfileWalletTap}
+          onOrdersTap={this.viewModel.onProfileOrdersTap}
+          onLiveSupportTap={this.viewModel.onProfileLiveSupportTap}
+          onNotificationsTap={this.viewModel.onProfileNotificationsTap}
+          onPaymentTap={this.viewModel.onProfilePaymentTap}
+          onShippingTap={this.viewModel.onProfileShippingTap}
+          walletBalance={this.viewModel.profileWalletBalance}
+          unreadNotificationCount={this.viewModel.profileUnreadNotificationCount}
+          displayName={this.viewModel.profileDisplayName}
         />
       ) : (
         <view style={styles.content} backgroundColor={activeTab.pageColor ?? colors.backgroundPrimary}>

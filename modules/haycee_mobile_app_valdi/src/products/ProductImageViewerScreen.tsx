@@ -207,14 +207,14 @@ const styles = {
   }),
   shopButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: radius.full,
     flexGrow: 1,
     height: 48,
     justifyContent: 'center',
     marginRight: spacing.sm,
   }),
-  shopButtonText: typography.buttonSmall.extend({ color: colors.textInverted }),
+  shopButtonText: typography.buttonSmall.extend({ color: colors.textPrimary }),
   iconButton: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,

@@ -30,10 +30,16 @@ const product = (
   galleryColors?: string[],
   metadata: Partial<HomeProduct> = {},
 ): HomeProduct => ({
+  vendorName: 'Atelier Noa',
+  vendorUsername: 'ateliernoa',
+  vendorId: 'atelier-noa',
+  vendorAvatarUrl: 'https://res.cloudinary.com/ddnz9y5v2/image/upload/v1793493675/images_a1a9b3.jpg',
   id,
   title,
   price: formatPriceLabel(price),
   color,
+  shippingMethod: 'delivery',
+  shippingPrice: '2,50 €',
   ...(galleryColors ? { galleryColors } : {}),
   ...metadata,
 });
@@ -62,6 +68,8 @@ export const homeCategoryDefinitions: HomeCategoryDefinition[] = [
       ], {
         originalPrice: '32,90 €',
         discountLabel: '-24%',
+        shippingMethod: 'delivery',
+        shippingPrice: '2,50 €',
         popularityBadge: 'BADGE_BEST_SELLER',
         isFlashSale: true,
         stockCount: 4,

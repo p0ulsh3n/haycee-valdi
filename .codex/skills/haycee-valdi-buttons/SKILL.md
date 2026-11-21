@@ -20,7 +20,7 @@ If a screen's intent does not fit these roles, first choose the closest semantic
 
 1. Use `DSButton` from `src/design-system` for labeled action buttons. The public variants are exactly `cta`, `black`, `neutral`, and `outline`.
 2. Do not create screen-local color, border, radius, typography, or disabled-state styles for a button that can use one of these variants. Use `size="standard"`, `"compact"`, or `"fullWidth"`; use the component's existing layout overrides only when the parent layout needs a specific size or row spacing.
-3. Keep icon contrast consistent: `cta` and `black` use white icons/text; `neutral` and `outline` use dark icons/text. Override icon tint only when the actual surface requires it for contrast.
+3. Keep icon contrast consistent: `cta` uses black icons/text on its lime-yellow surface (`#F0FF85`); `black` uses white icons/text; `neutral` and `outline` use dark icons/text. Override icon tint only when the actual surface requires it for contrast.
 4. Keep casing intentional. `DSButton` defaults to the design-system uppercase rule; pass `textCase="none"` when the supplied copy should retain its authored casing.
 5. Set `disabled` from real validation or pending state. Pass `loading` for async progress and return the action's promise so `AsyncActionButton` provides its single-flight guard. Keep a handler-level guard for effects also reachable elsewhere, as required by `haycee-valdi-idempotency`.
 6. Preserve accessible button labels, including an explicit `accessibilityLabel` when the visible title is not descriptive enough.

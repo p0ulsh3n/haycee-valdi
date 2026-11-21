@@ -195,7 +195,7 @@ const styles = {
   tagline: new Style<Label>({ color: colors.textPrimary, font: montserrat.regular(fontSize.body), marginBottom: spacing.xl, marginTop: spacing.md, textAlign: 'center' }),
   actions: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center', width: '100%' }),
   storeButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonPrimary, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
-  storeLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.label), textAlign: 'center' }),
+  storeLabel: new Style<Label>({ color: colors.textPrimary, font: montserrat.extraBold(fontSize.label), textAlign: 'center' }),
   actionContent: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }),
   secondaryActionButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonSecondary, borderRadius: radius.full, flexGrow: 1, flexShrink: 1, height: 58, justifyContent: 'center', marginLeft: spacing.xs, marginRight: spacing.xs, paddingLeft: spacing.md, paddingRight: spacing.md }),
   secondaryActionLabel: new Style<Label>({ color: colors.textInverted, font: montserrat.extraBold(fontSize.label), marginLeft: spacing.sm, textAlign: 'center' }),

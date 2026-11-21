@@ -29,6 +29,11 @@ export const getProductPopularityBadgePresentation = (
 export class ProductPopularityBadge extends Component<ProductPopularityBadgeViewModel> {
   onRender(): void {
     const badge = getProductPopularityBadgePresentation(this.viewModel.type);
-    <ProductCardBadge label={badge.label} backgroundColor={badge.color} borderRadius={radius.xxs} />;
+    <ProductCardBadge
+      label={badge.label}
+      backgroundColor={badge.color}
+      textColor={this.viewModel.type === 'BADGE_TOP_PICK' ? colors.textPrimary : undefined}
+      borderRadius={radius.xxs}
+    />;
   }
 }

@@ -46,7 +46,7 @@ const badgeColors: Record<DSBadgeVariant, { backgroundColor: string; textColor: 
   exclusive: { backgroundColor: colors.liveCardBadgeExclusive, textColor: colors.textPrimary },
   sold: { backgroundColor: colors.liveCardBadgeSold, textColor: colors.textInverted },
   clearance: { backgroundColor: colors.liveCardBadgeClearance, textColor: colors.textInverted },
-  promotion: { backgroundColor: colors.liveCardBadgePromotion, textColor: colors.textInverted },
+  promotion: { backgroundColor: colors.liveCardBadgePromotion, textColor: colors.textPrimary },
   new: { backgroundColor: colors.liveCardBadgeNew, textColor: colors.textPrimary },
   limited: { backgroundColor: colors.liveCardBadgeLimited, textColor: colors.textInverted },
   neutral: { backgroundColor: colors.backgroundSecondary, textColor: colors.textPrimary },

@@ -28,13 +28,15 @@ import { fontSize, montserrat, typography, transformText } from '../design-syste
 import { MasonryProduct } from '../design-system/components/MasonryProductCard';
 import { ProductImageViewerScreen } from './ProductImageViewerScreen';
 import { ProductVariantSelectionSheet, getProductVariantGroups } from './ProductVariantSelectionSheet';
-import type { ProductVariantSelectionIntent } from './ProductVariantSelectionSheet';
+import type { ProductVariantSelectionIntent, SelectedProductVariant } from './ProductVariantSelectionSheet';
 import { getBottomSheetNavigationOptions } from '../design-system/components/BottomSheet';
 import { SellerProfileScreen } from '../sellers/SellerProfileScreen';
+import { DSButton } from '../design-system/index';
 
 export interface ProductDetailViewModel {
   product: MasonryProduct;
   recommendations?: MasonryProduct[];
+  onAddToCart?: (product: MasonryProduct, quantity: number, selections: SelectedProductVariant[], combinationId?: string) => void;
 }
 
 interface ProductDetailState {
@@ -219,13 +221,7 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
         {
           product,
           intent,
-          onAddToCart: selectedProduct => {
-            TransientFeedback.show({
-              message: `${selectedProduct.title} ajouté au panier`,
-              icon: navigationIcons.shoppingCartAdd02,
-              duration: 2200,
-            });
-          },
+          onAddToCart: (selectedProduct, quantity, selections, combinationId) => this.addToCart(selectedProduct, quantity, selections, combinationId),
           onBuyNow: selectedProduct => this.showFeedback(`Passage au paiement pour ${selectedProduct.title}`),
         },
         {},
@@ -234,6 +230,23 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
     });
     return true;
   }
+
+  private addToCart = (
+    product: MasonryProduct,
+    quantity: number,
+    selections: SelectedProductVariant[] = [],
+    combinationId?: string,
+  ): void => {
+    if (this.viewModel.onAddToCart) {
+      this.viewModel.onAddToCart(product, quantity, selections, combinationId);
+      return;
+    }
+    TransientFeedback.show({
+      message: `${product.title} ajouté au panier`,
+      icon: navigationIcons.shoppingCartCheck02,
+      duration: 2200,
+    });
+  };
 
   private handleMessageSeller = (): void => {
     this.showFeedback('Contacter le vendeur');
@@ -392,14 +405,18 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
       columnWidth={columnWidth}
       onTap={createReusableCallback(() => this.handleRecommendationTap(product, recommendations))}
       onQuickAdd={createReusableCallback(() => {
-        if (!this.openProductVariantSheet(product, 'add-to-cart')) this.showFeedback('Ajouté au panier');
+        if (!this.openProductVariantSheet(product, 'add-to-cart')) this.addToCart(product, 1);
       })}
     />;
   };
 
   private handleRecommendationTap = (product: MasonryProduct, recommendations: MasonryProduct[]): void => {
     runNavigationAction(this.navigationController, () => {
-      this.navigationController.push(ProductDetailScreen, { product, recommendations }, {});
+      this.navigationController.push(ProductDetailScreen, {
+        product,
+        recommendations,
+        onAddToCart: this.viewModel.onAddToCart,
+      }, {});
     });
   };
 
@@ -477,11 +494,7 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
 
   private handleAddToCart = (): void => {
     if (this.openProductVariantSheet(this.viewModel.product, 'add-to-cart')) return;
-    TransientFeedback.show({
-      message: 'Votre article a été ajouté au panier',
-      icon: navigationIcons.shoppingCartAdd02,
-      duration: 2200,
-    });
+    this.addToCart(this.viewModel.product, this.state.quantity);
   };
 
   private renderVendor(product: MasonryProduct): void {
@@ -669,12 +682,30 @@ export class ProductDetailScreen extends NavigationPageStatefulComponent<Product
           <image src={navigationIcons.bubbleChat} tint={colors.textPrimary} width={20} height={20} objectFit="contain" />
           <label value="Message" style={styles.bottomMessageLabel} numberOfLines={1} />
         </view>
-        <view style={styles.bottomAdd} onTap={this.recommendationsSectionVisible ? undefined : this.handleAddToCart} accessibilityCategory="button">
-          <label value="Ajouter" style={styles.bottomAddText} />
-        </view>
-        <view style={styles.bottomBuy} onTap={this.recommendationsSectionVisible ? undefined : this.handleBuyNow} accessibilityCategory="button">
-          <label value="Acheter" style={styles.bottomBuyText} />
-        </view>
+        <DSButton
+          title="Ajouter"
+          variant="black"
+          size="fullWidth"
+          height={52}
+          cornerRadius={radius.md}
+          marginLeft={spacing.sm}
+          textCase="none"
+          accessibilityLabel={`Ajouter ${this.viewModel.product.title} au panier`}
+          interactionDisabled={this.recommendationsSectionVisible}
+          onTap={this.handleAddToCart}
+        />
+        <DSButton
+          title="Acheter"
+          variant="cta"
+          size="fullWidth"
+          height={52}
+          cornerRadius={radius.md}
+          marginLeft={spacing.sm}
+          textCase="none"
+          accessibilityLabel={`Acheter ${this.viewModel.product.title}`}
+          interactionDisabled={this.recommendationsSectionVisible}
+          onTap={this.handleBuyNow}
+        />
       </layout>
     </view>;
   }
@@ -1214,25 +1245,6 @@ const styles = {
     font: montserrat.semiBold(fontSize.nano),
     marginTop: spacing.xs,
   }),
-  bottomAdd: new Style<View>({
-    alignItems: 'center',
-    backgroundColor: colors.buttonSecondary,
-    borderRadius: radius.xs,
-    flexGrow: 1,
-    height: 52,
-    justifyContent: 'center',
-    marginLeft: spacing.sm,
-  }),
-  bottomAddText: typography.buttonSmall.extend({ color: colors.textInverted }),
-  bottomBuy: new Style<View>({
-    alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
-    borderRadius: radius.xs,
-    flexGrow: 1,
-    height: 52,
-    justifyContent: 'center',
-    marginLeft: spacing.sm,
-  }),
-  bottomBuyText: typography.buttonSmall.extend({ color: colors.textBrand }),
 };
+
 

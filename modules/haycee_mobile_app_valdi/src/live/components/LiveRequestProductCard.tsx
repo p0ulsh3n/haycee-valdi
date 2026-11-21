@@ -63,7 +63,7 @@ export class LiveRequestProductCard extends Component<LiveRequestProductCardView
             accessibilityLabel={`Demander ${product.title}`}
           >
             <label value="Demander" style={styles.requestLabel} numberOfLines={1} />
-            <image src={navigationIcons.userHandUp01} tint={colors.textInverted} width={19} height={19} objectFit="contain" />
+            <image src={navigationIcons.userHandUp01} tint={colors.textPrimary} width={19} height={19} objectFit="contain" />
           </view>
         ) : null}
       </view>
@@ -88,7 +88,7 @@ const styles = {
   requestButton: new Style<View>({
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: radius.full,
     bottom: spacing.sm,
     flexDirection: 'row',
@@ -129,7 +129,7 @@ const styles = {
     top: spacing.sm,
   }),
   requestLabel: new Style<Label>({
-    color: colors.textInverted,
+    color: colors.textPrimary,
     font: montserrat.semiBold(fontSize.body),
     marginRight: spacing.xs,
   }),

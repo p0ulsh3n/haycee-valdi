@@ -50,6 +50,8 @@ export interface BottomSheetViewModel {
   title?: string;
   /** Optional sheet message. Omit it for a spinner-only loading state. */
   message?: string;
+  /** Optional feature-owned body content rendered inside the shared sheet surface. */
+  renderContent?: () => void;
   /** Defaults to `upper` for sheet text. */
   textCase?: TextCase;
   /** Defaults to false. Set true to add the dimming overlay. */
@@ -391,6 +393,7 @@ export class BottomSheet extends NavigationPageStatefulComponent<BottomSheetView
             numberOfLines={0}
           />;
         })}
+        {this.viewModel.renderContent?.()}
         {!isSnapPointSheet ? (
           <view style={styles.closeButton} onTap={this.handleCloseTap} accessibilityCategory="button">
             <label
@@ -443,7 +446,7 @@ const footerStyles = {
   }),
   button: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: radius.full,
     justifyContent: 'center',
     minHeight: 48,
@@ -537,7 +540,7 @@ const styles = {
   }),
   closeButton: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: radius.md,
     justifyContent: 'center',
     marginTop: spacing.xxl,

@@ -239,7 +239,7 @@ export class ProductVariantSelectionSheet extends NavigationPageStatefulComponen
         chipHeight={38}
         selectedBackgroundColor={colors.backgroundBrand}
         unselectedBackgroundColor={colors.backgroundSecondary}
-        selectedTextColor={colors.textInverted}
+        selectedTextColor={colors.textPrimary}
         unselectedTextColor={colors.textPrimary}
         textCase="none"
       />

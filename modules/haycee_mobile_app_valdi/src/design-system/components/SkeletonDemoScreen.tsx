@@ -101,7 +101,7 @@ const styles = {
   }),
   avatar: new Style<View>({
     alignItems: 'center',
-    backgroundColor: colors.interactivePrimary,
+    backgroundColor: colors.backgroundBrand,
     borderRadius: 32,
     height: 64,
     justifyContent: 'center',

@@ -144,7 +144,7 @@ export class LiveWalletSheet extends NavigationPageStatefulComponent<LiveWalletS
         </view>
         <layout style={styles.walletActions}>
           <view style={styles.addFundsButton} onTap={this.openAddFunds} accessibilityCategory="button" accessibilityLabel="Ajouter des fonds au portefeuille">
-            <image src={navigationIcons.moneyAdd02} tint={colors.iconBrand} width={19} height={19} objectFit="contain" />
+            <image src={navigationIcons.moneyAdd02} tint={colors.textPrimary} width={19} height={19} objectFit="contain" />
             <label value="Ajouter des fonds" style={styles.addFundsLabel} numberOfLines={1} />
           </view>
           <view style={styles.ordersButton} onTap={this.openOrders} accessibilityCategory="button" accessibilityLabel="Voir l’historique des commandes">
@@ -224,7 +224,7 @@ export class LiveWalletSheet extends NavigationPageStatefulComponent<LiveWalletS
               accessibilityLabel={`Choisir ${method.label}`}
             >
               <view style={this.state.selectedPaymentMethod === method.id ? styles.paymentMethodIconSelected : styles.paymentMethodIcon}>
-                <image src={navigationIcons.money03} tint={this.state.selectedPaymentMethod === method.id ? colors.iconBrand : colors.textSecondary} width={20} height={20} objectFit="contain" />
+                <image src={navigationIcons.money03} tint={this.state.selectedPaymentMethod === method.id ? colors.textPrimary : colors.textSecondary} width={20} height={20} objectFit="contain" />
               </view>
               <label value={method.label} style={this.state.selectedPaymentMethod === method.id ? styles.paymentMethodLabelSelected : styles.paymentMethodLabel} numberOfLines={2} />
             </view>
@@ -358,7 +358,7 @@ const styles = {
   paymentMethodLabel: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.metadata), textAlign: 'center' }),
   paymentMethodLabelSelected: new Style<Label>({ color: colors.textBrand, font: montserrat.extraBold(fontSize.metadata), textAlign: 'center' }),
   topUpFooter: new Style<View>({ backgroundColor: colors.backgroundPrimary, flexShrink: 0, paddingBottom: spacing.md, paddingTop: spacing.md, width: '100%' }),
-  continueButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.interactivePrimary, borderRadius: radius.full, height: 52, justifyContent: 'center', width: '100%' }),
+  continueButton: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonPrimary, borderRadius: radius.full, height: 52, justifyContent: 'center', width: '100%' }),
   continueButtonDisabled: new Style<View>({ alignItems: 'center', backgroundColor: colors.interactiveDisabled, borderRadius: radius.full, height: 52, justifyContent: 'center', width: '100%' }),
   continueButtonLabel: new Style<Label>({ color: colors.textBrand, font: montserrat.extraBold(fontSize.body) }),
   continueButtonLabelDisabled: new Style<Label>({ color: colors.textSecondary, font: montserrat.semiBold(fontSize.body) }),

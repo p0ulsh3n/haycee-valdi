@@ -426,7 +426,7 @@ export class LegalUpdateSheet extends NavigationPageStatefulComponent<LegalUpdat
           >
             <view style={this.state.confirmationChecked ? styles.checkboxSelected : styles.checkbox}>
               {this.state.confirmationChecked ? (
-                <image src={navigationIcons.tick03Bold} tint={colors.textInverted} width={14} height={14} objectFit="contain" />
+                <image src={navigationIcons.tick03Bold} tint={colors.textPrimary} width={14} height={14} objectFit="contain" />
               ) : null}
             </view>
             <label value={transformText(this.viewModel.confirmationLabel, this.viewModel.textCase ?? 'none')} style={styles.confirmationLabel} numberOfLines={0} />
@@ -484,7 +484,7 @@ const styles = {
   documentMeta: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.tiny), marginTop: spacing.xs }),
   documentLink: new Style<Label>({ color: colors.interactivePrimary, flexShrink: 0, font: montserrat.semiBold(fontSize.metadata) }),
   changeRow: new Style<Layout>({ alignItems: 'flex-start', flexDirection: 'row', marginBottom: spacing.md, width: '100%' }),
-  changeMarker: new Style<View>({ backgroundColor: colors.interactivePrimary, borderRadius: radius.full, flexShrink: 0, height: 7, marginRight: spacing.md, marginTop: 6, width: 7 }),
+  changeMarker: new Style<View>({ backgroundColor: colors.buttonPrimary, borderRadius: radius.full, flexShrink: 0, height: 7, marginRight: spacing.md, marginTop: 6, width: 7 }),
   changeCopy: new Style<View>({ flexDirection: 'column', flexGrow: 1, flexShrink: 1 }),
   changeTitle: new Style<Label>({ color: colors.textPrimary, font: montserrat.semiBold(fontSize.body), lineHeight: 1.35 }),
   changeDescription: new Style<Label>({ color: colors.textSecondary, font: montserrat.regular(fontSize.metadata), lineHeight: 1.4, marginTop: spacing.xs }),
@@ -494,7 +494,7 @@ const styles = {
   errorMessage: new Style<Label>({ color: colors.textDanger, font: montserrat.semiBold(fontSize.metadata), marginTop: spacing.md }),
   confirmationRow: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', flexShrink: 0, marginBottom: spacing.md, marginTop: spacing.sm, width: '100%' }),
   checkbox: new Style<View>({ alignItems: 'center', borderColor: colors.borderDefault, borderRadius: radius.xs, borderWidth: 1, flexShrink: 0, height: 22, justifyContent: 'center', marginRight: spacing.md, width: 22 }),
-  checkboxSelected: new Style<View>({ alignItems: 'center', backgroundColor: colors.interactivePrimary, borderColor: colors.interactivePrimary, borderRadius: radius.xs, borderWidth: 1, flexShrink: 0, height: 22, justifyContent: 'center', marginRight: spacing.md, width: 22 }),
+  checkboxSelected: new Style<View>({ alignItems: 'center', backgroundColor: colors.buttonPrimary, borderColor: colors.buttonPrimary, borderRadius: radius.xs, borderWidth: 1, flexShrink: 0, height: 22, justifyContent: 'center', marginRight: spacing.md, width: 22 }),
   confirmationLabel: new Style<Label>({ color: colors.textPrimary, flexGrow: 1, flexShrink: 1, font: montserrat.regular(fontSize.metadata), lineHeight: 1.35 }),
   actions: new Style<View>({ flexDirection: 'column', flexShrink: 0, width: '100%' }),
 };

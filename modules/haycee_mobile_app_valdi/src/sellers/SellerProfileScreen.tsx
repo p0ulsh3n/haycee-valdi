@@ -7,7 +7,6 @@ import { NavigationPageStatefulComponent } from 'valdi_navigation/src/Navigation
 import { Label, Layout, ScrollView, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { ScrollEvent } from 'valdi_tsx/src/GestureEvents';
 import { ElementFrame } from 'valdi_tsx/src/Geometry';
-import { ImageFilters } from 'valdi_core/src/utils/ImageFilter';
 import navigationIcons from '../../res/navigation-icons';
 import { MasonryFeed, MasonryItem } from '../design-system/components/MasonryFeed';
 import { estimateMasonryProductCardHeight, MasonryProductCard, MasonryProduct } from '../design-system/components/MasonryProductCard';
@@ -36,6 +35,8 @@ import { layout, spacing } from '../design-system/tokens/spacing';
 import { fontSize, montserrat, typography } from '../design-system/tokens/typography';
 import { normalizeUsername } from '../design-system/utils/identity';
 import { limitSellerBio } from '../design-system/utils/sellerBio';
+import { ProfileCover } from '../profile/components/ProfileCover';
+import { ProfileIdentitySection, ProfileSummaryStat } from '../profile/components/ProfileIdentitySection';
 
 export interface SellerProfileViewModel {
   product: MasonryProduct;
@@ -598,7 +599,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
     </view>;
   }
 
-  private renderCoverStats(): void {
+  private renderCoverStats = (): void => {
     const product = this.viewModel.product;
     const hasDispatch = Boolean(product.vendorDispatchTime);
     const hasDelivery = Boolean(product.vendorDeliveryTime);
@@ -623,7 +624,7 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
         ) : null}
       </layout>
     </view>;
-  }
+  };
 
   onRender(): void {
     const product = this.viewModel.product;
@@ -635,10 +636,15 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
     const initial = vendorDisplayName.charAt(0).toUpperCase();
     const coverColor = product.galleryColors?.[0] ?? product.color;
     const coverImage = product.vendorCoverImageUrl ?? product.imageUrl ?? product.vendorAvatarUrl;
-    const stats: Array<{ value: string; label: string; showReviewIcon?: boolean }> = [];
+    const stats: ProfileSummaryStat[] = [];
 
     if (product.vendorRating || product.vendorReviewSummary) {
-      stats.push({ value: product.vendorReviewSummary ?? product.vendorRating ?? '', label: 'Avis', showReviewIcon: true });
+      stats.push({
+        value: product.vendorReviewSummary ?? product.vendorRating ?? '',
+        label: 'Avis',
+        icon: navigationIcons.star,
+        iconTint: colors.interactivePrimary,
+      });
     }
     if (this.viewModel.sellerProducts !== undefined) {
       stats.push({ value: formatSellerCount(this.viewModel.sellerProducts.length), label: 'Articles' });
@@ -654,19 +660,12 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
         onScroll={this.handleSellerScroll}
         showsVerticalScrollIndicator={false}
       >
-        <view style={styles.cover} backgroundColor={coverColor}>
-          {coverImage ? (
-            <image
-              src={coverImage}
-              style={styles.coverImage}
-              objectFit="cover"
-              filter={ImageFilters.blur(14)}
-            />
-          ) : null}
-          <view style={styles.coverTint} />
-          <view style={styles.coverBottomShade} />
-          {this.renderCoverStats()}
-        </view>
+        <ProfileCover
+          backgroundColor={coverColor}
+          imageUrl={coverImage}
+          blurImage={true}
+          renderOverlay={this.renderCoverStats}
+        />
         <view style={styles.profileSurface} onLayout={this.handleProfileSurfaceLayout}>
           <view style={styles.profileHeader}>
             {this.renderAvatar(initial)}
@@ -692,38 +691,15 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
               </layout>
             ) : null}
           </view>
-          <label
-            value={vendorDisplayName}
-            style={styles.displayName}
-            numberOfLines={1}
-            onLayout={this.handleDisplayNameLayout}
+          <ProfileIdentitySection
+            displayName={vendorDisplayName}
+            username={'@' + this.vendorUsername()}
+            locationLabel={vendorCountryLabel ? `Ce vendeur est en ${vendorCountryLabel}` : undefined}
+            locationFlag={vendorCountryFlag}
+            stats={stats}
+            bio={sellerBio}
+            onDisplayNameLayout={this.handleDisplayNameLayout}
           />
-          <label value={'@' + this.vendorUsername()} style={styles.vendorHandle} numberOfLines={1} />
-          {vendorCountryLabel ? (
-            <layout style={styles.countryRow}>
-              <label value={`Ce vendeur est en ${vendorCountryLabel}`} style={styles.countryLabel} numberOfLines={1} />
-              {vendorCountryFlag ? <label value={vendorCountryFlag} style={styles.countryFlag} /> : null}
-            </layout>
-          ) : null}
-          {stats.length > 0 ? (
-            <layout style={styles.statsRow}>
-              {stats.map((stat, index) => (
-                <layout key={`seller-stat-${stat.label}`} style={styles.statGroup}>
-                  {index > 0 ? <view style={styles.statsSeparatorDot} /> : null}
-                  <layout style={styles.statItem}>
-                    {stat.showReviewIcon ? (
-                      <view style={styles.statsReviewIcon}>
-                        <image src={navigationIcons.star} tint={colors.interactivePrimary} width={14} height={14} objectFit="contain" />
-                      </view>
-                    ) : null}
-                    <label value={stat.value} style={styles.statsNumber} numberOfLines={1} />
-                    <label value={stat.label} style={styles.statsLabel} numberOfLines={1} />
-                  </layout>
-                </layout>
-              ))}
-            </layout>
-          ) : null}
-          {sellerBio ? <label value={sellerBio} style={styles.bio} numberOfLines={4} /> : null}
           {this.renderSellerTabs()}
         </view>
       </scroll>
@@ -732,8 +708,6 @@ export class SellerProfileScreen extends NavigationPageStatefulComponent<
     </view>;
   }
 }
-
-const sellerProfileBodyFont = montserrat.semiBold(fontSize.body);
 
 const styles = {
   root: new Style<View>({
@@ -745,37 +719,6 @@ const styles = {
   scroll: new Style<ScrollView>({
     flexGrow: 1,
     flexShrink: 1,
-  }),
-  cover: new Style<View>({
-    alignItems: 'center',
-    height: 188,
-    justifyContent: 'center',
-    paddingLeft: spacing.lg,
-    paddingRight: spacing.lg,
-    position: 'relative',
-  }),
-  coverImage: new Style<View>({
-    height: '100%',
-    left: 0,
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-  }),
-  coverTint: new Style<View>({
-    backgroundColor: 'rgba(0, 0, 0, 0.12)',
-    height: '100%',
-    left: 0,
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-  }),
-  coverBottomShade: new Style<View>({
-    background: 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.42) 100%)',
-    bottom: 0,
-    height: 88,
-    left: 0,
-    position: 'absolute',
-    width: '100%',
   }),
   coverStatsOverlay: new Style<View>({
     alignSelf: 'flex-end',
@@ -853,34 +796,6 @@ const styles = {
     color: colors.textPrimary,
     font: montserrat.black(fontSize.display),
   }),
-  displayName: new Style<Label>({
-    color: colors.textPrimary,
-    font: montserrat.extraBold(fontSize.display),
-    marginTop: spacing.md,
-  }),
-  vendorHandle: typography.body.extend({
-    color: colors.textSecondary,
-    font: sellerProfileBodyFont,
-  }),
-  countryRow: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginTop: spacing.xs }),
-  countryLabel: typography.body.extend({ color: colors.textSecondary, font: sellerProfileBodyFont }),
-  countryFlag: typography.body.extend({ font: sellerProfileBodyFont, marginLeft: spacing.xs }),
-  statsRow: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', marginTop: spacing.xxl }),
-  statGroup: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', flexShrink: 1 }),
-  statItem: new Style<Layout>({ alignItems: 'center', flexDirection: 'row', flexShrink: 1 }),
-  statsReviewIcon: new Style<View>({ marginRight: spacing.xs }),
-  statsSeparatorDot: new Style<View>({ backgroundColor: colors.textSecondary, borderRadius: radius.full, height: 3, marginLeft: spacing.sm, marginRight: spacing.sm, width: 3 }),
-  statsNumber: new Style<Label>({
-    color: colors.textPrimary,
-    flexShrink: 1,
-    font: montserrat.extraBold(fontSize.body),
-  }),
-  statsLabel: new Style<Label>({
-    color: colors.textSecondary,
-    flexShrink: 1,
-    font: sellerProfileBodyFont,
-    marginLeft: spacing.xs,
-  }),
   messageButton: new Style<View>({
     alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,
@@ -890,7 +805,6 @@ const styles = {
     marginRight: spacing.sm,
     width: 36,
   }),
-  bio: typography.body.extend({ color: colors.textPrimary, font: sellerProfileBodyFont, marginTop: spacing.xxl }),
   tabsContainer: new Style<Layout>({
     marginLeft: -spacing.lg,
     marginRight: -spacing.lg,

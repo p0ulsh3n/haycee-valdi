@@ -93,7 +93,7 @@ export class LiveFeedCard extends Component<LiveFeedCardViewModel> {
               >
                 <image
                   src={this.viewModel.isReminderSet ? navigationIcons.notification01Bold : navigationIcons.notification01}
-                  tint={this.viewModel.isReminderSet ? colors.iconInverted : colors.iconDefault}
+                  tint={colors.iconDefault}
                   width={16}
                   height={16}
                   objectFit="contain"
@@ -232,7 +232,7 @@ const styles = {
     marginLeft: spacing.xs,
   }),
   reminderCountActive: new Style<Label>({
-    color: colors.textInverted,
+    color: colors.textPrimary,
     font: montserrat.semiBold(fontSize.nano),
     marginLeft: spacing.xs,
   }),

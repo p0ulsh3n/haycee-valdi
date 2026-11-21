@@ -239,7 +239,7 @@ const styles = {
     textDecoration: 'strikethrough',
   }),
   discountPercent: new Style<Label>({
-    color: colors.interactivePrimary,
+    color: colors.buttonPrimary,
     flexShrink: 0,
     font: montserrat.semiBold(fontSize.tiny),
     marginLeft: spacing.xs,

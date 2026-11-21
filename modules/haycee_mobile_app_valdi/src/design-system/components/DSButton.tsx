@@ -29,6 +29,8 @@ export interface DSButtonViewModel {
   marginRight?: number;
   /** Optional height override for a shared variant in a denser surface. */
   height?: number;
+  /** Optional shared radius token value when the default pill shape is too round. */
+  cornerRadius?: number;
   /** Optional width override for compact shared actions such as inline feed controls. */
   width?: number;
   disabled?: boolean;
@@ -59,7 +61,7 @@ const semanticButtonColors = {
 } as const;
 
 const semanticLabelColors = {
-  cta: colors.textInverted,
+  cta: colors.textPrimary,
   black: colors.textInverted,
   neutral: colors.textPrimary,
   outline: colors.textPrimary,
@@ -146,9 +148,12 @@ export class DSButton extends Component<DSButtonViewModel> {
     const surfaceStyle = !disabled && this.viewModel.surfaceColor !== undefined
       ? baseStyle.extend({ backgroundColor: this.viewModel.surfaceColor }) as Style<View>
       : baseStyle;
-    const style = disabled
-      ? surfaceStyle.extend(disabledSemanticStyles[size]) as Style<View>
+    const radiusStyle = this.viewModel.cornerRadius !== undefined
+      ? surfaceStyle.extend({ borderRadius: this.viewModel.cornerRadius }) as Style<View>
       : surfaceStyle;
+    const style = disabled
+      ? radiusStyle.extend(disabledSemanticStyles[size]) as Style<View>
+      : radiusStyle;
     const semanticLabelStyle = !disabled && this.viewModel.labelColor !== undefined
       ? semanticLabelStyles[variant].extend({ color: this.viewModel.labelColor }) as Style<Label>
       : semanticLabelStyles[variant];
@@ -168,7 +173,7 @@ export class DSButton extends Component<DSButtonViewModel> {
     const iconTint = this.viewModel.iconTint
       ?? (disabled
         ? colors.textTertiary
-        : variant === 'cta' || variant === 'black'
+        : variant === 'black'
           ? colors.textInverted
           : colors.textPrimary);
     <AsyncActionButton
